@@ -12,3 +12,6 @@
 
 #include <cstdlib>
 #include <type_traits>
+
+
+#include <ROSE/preamble/ROSE_macros.h>

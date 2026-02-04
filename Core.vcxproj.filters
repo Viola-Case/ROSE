@@ -36,5 +36,8 @@
     <ClInclude Include="include\ROSE\rtl\ROSE_list.h">
       <Filter>Source Files\include\rtl</Filter>
     </ClInclude>
+    <ClInclude Include="include\ROSE\preamble\ROSE_macros.h">
+      <Filter>Source Files\include\preamble</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
