@@ -19,10 +19,22 @@
     <Filter Include="Source Files\src">
       <UniqueIdentifier>{1e3265a1-b98f-41b2-b138-33256d34282f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\include\rtl">
+      <UniqueIdentifier>{7d23a880-3abf-4f7e-92fa-5e6953f9ebf3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\include\preamble">
+      <UniqueIdentifier>{dee4865e-99c4-465d-82b5-d5dd3067506e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ROSE\ROSE.h">
       <Filter>Source Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\ROSE_preamble.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\rtl\ROSE_list.h">
+      <Filter>Source Files\include\rtl</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
