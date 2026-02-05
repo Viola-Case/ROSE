@@ -39,5 +39,13 @@
     <ClInclude Include="include\ROSE\preamble\ROSE_macros.h">
       <Filter>Source Files\include\preamble</Filter>
     </ClInclude>
+    <ClInclude Include="include\ROSE\ROSE_version.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\version.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

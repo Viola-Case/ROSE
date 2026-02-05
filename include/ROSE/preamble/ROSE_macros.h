@@ -12,6 +12,18 @@
 
 #include <type_traits>
 
+#pragma region preprocessor macros
+
+#define ROSE_STR(x) #x
+#define ROSE_XSTR(x) ROSE_STR(x)
+
+#define ROSE_CAT(a,b) a##b
+#define ROSE_XCAT(a,b) ROSE_CAT(a,b)
+
+#define ROSE_PRAGMA(x) __pragma(x)
+
+#pragma endregion
+
 #pragma region important stuff
 #if !(__cplusplus >= 202002L || _MSVC_LANG >= 202002L)
 #error ROSE is designed for C++20 or newer!
@@ -29,22 +41,9 @@
 #error ROSE is designed for 64-bit Windows. For POSIX systems please launch the ROSE runtime through Proton.
 #endif
 
-
 #pragma endregion
 
-#pragma region versioning
 
-constexpr unsigned char  ROSE_VERSION_MAJOR = 0;
-constexpr unsigned char  ROSE_VERSION_MINOR = 0;
-constexpr unsigned short ROSE_VERSION_PATCH = 1;
-
-constexpr unsigned int   ROSE_VERSIONNUM(char major, char minor, short patch) { return (1000000 * major + 10000 * minor + patch); }
-
-constexpr unsigned char  ROSE_VERSIONNUM_MAJOR(unsigned int version) { return (version / 1000000); }
-constexpr unsigned char  ROSE_VERSIONNUM_MINOR(unsigned int version) { return ((version % 1000000) / 10000); }
-constexpr unsigned short ROSE_VERSIONNUM_PATCH(unsigned int version) { return (version % 10000); }
-
-#pragma endregion
 
 #pragma region logic
 
@@ -60,6 +59,10 @@ namespace ROSE {
 
 #pragma endregion
 
+#define ROSE_API_EXPORT __declspec(dllexport)
+#define ROSE_API_IMPORT __declspec(dllimport)
+
+#define ROSE_API(MODULE) CASE_XCAT(ROSE_, CASE_XCAT(MODULE, _API))
 
 #pragma endregion
 
