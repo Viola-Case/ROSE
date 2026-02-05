@@ -1,7 +1,7 @@
 /**
 
-    @file      ROSE_list.h
-    @brief     
+    @file      ROSE_rtl.h
+    @brief     Collection of the ROSE Template Library (my re-implementation of the standard template library)
     @details   ~
     @author    Viola Case
     @date      4.02.2026
@@ -10,9 +10,3 @@
 **/
 #pragma once
 
-namespace ROSE {
-    template<typename T>
-    class List {
-
-    };
-}

@@ -42,6 +42,9 @@
     <ClInclude Include="include\ROSE\ROSE_version.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\ROSE\preamble\ROSE_rtl.h">
+      <Filter>Source Files\include\preamble</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\version.cpp">
