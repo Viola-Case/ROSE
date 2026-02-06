@@ -50,5 +50,8 @@
     <ClCompile Include="src\version.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
+    <ClCompile Include="ROSE_string.h">
+      <Filter>Source Files\include\rtl</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

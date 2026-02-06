@@ -1,11 +1,11 @@
 /**
 
-    @file      ROSE_macros.h
-    @brief     
-    @details   ~
-    @author    Cool Guy
-    @date      4.02.2026
-    @copyright © Cool Guy, 2026. All right reserved.
+  @file      ROSE_macros.h
+  @brief     
+  @details   ~
+  @author    Cool Guy
+  @date      4.02.2026
+  @copyright © Cool Guy, 2026. All right reserved.
 
 **/
 #pragma once
@@ -48,12 +48,12 @@
 #pragma region logic
 
 namespace ROSE {
-    template<typename T>
-    constexpr void SWAP(T &a, T &b) { T &c = a; a = b; b = c; }
-    template<typename T>
-    constexpr const T &MIN(const T &a, const T &b) noexcept requires(std::is_arithmetic_v<T>) { return (b < a ? b : a); }
-    template<typename T>
-    constexpr const T &MAX(const T &a, const T &b) noexcept requires(std::is_arithmetic_v<T>) { return (a < b ? b : a); }
+  template<typename T>
+  constexpr void SWAP(T &a, T &b) { T &c = a; a = b; b = c; }
+  template<typename T>
+  constexpr const T &MIN(const T &a, const T &b) noexcept requires(std::is_arithmetic_v<T>) { return (b < a ? b : a); }
+  template<typename T>
+  constexpr const T &MAX(const T &a, const T &b) noexcept requires(std::is_arithmetic_v<T>) { return (a < b ? b : a); }
 
 }
 

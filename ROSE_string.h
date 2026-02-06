@@ -1,18 +1,11 @@
 /**
 
-  @file      ROSE_list.h
+  @file      ROSE_string.h
   @brief     
   @details   ~
   @author    Viola Case
-  @date      4.02.2026
+  @date      6.02.2026
   @copyright © Cool Guy, 2026. All right reserved.
 
 **/
 #pragma once
-
-namespace ROSE {
-    template<typename T>
-    class List {
-
-    };
-}

@@ -1,11 +1,11 @@
 /**
 
-    @file      ROSE_version.h
-    @brief     
-    @details   ~
-    @author    Cool Guy
-    @date      5.02.2026
-    @copyright © Cool Guy, 2026. All right reserved.
+  @file      ROSE_version.h
+  @brief     
+  @details   ~
+  @author    Cool Guy
+  @date      5.02.2026
+  @copyright © Cool Guy, 2026. All right reserved.
 
 **/
 #pragma once

@@ -91,6 +91,7 @@
     <ClInclude Include="include\ROSE\rtl\ROSE_list.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ROSE_string.h" />
     <ClCompile Include="src\version.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
