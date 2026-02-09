@@ -1,0 +1,12 @@
+{
+  "name": "rose",
+  "version": "0.0.1",
+  "homepage": "https://github.com/Viola-Case/ROSE",
+  "license": null,
+  "description": "Radical Open Software Engine",
+  "dependencies": [
+    "sdl3",
+    "dear-imgui",
+    "glad"
+  ]
+ }
