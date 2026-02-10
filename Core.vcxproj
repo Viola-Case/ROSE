@@ -46,11 +46,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)build\bin\</OutDir>
     <IntDir>$(SolutionDir)build\out\$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)d</TargetName>
+    <TargetName>ROSE_$(ProjectName)d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)build\bin\</OutDir>
     <IntDir>$(SolutionDir)build\out\$(Configuration)\</IntDir>
+    <TargetName>ROSE_$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -88,10 +89,13 @@
     <ClInclude Include="include\ROSE\ROSE.h" />
     <ClInclude Include="include\ROSE\ROSE_preamble.h" />
     <ClInclude Include="include\ROSE\ROSE_version.h" />
+    <ClInclude Include="include\ROSE\rtl\ROSE_buffer.h" />
     <ClInclude Include="include\ROSE\rtl\ROSE_list.h" />
+    <ClInclude Include="include\ROSE\rtl\ROSE_memory.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ROSE_string.h" />
+    <ClCompile Include="include\Rose\rtl\ROSE_string.h" />
+    <ClCompile Include="src\rtl\buffer.cpp" />
     <ClCompile Include="src\version.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

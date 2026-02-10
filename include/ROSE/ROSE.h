@@ -12,3 +12,5 @@
 
 #include <ROSE/ROSE_preamble.h>
 #include <ROSE/ROSE_version.h>
+
+namespace rose = ROSE;

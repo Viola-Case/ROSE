@@ -10,3 +10,7 @@
 **/
 #pragma once
 
+#include <ROSE/rtl/ROSE_buffer.h>
+#include <ROSE/rtl/ROSE_list.h>
+#include <ROSE/rtl/ROSE_string.h>
+#include <ROSE/rtl/ROSE_memory.h>

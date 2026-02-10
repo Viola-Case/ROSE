@@ -14,6 +14,6 @@
 #include <iostream>
 
 int main() {
-	std::cout << "ROSE version " ROSE_VERSION_STR << std::endl;
+  std::cout << "ROSE version " << ROSE::GetVersion() << std::endl;
 	return 0;
 }
