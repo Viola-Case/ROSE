@@ -87,6 +87,7 @@
     <ClInclude Include="include\ROSE\preamble\ROSE_macros.h" />
     <ClInclude Include="include\ROSE\preamble\ROSE_rtl.h" />
     <ClInclude Include="include\ROSE\ROSE.h" />
+    <ClInclude Include="include\ROSE\ROSE_main.h" />
     <ClInclude Include="include\ROSE\ROSE_preamble.h" />
     <ClInclude Include="include\ROSE\ROSE_version.h" />
     <ClInclude Include="include\ROSE\rtl\ROSE_buffer.h" />

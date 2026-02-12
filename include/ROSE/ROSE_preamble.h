@@ -11,7 +11,11 @@
 #pragma once
 
 #include <cstdlib>
+#include <cstdint>
 #include <type_traits>
+#include <utility>
 
 #include <ROSE/preamble/ROSE_macros.h>
 #include <ROSE/preamble/ROSE_rtl.h>
+
+namespace rose = ROSE;
