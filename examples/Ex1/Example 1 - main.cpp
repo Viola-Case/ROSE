@@ -13,12 +13,13 @@
 #include <ROSE/ROSE.h>
 #include <iostream>
 
+#include <Windows.h>
+
 using namespace ROSE;
 
 
 
-int main(int argc, char** argv) {
-
+int ROSE_main(int argc, char** argv) {
   std::cout << "ROSE version " << ROSE::GetVersion() << std::endl;
 	return 0;
 }

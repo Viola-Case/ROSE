@@ -54,6 +54,9 @@
     <ClInclude Include="include\ROSE\ROSE_main.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\ROSE\ROSE_log.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\version.cpp">
@@ -63,6 +66,12 @@
       <Filter>Source Files\include\rtl</Filter>
     </ClCompile>
     <ClCompile Include="src\rtl\buffer.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\entry.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\log.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
   </ItemGroup>

@@ -39,12 +39,12 @@ namespace ROSE {
       @warning dont call `delete` on this
       @retval
     **/
-    T *get() noexcept { return ptr };
+    T *get() noexcept { return ptr; }
     /**
       @warning dont call `delete` on this
       @retval
     **/
-    const T *get() const noexcept { return ptr };
+    const T *get() const noexcept { return ptr; }
 
     T &operator*() const { return *ptr; }
     T *operator->() const { return ptr; }
@@ -110,7 +110,7 @@ namespace ROSE {
     SharedPtr() = default;
 
     explicit SharedPtr(T *p_) {
-      if (p_) ctrl = new ControlBlock(p);
+      if (p_) ctrl = new ControlBlock(p_);
     }
 
     SharedPtr(const SharedPtr &other) noexcept : ctrl(other.ctrl) {

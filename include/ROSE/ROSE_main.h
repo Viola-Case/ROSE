@@ -12,6 +12,4 @@
 
 #include <ROSE/ROSE_preamble.h>
 
-namespace ROSE {
-
-}
+int ROSE_main(int argc, char **argv);

@@ -66,6 +66,9 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <SubSystem>Console</SubSystem>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -82,11 +85,15 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <SubSystem>Windows</SubSystem>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\ROSE\preamble\ROSE_macros.h" />
     <ClInclude Include="include\ROSE\preamble\ROSE_rtl.h" />
     <ClInclude Include="include\ROSE\ROSE.h" />
+    <ClInclude Include="include\ROSE\ROSE_log.h" />
     <ClInclude Include="include\ROSE\ROSE_main.h" />
     <ClInclude Include="include\ROSE\ROSE_preamble.h" />
     <ClInclude Include="include\ROSE\ROSE_version.h" />
@@ -96,6 +103,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\Rose\rtl\ROSE_string.h" />
+    <ClCompile Include="src\entry.cpp" />
+    <ClCompile Include="src\log.cpp" />
     <ClCompile Include="src\rtl\buffer.cpp" />
     <ClCompile Include="src\version.cpp" />
   </ItemGroup>

@@ -11,5 +11,7 @@
 #pragma once
 
 #include <ROSE/ROSE_preamble.h>
+#include <ROSE/ROSE_main.h>
 #include <ROSE/ROSE_version.h>
+//#include <ROSE/ROSE_log.h>
 
