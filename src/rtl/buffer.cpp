@@ -10,6 +10,7 @@
 **/
 
 #include <ROSE/ROSE.h>
+#include <cstring>
 
 namespace ROSE {
   RawBuffer::RawBuffer() noexcept : m_data(nullptr), m_size(0) {}
@@ -30,5 +31,42 @@ namespace ROSE {
   void *RawBuffer::data() noexcept { return m_data; }
   const void *RawBuffer::data() const noexcept { return m_data; }
   size_t RawBuffer::size() const noexcept { return m_size; }
+
+  void RawBuffer::allocate(size_t bytes) {
+    if (bytes == 0) {
+      free();
+      return;
+    }
+
+    ::operator delete(m_data);
+
+    m_data = ::operator new(bytes);
+    m_size = bytes;
+  }
+  void RawBuffer::reallocate(size_t bytes) {
+    if (bytes == m_size)
+      return;
+
+    if (bytes == 0) {
+      free();
+      return;
+    }
+
+    void *new_data = ::operator new(bytes);
+
+    if (m_data) {
+      const size_t copy_size = (bytes < m_size) ? bytes : m_size;
+      std::memcpy(new_data, m_data, copy_size);
+      ::operator delete(m_data);
+    }
+
+    m_data = new_data;
+    m_size = bytes;
+  }
+  void RawBuffer::free() {
+    ::operator delete(m_data);
+    m_data = nullptr;
+    m_size = 0;
+  }
 
 }
