@@ -3,12 +3,14 @@
     @file      ROSE_buffer.h
     @brief     
     @details   ~
-    @author    Cool Guy
+    @author    Viola Case
     @date      9.02.2026
-    @copyright © Cool Guy, 2026. All right reserved.
+    @copyright © Viola Case, 2026. All right reserved.
 
 **/
 #pragma once
+
+
 
 namespace ROSE {
   class RawBuffer {
@@ -30,7 +32,7 @@ namespace ROSE {
     void *data() noexcept;
     const void *data() const noexcept;
 
-    size_t size() const noexcept;
+    size_t size_bytes() const noexcept;
   private:
     void *m_data;
     size_t m_size;

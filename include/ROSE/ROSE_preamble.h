@@ -5,7 +5,7 @@
   @details   ~
   @author    Viola Case
   @date      4.02.2026
-  @copyright © Cool Guy, 2026. All right reserved.
+  @copyright © Viola Case, 2026. All right reserved.
 
 **/
 #pragma once
@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <utility>
 
+#include <ROSE/preamble/ROSE_stdlib.h>
 #include <ROSE/preamble/ROSE_macros.h>
 #include <ROSE/preamble/ROSE_rtl.h>
 

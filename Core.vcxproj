@@ -92,12 +92,14 @@
   <ItemGroup>
     <ClInclude Include="include\ROSE\preamble\ROSE_macros.h" />
     <ClInclude Include="include\ROSE\preamble\ROSE_rtl.h" />
+    <ClInclude Include="include\ROSE\preamble\ROSE_stdlib.h" />
     <ClInclude Include="include\ROSE\ROSE.h" />
     <ClInclude Include="include\ROSE\ROSE_log.h" />
     <ClInclude Include="include\ROSE\ROSE_main.h" />
     <ClInclude Include="include\ROSE\ROSE_preamble.h" />
     <ClInclude Include="include\ROSE\ROSE_version.h" />
     <ClInclude Include="include\ROSE\rtl\ROSE_buffer.h" />
+    <ClInclude Include="include\ROSE\rtl\ROSE_fixedarray.h" />
     <ClInclude Include="include\ROSE\rtl\ROSE_list.h" />
     <ClInclude Include="include\ROSE\rtl\ROSE_memory.h" />
   </ItemGroup>

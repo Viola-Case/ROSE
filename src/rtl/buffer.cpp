@@ -3,9 +3,9 @@
   @file      buffer.cpp
   @brief     
   @details   ~
-  @author    Cool Guy
-  @date      9.02.2026
-  @copyright © Cool Guy, 2026. All right reserved.
+  @author    Viola Case
+  @date      16.02.2026
+  @copyright © Viola Case, 2026. All right reserved.
 
 **/
 
@@ -24,13 +24,21 @@ namespace ROSE {
     other.m_size = 0;
   }
 
+  RawBuffer &RawBuffer::operator=(RawBuffer &&other) noexcept {
+    m_data = other.m_data;
+    m_size = other.m_size;
+    other.m_data = nullptr;
+    other.m_size = 0;
+    return *this;
+  }
+
   RawBuffer::~RawBuffer() {
     ::operator delete(m_data);
   }
 
   void *RawBuffer::data() noexcept { return m_data; }
   const void *RawBuffer::data() const noexcept { return m_data; }
-  size_t RawBuffer::size() const noexcept { return m_size; }
+  size_t RawBuffer::size_bytes() const noexcept { return m_size; }
 
   void RawBuffer::allocate(size_t bytes) {
     if (bytes == 0) {

@@ -5,7 +5,7 @@
   @details   ~
   @author    Viola Case
   @date      6.02.2026
-  @copyright © Cool Guy, 2026. All right reserved.
+  @copyright © Viola Case, 2026. All right reserved.
 
 **/
 
@@ -20,6 +20,13 @@ using namespace ROSE;
 
 
 int ROSE_main(int argc, char** argv) {
-  std::cout << "ROSE version " << ROSE::GetVersion() << std::endl;
+
+  List<int> integers{1,2,3};
+
+  for (auto &i : integers) {
+    std::cout << i << '\t';
+  }
+  std::cout << std::endl;
+
 	return 0;
 }

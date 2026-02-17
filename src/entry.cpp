@@ -3,9 +3,9 @@
   @file      main.cpp
   @brief     
   @details   ~
-  @author    Cool Guy
+  @author    Viola Case
   @date      12.02.2026
-  @copyright © Cool Guy, 2026. All right reserved.
+  @copyright © Viola Case, 2026. All right reserved.
 
 **/
 

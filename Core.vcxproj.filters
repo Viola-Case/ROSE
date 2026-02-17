@@ -57,6 +57,12 @@
     <ClInclude Include="include\ROSE\ROSE_log.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\ROSE\preamble\ROSE_stdlib.h">
+      <Filter>Source Files\include\preamble</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\rtl\ROSE_fixedarray.h">
+      <Filter>Source Files\include\rtl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\version.cpp">
