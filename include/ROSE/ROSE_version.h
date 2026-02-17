@@ -24,7 +24,11 @@ constexpr unsigned short ROSE_VERSIONNUM_PATCH(unsigned int version) { return (v
 
 constexpr unsigned int   ROSE_VERSION = ROSE_VERSIONNUM(ROSE_VERSION_MAJOR, ROSE_VERSION_MINOR, ROSE_VERSION_PATCH);
 
-namespace ROSE { unsigned int GetVersion(); }
+namespace ROSE { 
+  unsigned int GetVersion();
+
+  String VersionStr(unsigned int version);
+}
 
 //const char *Rose_Versionnum_Str(unsigned int version);
 

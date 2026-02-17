@@ -9,3 +9,62 @@
 
 **/
 #pragma once
+
+#include <ROSE/preamble/ROSE_typetraits.h>
+
+namespace ROSE {
+
+  template<typename CharT>
+    requires Character<CharT>
+  constexpr size_t StrLen(const CharT *str) noexcept {
+    if (!str) return 0;
+    size_t len = 0;
+    while (str[len] != CharT(0))
+      ++len;
+    return len;
+  }
+
+
+  template <Character CharT>
+  class BasicString {
+  private:
+    CharT *m_data;
+    size_t m_size;
+    size_t m_capacity;
+
+  public:
+    using value_type = CharT;
+
+    BasicString() noexcept : m_data(nullptr), m_size(0), m_capacity(0) {}
+    BasicString(const CharT *str) {
+      m_size = StrLen(str);
+      m_capacity = m_size + 1;
+      m_data = allocate(m_capacity);
+      copy(m_data, str, m_size);
+      m_data[m_size] = 0;
+    }
+    BasicString(const BasicString &other) {
+      
+    }
+    BasicString(BasicString &&other) noexcept : m_data(other.m_data), m_size(other.m_size), m_capacity(other.m_capacity) {
+      other.m_data = nullptr;
+      other.m_size = 0;
+      other.m_capacity = 0;
+    }
+    ~BasicString();
+
+    BasicString &operator=(const BasicString &);
+    BasicString &operator=(BasicString &&) noexcept;
+
+    const CharT *data() const noexcept;
+    CharT *data() noexcept;
+
+    size_t size() const noexcept;
+    size_t capacity() const noexcept;
+
+    void reserve(size_t newCapacity);
+    void resize(size_t newSize);
+
+    void append(const CharT *str);
+  };
+}

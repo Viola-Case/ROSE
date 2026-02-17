@@ -11,6 +11,7 @@
 #pragma once
 
 #include <ROSE/preamble/ROSE_stdlib.h>
+#include <ROSE/rtl/ROSE_array.h>
 
 namespace ROSE {
 
@@ -79,6 +80,18 @@ namespace ROSE {
       m_count(other.m_count) {
       other.m_count = 0;
     }
+
+
+    template<size_t N>
+    List(const FixedArray<T, N> &arr) {
+      reserve(N);
+
+      for (size_t i = 0; i < N; ++i)
+        new (data() + i) T(arr[i]);
+
+      m_count = N;
+    }
+
 
     List &operator=(const List &other) {
       if (this == &other)

@@ -60,8 +60,11 @@
     <ClInclude Include="include\ROSE\preamble\ROSE_stdlib.h">
       <Filter>Source Files\include\preamble</Filter>
     </ClInclude>
-    <ClInclude Include="include\ROSE\rtl\ROSE_fixedarray.h">
+    <ClInclude Include="include\ROSE\rtl\ROSE_array.h">
       <Filter>Source Files\include\rtl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\preamble\ROSE_typetraits.h">
+      <Filter>Source Files\include\preamble</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -78,6 +81,9 @@
       <Filter>Source Files\src</Filter>
     </ClCompile>
     <ClCompile Include="src\log.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\string.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
   </ItemGroup>

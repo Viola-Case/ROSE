@@ -13,6 +13,8 @@
 #include <ROSE/ROSE.h>
 #include <iostream>
 
+#include <string>
+
 #include <Windows.h>
 
 using namespace ROSE;
@@ -20,6 +22,8 @@ using namespace ROSE;
 
 
 int ROSE_main(int argc, char** argv) {
+
+  std::string g;
 
   List<int> integers{1,2,3};
 
