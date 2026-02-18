@@ -27,9 +27,15 @@ int ROSE_main(int argc, char** argv) {
 
   List<int> integers{1,2,3};
 
-  for (auto &i : integers) {
-    std::cout << i << '\t';
-  }
+  std::printf("integers is at 0x%x.\n", reinterpret_cast<int>(integers.data()));
+
+  List<int> newList(Move(integers));
+
+  std::printf("integers is at 0x%x, newList is at 0x%x.", reinterpret_cast<int>(integers.data()), reinterpret_cast<int>(newList.data()));
+
+  //for (auto &i : integers) {
+  //  std::cout << i << '\t';
+  //}
   std::cout << std::endl;
 
 	return 0;

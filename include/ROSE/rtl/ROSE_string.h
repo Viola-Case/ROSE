@@ -14,8 +14,7 @@
 
 namespace ROSE {
 
-  template<typename CharT>
-    requires Character<CharT>
+  template<Character CharT>
   constexpr size_t StrLen(const CharT *str) noexcept {
     if (!str) return 0;
     size_t len = 0;
@@ -67,4 +66,7 @@ namespace ROSE {
 
     void append(const CharT *str);
   };
+
+  using String = BasicString<char>;
+  using WString = BasicString<wchar_t>;
 }

@@ -11,8 +11,10 @@
 #pragma once
 
 #include <utility>
+#include <ROSE/rtl/ROSE_utility.h>
 
 namespace ROSE {
+
   template<typename T>
   class UniquePtr {
   public:
@@ -176,6 +178,46 @@ namespace ROSE {
       }
     }
 
+  public:
+    WeakPtr() = default;
+    WeakPtr(const SharedPtr<T> &sp) noexcept : ctrl(sp.ctrl) {
+      if (ctrl) ++ctrl->weak_count;
+    }
+    WeakPtr(const WeakPtr &other) noexcept : ctrl(other.ctrl) {
+      if (ctrl) ++ctrl->weak_count;
+    }
+    WeakPtr(WeakPtr &&other) noexcept : ctrl(other.ctrl) {
+      other.ctrl = nullptr;
+    }
+    ~WeakPtr() { release(); }
+
+    WeakPtr &operator=(const WeakPtr &other) noexcept {
+      if (this != &other) {
+        release();
+        ctrl = other.ctrl;
+        if (ctrl) ++ctrl->weak_count;
+      }
+      return *this;
+    }
+
+    WeakPtr &operator=(WeakPtr &&other) noexcept {
+      if (this != &other) {
+        release();
+        ctrl = other.ctrl;
+        other.ctrl = nullptr;
+      }
+      return *this;
+    }
+
+    bool expired() const noexcept { return !ctrl || ctrl->strong_count == 0; }
+
+    SharedPtr<T> lock() const noexcept {
+      if (expired()) return SharedPtr<T>();
+      SharedPtr<T> sp;
+      sp.ctrl = ctrl;
+      ++ctrl->strong_count;
+      return sp;
+    }
 
   };
 }

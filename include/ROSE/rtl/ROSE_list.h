@@ -12,6 +12,7 @@
 
 #include <ROSE/preamble/ROSE_stdlib.h>
 #include <ROSE/rtl/ROSE_array.h>
+#include <ROSE/rtl/ROSE_utility.h>
 
 namespace ROSE {
 
@@ -76,7 +77,7 @@ namespace ROSE {
 
 
     List(List &&other) noexcept
-      : m_buffer(std::move(other.m_buffer)),
+      : m_buffer(Move(other.m_buffer)),
       m_count(other.m_count) {
       other.m_count = 0;
     }
@@ -226,10 +227,6 @@ namespace ROSE {
       data()[m_count].~T();
     }
 
-  private:
-
-    RawBuffer m_buffer;
-    size_t m_count = 0;
 
     T *data() noexcept {
       return reinterpret_cast<T *>(m_buffer.data());
@@ -238,6 +235,11 @@ namespace ROSE {
     const T *data() const noexcept {
       return reinterpret_cast<const T *>(m_buffer.data());
     }
+
+  private:
+
+    RawBuffer m_buffer;
+    size_t m_count = 0;
 
     void ensure_capacity_for_one() {
       if (m_count < capacity())

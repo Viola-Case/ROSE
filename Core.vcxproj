@@ -108,6 +108,7 @@
     <ClInclude Include="include\ROSE\rtl\ROSE_hashmap.h" />
     <ClInclude Include="include\ROSE\rtl\ROSE_list.h" />
     <ClInclude Include="include\ROSE\rtl\ROSE_memory.h" />
+    <ClInclude Include="include\ROSE\rtl\ROSE_utility.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\Rose\rtl\ROSE_string.h" />
