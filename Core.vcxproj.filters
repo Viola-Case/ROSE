@@ -15,6 +15,7 @@
     </Filter>
     <Filter Include="Source Files\include">
       <UniqueIdentifier>{960253b9-ab69-43d1-a655-044295f4dcd2}</UniqueIdentifier>
+      <Extensions>.h;.hh;.hpp</Extensions>
     </Filter>
     <Filter Include="Source Files\src">
       <UniqueIdentifier>{1e3265a1-b98f-41b2-b138-33256d34282f}</UniqueIdentifier>
@@ -65,6 +66,21 @@
     </ClInclude>
     <ClInclude Include="include\ROSE\preamble\ROSE_typetraits.h">
       <Filter>Source Files\include\preamble</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\ROSE_object.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\ROSE_behavior.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\rtl\ROSE_hashmap.h">
+      <Filter>Source Files\include\rtl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\preamble\ROSE_uuid.h">
+      <Filter>Source Files\include\preamble</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\ROSE_meta.h">
+      <Filter>Source Files\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

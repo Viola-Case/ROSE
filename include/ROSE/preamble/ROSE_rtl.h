@@ -16,3 +16,4 @@
 #include <ROSE/rtl/ROSE_string.h>
 #include <ROSE/rtl/ROSE_memory.h>
 #include <ROSE/rtl/ROSE_array.h>
+#include <ROSE/rtl/ROSE_hashmap.h>

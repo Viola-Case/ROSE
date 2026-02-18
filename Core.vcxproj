@@ -95,12 +95,17 @@
     <ClInclude Include="include\ROSE\preamble\ROSE_stdlib.h" />
     <ClInclude Include="include\ROSE\preamble\ROSE_typetraits.h" />
     <ClInclude Include="include\ROSE\ROSE.h" />
+    <ClInclude Include="include\ROSE\ROSE_behavior.h" />
     <ClInclude Include="include\ROSE\ROSE_log.h" />
     <ClInclude Include="include\ROSE\ROSE_main.h" />
+    <ClInclude Include="include\ROSE\ROSE_meta.h" />
+    <ClInclude Include="include\ROSE\ROSE_object.h" />
     <ClInclude Include="include\ROSE\ROSE_preamble.h" />
+    <ClInclude Include="include\ROSE\preamble\ROSE_uuid.h" />
     <ClInclude Include="include\ROSE\ROSE_version.h" />
     <ClInclude Include="include\ROSE\rtl\ROSE_buffer.h" />
     <ClInclude Include="include\ROSE\rtl\ROSE_array.h" />
+    <ClInclude Include="include\ROSE\rtl\ROSE_hashmap.h" />
     <ClInclude Include="include\ROSE\rtl\ROSE_list.h" />
     <ClInclude Include="include\ROSE\rtl\ROSE_memory.h" />
   </ItemGroup>

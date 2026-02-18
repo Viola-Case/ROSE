@@ -19,5 +19,6 @@
 #include <ROSE/preamble/ROSE_macros.h>
 #include <ROSE/preamble/ROSE_rtl.h>
 #include <ROSE/preamble/ROSE_typetraits.h>
+#include <ROSE/preamble/ROSE_uuid.h>
 
 namespace rose = ROSE;
