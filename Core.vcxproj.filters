@@ -26,6 +26,9 @@
     <Filter Include="Source Files\include\preamble">
       <UniqueIdentifier>{dee4865e-99c4-465d-82b5-d5dd3067506e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\include\math">
+      <UniqueIdentifier>{13bccb2f-fe6c-41e9-ab37-bf3eeef5c8d5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ROSE\ROSE.h">
@@ -84,6 +87,27 @@
     </ClInclude>
     <ClInclude Include="include\ROSE\rtl\ROSE_utility.h">
       <Filter>Source Files\include\rtl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\ROSE_math.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\ROSE_scene.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\math\ROSE_tensor.h">
+      <Filter>Source Files\include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\math\ROSE_matrix.h">
+      <Filter>Source Files\include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\math\ROSE_vector.h">
+      <Filter>Source Files\include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\math\ROSE_complex.h">
+      <Filter>Source Files\include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ROSE\math\ROSE_quaternion.h">
+      <Filter>Source Files\include\math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

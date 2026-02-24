@@ -22,4 +22,20 @@ namespace ROSE {
     std::same_as<T, char8_t> ||
     std::same_as<T, char16_t> ||
     std::same_as<T, char32_t>;
+
+  template<typename T>
+  concept StdScalar = std::is_arithmetic_v<T>;
+
+  namespace math {
+    template <StdScalar T>
+    struct Comp;
+    template <StdScalar T>
+    struct Quat;
+  }
+
+  template<typename T>
+  concept Scalar =
+    std::same_as<T, math::Comp<std::underlying_type_t<T>>> ||
+    std::same_as<T, math::Quat<std::underlying_type_t<T>>> ||
+    StdScalar<T>;
 }

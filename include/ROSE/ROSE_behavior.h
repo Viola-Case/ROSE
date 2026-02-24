@@ -12,9 +12,9 @@
 
 namespace ROSE {
   class Behavior {
-    virtual void OnStart();
-    virtual void FrameUpdate();
-    virtual void FixedUpdate();
+    virtual void OnStart() = 0;
+    virtual void FrameUpdate() = 0;
+    virtual void FixedUpdate() = 0;
   };
 
   using Behaviour = Behavior;

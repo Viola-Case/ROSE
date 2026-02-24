@@ -11,6 +11,7 @@
 #pragma once
 
 #include <ROSE/preamble/ROSE_typetraits.h>
+#include <ROSE/rtl/ROSE_list.h>
 
 namespace ROSE {
 
@@ -35,25 +36,35 @@ namespace ROSE {
     using value_type = CharT;
 
     BasicString() noexcept : m_data(nullptr), m_size(0), m_capacity(0) {}
-    BasicString(const CharT *str) {
-      m_size = StrLen(str);
-      m_capacity = m_size + 1;
-      m_data = allocate(m_capacity);
-      copy(m_data, str, m_size);
-      m_data[m_size] = 0;
-    }
-    BasicString(const BasicString &other) {
-      
-    }
-    BasicString(BasicString &&other) noexcept : m_data(other.m_data), m_size(other.m_size), m_capacity(other.m_capacity) {
-      other.m_data = nullptr;
-      other.m_size = 0;
-      other.m_capacity = 0;
-    }
-    ~BasicString();
+    //BasicString(const CharT *str) {
+    //  m_size = StrLen(str);
+    //  m_capacity = m_size + 1;
+    //  m_data = allocate(m_capacity);
+    //  copy(m_data, str, m_size);
+    //  m_data[m_size] = 0;
+    //}
+    //BasicString(const BasicString &other) {
+    //  
+    //}
+    //BasicString(BasicString &&other) noexcept : m_data(other.m_data), m_size(other.m_size), m_capacity(other.m_capacity) {
+    //  other.m_data = nullptr;
+    //  other.m_size = 0;
+    //  other.m_capacity = 0;
+    //}
+    //~BasicString();
+    //
+    BasicString &operator=(const BasicString &lvalue);
 
-    BasicString &operator=(const BasicString &);
-    BasicString &operator=(BasicString &&) noexcept;
+
+    BasicString &operator=(BasicString &&rvalue) noexcept {
+      m_data = rvalue.m_data;
+      m_size = rvalue.m_size;
+      m_capacity = rvalue.m_capacity;
+      rvalue.m_data = nullptr;
+      rvalue.m_size = 0;
+      rvalue.m_capacity = 0;
+
+    }
 
     const CharT *data() const noexcept;
     CharT *data() noexcept;
@@ -69,4 +80,5 @@ namespace ROSE {
 
   using String = BasicString<char>;
   using WString = BasicString<wchar_t>;
+
 }

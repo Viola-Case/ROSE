@@ -13,6 +13,7 @@
 #include <ROSE/preamble/ROSE_stdlib.h>
 #include <ROSE/rtl/ROSE_array.h>
 #include <ROSE/rtl/ROSE_utility.h>
+#include <ROSE/rtl/ROSE_buffer.h>
 
 namespace ROSE {
 
