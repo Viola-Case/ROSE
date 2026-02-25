@@ -11,7 +11,17 @@
 #pragma once
 
 #include <ROSE/math/ROSE_tensor.h>
+#include <ROSE/math/ROSE_vector.h>
+#include <ROSE/math/ROSE_matrix.h>
+#include <ROSE/math/ROSE_complex.h>
+#include <ROSE/math/ROSE_quaternion.h>
 
 namespace ROSE {
-  
+  using math::Compf;
+  using math::Compd;
+  using math::Quatf;
+  using math::Quatd;
+  using math::Vec3f;
+  using math::Vec3d;
+  using math::Mat;
 }

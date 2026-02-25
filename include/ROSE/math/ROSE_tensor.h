@@ -14,7 +14,14 @@
 
 namespace ROSE::math {
 
-  template <typename T, size_t ...Dims>
+  template<typename Derived, Scalar T, size_t ...Dims>
+  struct TensorBase {
+    constexpr T &operator[](size_t i) {
+      return static_cast<Derived *>(this)->data[i];
+    }
+  };
+
+  template <Scalar T, size_t ...Dims>
   struct Tensor {
   protected:
     static constexpr size_t Rank = sizeof...(Dims);

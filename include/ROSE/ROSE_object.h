@@ -35,7 +35,7 @@ namespace ROSE {
 
   private:
     TypedHashMap<UUID, UniquePtr<Behavior>> behaviors;
-
+    Scene *const Parent;
 
   };
 }

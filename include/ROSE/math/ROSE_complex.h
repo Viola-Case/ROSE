@@ -110,4 +110,7 @@ namespace ROSE::math {
 
 
   };
+
+  using Compf = Comp<float>;
+  using Compd = Comp<double>;
 }

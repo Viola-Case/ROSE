@@ -11,6 +11,7 @@
 #pragma once
 
 #include <ROSE/math/ROSE_complex.h>
+#include <ROSE/math/ROSE_vector.h>
 
 namespace ROSE::math {
   template<StdScalar T>
@@ -28,6 +29,14 @@ namespace ROSE::math {
     constexpr Quat() = default;
     constexpr Quat(T _w, T _x = T{}, T _y = T{}, T _z = T{}) noexcept : w(_w), x(_x), y(_y), z(_z) {}
     constexpr Quat(Comp<T> _c, T _y = T{}, T _z = T{}) noexcept : c(_c), y(_y), z(_z) {}
+
+    constexpr const Quat FromEuler(Vec<T,3> vec) {
+
+    }
+
   };
+
+  using Quatf = Quat<float>;
+  using Quatd = Quat<double>;
   
 }
