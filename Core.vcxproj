@@ -91,6 +91,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\ROSE\math\ROSE_complex.h" />
+    <ClInclude Include="include\rose\math\ROSE_mathenum.h" />
     <ClInclude Include="include\ROSE\math\ROSE_matrix.h" />
     <ClInclude Include="include\ROSE\math\ROSE_quaternion.h" />
     <ClInclude Include="include\ROSE\math\ROSE_tensor.h" />

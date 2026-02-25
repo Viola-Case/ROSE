@@ -22,6 +22,48 @@
 
 #define ROSE_PRAGMA(x) __pragma(x)
 
+#ifdef _DEBUG
+
+#include <cstdio>
+#include <cstdlib>
+
+#if defined(_MSC_VER)
+#define ROSE_DEBUG_BREAK() __debugbreak()
+#else
+#define ROSE_DEBUG_BREAK() __builtin_trap()
+#endif
+
+#define ROSE_ASSERT(expr)                                                   \
+    do {                                                                      \
+      if (!(expr)) {                                                          \
+        std::fprintf(stderr,                                                  \
+          "Assertion failed!\n  Expr: %s\n  File: %s\n  Line: %d\n",          \
+          #expr, __FILE__, __LINE__);                                         \
+        ROSE_DEBUG_BREAK();                                                   \
+        std::abort();                                                         \
+      }                                                                       \
+    } while (0)
+
+#define ROSE_ASSERT_MSG(expr, msg)                                            \
+  do {                                                                        \
+    if (!(expr)) {                                                            \
+      std::fprintf(stderr,                                                    \
+        "Assertion failed!\n  Expr: %s\n  Msg: %s\n  File: %s\n  Line: %d\n", \
+        #expr, msg, __FILE__, __LINE__);                                      \
+      ROSE_DEBUG_BREAK();                                                     \
+      std::abort();                                                           \
+    }                                                                         \
+  } while (0)
+
+#else
+
+#define ROSE_ASSERT(expr) ((void)0)
+#define ROSE_ASSERT_MSG(expr, msg) ((void)0)
+
+#endif
+
+
+
 #pragma endregion
 
 #pragma region important stuff
@@ -43,8 +85,6 @@
 
 #pragma endregion
 
-
-
 #pragma region logic
 
 namespace ROSE {
@@ -59,6 +99,8 @@ namespace ROSE {
 
 #pragma endregion
 
+#pragma region API bullshit
+
 #define ROSE_API_EXPORT __declspec(dllexport)
 #define ROSE_API_IMPORT __declspec(dllimport)
 
@@ -66,6 +108,7 @@ namespace ROSE {
 
 #pragma endregion
 
+#pragma region math symbols
 #define ≤ <=
 #define ≥ >=
 #define ≠ !=
@@ -77,4 +120,6 @@ namespace ROSE {
 #define ÷ /
 #define − -
 #define ⋅ *
-#define ⊗ %
+#define ⊗ %  
+#pragma endregion
+

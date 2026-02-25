@@ -4,5 +4,7 @@
 
 namespace ROSE::math {
   template<Scalar T, size_t Rows, size_t Cols>
-  class Mat : public Tensor<T, Rows, Cols> {};
+  class Mat {
+    
+  };
 }
