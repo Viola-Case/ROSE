@@ -51,12 +51,12 @@ namespace ROSE::math {
 
     constexpr const T &operator[](const size_t idx) {
       ROSE_ASSERT(idx < N);
-      ROSE_ASSERT_MSG(ptr != nullptr, "Vector storage must not be null");
+      ROSE_ASSERT_MSG(data != nullptr, "Vector storage must not be null");
       return data[idx];
     }
     constexpr T &operator[](const size_t idx) {
       ROSE_ASSERT(idx < N);
-      ROSE_ASSERT_MSG(ptr != nullptr, "Vector storage must not be null");
+      ROSE_ASSERT_MSG(data != nullptr, "Vector storage must not be null");
       return data[idx];
     }
     template<size_t I>

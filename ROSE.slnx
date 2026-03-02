@@ -7,5 +7,6 @@
   </Folder>
   <Folder Name="/Ex/">
     <Project Path="examples/Ex1/Ex1.vcxproj" Id="73e3ecb3-712e-4250-a621-de928a39e1a9" />
+    <Project Path="examples/Ex2/Ex2.vcxproj" Id="4dda5985-243b-4f54-858b-0c0c8002936c" />
   </Folder>
 </Solution>

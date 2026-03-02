@@ -24,8 +24,8 @@ namespace ROSE::math {
   template <Scalar T, size_t ...Dims>
   struct Tensor {
   protected:
-    static constexpr size_t Rank = sizeof...(Dims);
-    static constexpr size_t dims[Rank] = { Dims... };
+    static constexpr size_t rank = sizeof...(Dims);
+    static constexpr size_t dims[rank] = { Dims... };
     static constexpr size_t size = (Dims * ...);
     T data[size];
 

@@ -23,7 +23,7 @@ using namespace ROSE;
 
 int ROSE_main(int argc, char** argv) {
 
-  std::string g;
+  //std::string g;
 
   List<int> integers{1,2,3};
 
