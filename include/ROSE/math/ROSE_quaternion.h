@@ -34,6 +34,29 @@ namespace ROSE::math {
 
     }
 
+    constexpr Quat &operator*=(const Quat &rhs) noexcept {
+      const T nw = w * rhs.w - x * rhs.x - y * rhs.y - z * rhs.z;
+      const T nx = w * rhs.x + x * rhs.w + y * rhs.z - z * rhs.y;
+      const T ny = w * rhs.y + y * rhs.w + z * rhs.x - x * rhs.z;
+      const T nz = w * rhs.z + z * rhs.w + x * rhs.y - y * rhs.x;
+
+      w = nw;
+      x = nx;
+      y = ny;
+      z = nz;
+      
+      return *this;
+    }
+
+    constexpr const Quat &operator*(const Quat &rhs) const noexcept {
+      Quat result(*this);
+      return (result *= rhs);
+    }
+    /*constexpr Quat &operator*(const Quat &rhs) const noexcept {
+      Quat result(*this);
+      return (result *= rhs);
+    }*/
+
   };
 
   using Quatf = Quat<float>;

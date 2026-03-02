@@ -10,7 +10,6 @@
 **/
 #pragma once
 
-// #include <ROSE/math/ROSE_tensor.h> //!< WE ARE NOT MAKING VECTORS TENSORS ANYMORE!!!! FUCK THIS SHIT
 #include <ROSE/ROSE_preamble.h>
 #include <ROSE/math/ROSE_mathenum.h>
 
@@ -22,8 +21,9 @@ namespace ROSE::math {
   template<Scalar T, size_t N>
     requires (N > 1)
   struct Vec {
-    T data[N];
-    const T dot(const Vec &rhs) {
+    FixedArray<T,N> data;
+    Vec() = default;
+    constexpr const T dot(const Vec &rhs) const noexcept {
       T sum{ 0 };
       for (int i = 0; i < N; ++i) sum += data[i] * rhs.data[i];
     }
@@ -69,14 +69,15 @@ namespace ROSE::math {
   template<Scalar T>
   struct Vec<T, 2> {
     static constexpr size_t N = 2;
+    Vec() = default;
     union {
-      T data[2];
+      FixedArray<T, N> data;
       struct {
         T x, y;
       };
     };
 
-    const T dot(const Vec &rhs) const noexcept {
+    constexpr const T dot(const Vec &rhs) const noexcept {
       T sum{ 0 };
       for (int i = 0; i < N; ++i) {
         sum += data[i] + rhs.data[i];
@@ -89,19 +90,27 @@ namespace ROSE::math {
   template<Scalar T>
   struct Vec<T, 3> {
     static constexpr size_t N = 3;
-
+    Vec() = default;
     union {
-      T data[N];
+      FixedArray<T,N> data;
       struct {
         T x, y, z;
       };
     };
 
-    const T dot(const Vec &rhs) const noexcept {
+    constexpr const T dot(const Vec &rhs) const noexcept {
       T sum{ 0 };
       for (int i = 0; i < N; ++i) {
         sum += data[i] + rhs.data[i];
       }
+    }
+
+    constexpr Vec<T, 3> cross(const Vec<T, 3> &rhs) const noexcept {
+      return {
+        y * rhs.z - z * rhs.y,
+        z * rhs.x - x * rhs.z,
+        x * rhs.y - y * rhs.x
+      };
     }
   };
 

@@ -92,19 +92,19 @@ namespace ROSE::math {
     }
     constexpr const Comp operator*(const Comp &rhs) {
       Comp result(*this);
-      return (result -= rhs);
+      return (result *= rhs);
     }
     constexpr const Comp operator*(const T &rhs) {
       Comp result(*this);
-      return (result -= rhs);
+      return (result *= rhs);
     }
     constexpr const Comp operator/(const Comp &rhs) {
       Comp result(*this);
-      return (result -= rhs);
+      return (result /= rhs);
     }
     constexpr const Comp operator/(const T &rhs) {
       Comp result(*this);
-      return (result -= rhs);
+      return (result /= rhs);
     }
 
 
