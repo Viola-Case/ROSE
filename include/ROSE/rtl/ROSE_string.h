@@ -79,14 +79,14 @@ namespace ROSE {
     
     BasicString &operator=(const BasicString &lvalue) {
       if (this != &lvalue) {
-        BasicString tmp(other);
+        BasicString tmp(lvalue);
         swap(tmp);
       }
     }
 
 
     BasicString &operator=(BasicString &&rvalue) noexcept {
-      if (this != &other) {
+      if (this != &rvalue) {
         deallocate(m_data);
         m_data = rvalue.m_data;
         m_size = rvalue.m_size;
@@ -176,7 +176,7 @@ namespace ROSE {
     CharT  operator[](size_t i) const noexcept { return m_data[i]; }
 
     CharT &at(size_t i) {
-      if (i >= m_size) throw std::out_of_range("BasicString::at");
+      //if (i >= m_size) throw std::out_of_range("BasicString::at");
       return m_data[i];
     }
 

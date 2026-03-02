@@ -14,6 +14,9 @@
 #include <bit>
 
 namespace ROSE {
+
+  void MemCpy(void *_Dst, const void *_Src, size_t size);
+
   template<typename T>
   constexpr std::remove_reference_t<T> &&Move(T &t) noexcept { return static_cast<std::remove_reference_t<T> &&>(t); }
 
@@ -82,5 +85,17 @@ namespace ROSE {
       return v;
     else
       return byteswap(v);
+  }
+
+  constexpr const size_t nextPow2(size_t n) {
+    if (n == 0) return 1;
+    n--;
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+    n |= n >> 32;
+    return n + 1;
   }
 }

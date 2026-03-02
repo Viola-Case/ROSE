@@ -123,8 +123,10 @@
     <ClCompile Include="include\Rose\rtl\ROSE_string.h" />
     <ClCompile Include="src\entry.cpp" />
     <ClCompile Include="src\log.cpp" />
+    <ClCompile Include="src\object.cpp" />
     <ClCompile Include="src\rtl\buffer.cpp" />
     <ClCompile Include="src\string.cpp" />
+    <ClCompile Include="src\utility.cpp" />
     <ClCompile Include="src\version.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

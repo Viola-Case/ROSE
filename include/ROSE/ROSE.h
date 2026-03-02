@@ -14,5 +14,8 @@
 #include <ROSE/ROSE_main.h>
 #include <ROSE/ROSE_version.h>
 #include <ROSE/ROSE_math.h>
+#include <ROSE/ROSE_scene.h>
+#include <ROSE/ROSE_object.h>
+#include <ROSE/ROSE_behavior.h>
 //#include <ROSE/ROSE_log.h>
 

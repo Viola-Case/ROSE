@@ -23,19 +23,21 @@ namespace ROSE {
     friend class Scene;
 
   public:
-    const Scene *GetParentScene();
+    Object();
+
+    Scene *const GetParentScene() const noexcept;
     
-    template<BehaviorType T>
-    T *GetBehaviorOfType() {
-      auto it = behaviors.find(TypeIdOf<T>());
-      if (it != behaviors.end())
-        return static_cast<T *>(it->second.get());
-      return nullptr;
-    }
+    //template<BehaviorType T>
+    //T *GetBehaviorOfType() {
+    //  auto it = behaviors.find(TypeIdOf<T>());
+    //  if (it != behaviors.end())
+    //    return static_cast<T *>(it->second.get());
+    //  return nullptr;
+    //}
 
   private:
     TypedHashMap<UUID, UniquePtr<Behavior>> behaviors;
-    Scene *const Parent;
+    Scene *const Parent{ nullptr };
 
   };
 }
