@@ -204,5 +204,6 @@ namespace ROSE {
 
   using String = BasicString<char>;
   using WString = BasicString<wchar_t>;
+  using UString = BasicString<char32_t>;
 
 }
