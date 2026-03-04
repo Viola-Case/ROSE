@@ -122,7 +122,10 @@ namespace ROSE {
   };
 
   enum class HashFunction {
-
+    MurmurHash,
+    FNV_1a,
+    CityHash,
+    XXHash
   };
 
   template<typename _Key, typename _Val, HashFunction Func>

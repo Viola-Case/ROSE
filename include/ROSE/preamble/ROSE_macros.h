@@ -62,7 +62,14 @@
 
 #endif
 
-
+#define ROSE_ENUM_CONSTRUCTOR(TYPE, NAME, ...) \
+  enum Value : TYPE { __VA_ARGS__ } value; \
+  constexpr NAME() = default; \
+  constexpr NAME(Value v) : value(v) {}                                      \
+  constexpr NAME(TYPE v) : value(static_cast<Value>(v)) {}                   \
+                                                                             \
+  constexpr operator Value() const { return value; }                         \
+  constexpr explicit operator TYPE() const { return static_cast<TYPE>(value); } \
 
 #pragma endregion
 
