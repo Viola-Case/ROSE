@@ -128,7 +128,7 @@ namespace ROSE {
     XXHash
   };
 
-  template<typename _Key, typename _Val, HashFunction Func>
+  template<typename _Key, typename _Val, HashFunction Func = HashFunction::MurmurHash>
   class TypedHashMap {
     HashMap _map;
   };
