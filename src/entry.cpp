@@ -9,7 +9,7 @@
 
 **/
 
-#include <ROSE/ROSE.h>
+//#include <ROSE/ROSE.h>
 
 #include <Windows.h>
 
@@ -24,8 +24,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int) {
 
 #else
 
+extern int ROSE_main(int argc, char **argv);
+
 int main(int argc, char **argv) {
   return ROSE_main(argc, argv);
 }
 
-#endif // !ROSE_MAIN_HANDLED
+#endif // !!defined(_DEBUG) || defined(_NDEBUG)

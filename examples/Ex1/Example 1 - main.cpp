@@ -8,7 +8,7 @@
   @copyright © Viola Case, 2026. All right reserved.
 
 **/
-
+#define ROSE_MAIN_HANDLED
 
 #include <ROSE/ROSE.h>
 #include <iostream>
@@ -21,17 +21,17 @@ using namespace ROSE;
 
 
 
-int ROSE_main(int argc, char** argv) {
+int main(int argc, char** argv) {
 
   //std::string g;
 
   List<int> integers{1,2,3};
 
-  std::printf("integers is at 0x%x.\n", reinterpret_cast<int>(integers.data()));
+  std::printf("integers is at %p.\n", reinterpret_cast<int>(integers.data()));
 
   List<int> newList(Move(integers));
 
-  std::printf("integers is at 0x%x, newList is at 0x%x.", reinterpret_cast<int>(integers.data()), reinterpret_cast<int>(newList.data()));
+  std::printf("integers is at %p, newList is at %p.", reinterpret_cast<int>(integers.data()), reinterpret_cast<int>(newList.data()));
 
   //for (auto &i : integers) {
   //  std::cout << i << '\t';

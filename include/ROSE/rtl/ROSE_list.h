@@ -80,7 +80,6 @@ namespace ROSE {
     List(List &&other) noexcept
       : m_buffer(Move(other.m_buffer)),
       m_count(other.m_count) {
-      other.m_buffer.data = nullptr;
       other.m_count = 0;
     }
 
