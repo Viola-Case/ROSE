@@ -17,5 +17,6 @@
 #include <ROSE/ROSE_scene.h>
 #include <ROSE/ROSE_object.h>
 #include <ROSE/ROSE_behavior.h>
+#include <ROSE/ROSE_input.h>
 //#include <ROSE/ROSE_log.h>
 
