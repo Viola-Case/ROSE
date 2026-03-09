@@ -172,6 +172,9 @@ namespace ROSE {
       append(buf);
     }
 
+    constexpr const CharT *begin() const noexcept { return data(); }
+    constexpr const CharT *end()   const noexcept { return data() + m_size; }
+
     CharT &operator[](size_t i)       noexcept { return m_data[i]; }
     CharT  operator[](size_t i) const noexcept { return m_data[i]; }
 
@@ -192,18 +195,41 @@ namespace ROSE {
     }
 
     bool operator==(const BasicString &rhs) const noexcept {
-      if (m_size != rhs.m_size) return false;
-      for (size_t i = 0; i < m_size; ++i)
-        if (m_data[i] != rhs.m_data[i]) return false;
-      return true;
+      return m_size == rhs.m_size && memcmp(m_data, rhs.m_data, m_size) == 0;
     }
 
     bool operator!=(const BasicString &rhs) const noexcept { return !(*this == rhs); }
 
   };
 
+  template <Character CharT>
+  class BasicStringView {
+  public:
+    constexpr BasicStringView(BasicString<CharT> &string) : data(string.m_data), size(string.m_size) {}
+
+    constexpr const CharT *begin() const noexcept { return data(); }
+    constexpr const CharT *end()   const noexcept { return data() + m_size; }
+
+    constexpr size_t size() { return m_size; }
+    constexpr CharT *data() { return m_data; }
+
+
+  private:
+    CharT *m_data;
+    size_t m_size;
+  };
+
+  template<Character CharT>
+  bool operator==(BasicStringView<CharT> a, BasicStringView<CharT> b) {
+    return a.size() == b.size() && memcmp(a.data(), b.data(), a.size()) == 0;
+  }
+
   using String = BasicString<char>;
   using WString = BasicString<wchar_t>;
   using UString = BasicString<char32_t>;
+
+  using StringView = BasicStringView<char>;
+  using WStringView = BasicStringView<wchar_t>;
+  using UStringView = BasicStringView<char32_t>;
 
 }

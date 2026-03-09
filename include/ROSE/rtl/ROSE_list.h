@@ -237,6 +237,10 @@ namespace ROSE {
       return reinterpret_cast<const T *>(m_buffer.data());
     }
 
+    const bool operator ==(const List &rhs) {
+      return m_count == rhs.m_count && memcmp(m_buffer.data(), rhs.m_buffer.data(), m_count) == 0;
+    }
+
   private:
 
     RawBuffer m_buffer;

@@ -46,7 +46,7 @@ namespace ROSE::math {
 	template <typename... Args>
 	constexpr Sign LeviCivita(Args... args) {
 		static_assert((std::is_convertible_v<Args, size_t> && ...), "cse::math::LeviCivita only accepts size_t-convertible arguments");
-		constexpr size_t N = sizeof...(Args);  //!< @TODO make sure this is not size-dependent
+		constexpr size_t N = sizeof...(Args);
 		size_t arr[N] = { args... };
 
 		size_t maxval = 0;
