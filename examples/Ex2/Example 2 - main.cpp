@@ -9,8 +9,8 @@
 
 int main(int argc, char **argv) {
   
-
-  std::cout << ROSE::ByteSwap(static_cast<uint16_t>(3));
+  ROSE::String test{"Hello"};
+  std::cout << test.c_str();
   
 
 

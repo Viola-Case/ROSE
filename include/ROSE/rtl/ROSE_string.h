@@ -212,6 +212,7 @@ namespace ROSE {
 
     constexpr size_t size() { return m_size; }
     constexpr CharT *data() { return m_data; }
+    constexpr const CharT *c_str() { return m_data; }
 
 
   private:
@@ -226,10 +227,10 @@ namespace ROSE {
 
   using String = BasicString<char>;
   using WString = BasicString<wchar_t>;
-  using UString = BasicString<char32_t>;
+  //using UString = BasicString<char32_t>;
 
   using StringView = BasicStringView<char>;
   using WStringView = BasicStringView<wchar_t>;
-  using UStringView = BasicStringView<char32_t>;
+  //using UStringView = BasicStringView<char32_t>;
 
 }

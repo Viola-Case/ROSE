@@ -20,8 +20,9 @@ namespace ROSE {
     std::same_as<T, unsigned char> ||
     std::same_as<T, wchar_t> ||
     std::same_as<T, char8_t> ||
-    std::same_as<T, char16_t> ||
-    std::same_as<T, char32_t>;
+    std::same_as<T, char16_t> 
+    //|| std::same_as<T, char32_t>
+    ;
 
   template<typename T>
   concept StdScalar = std::is_arithmetic_v<T>;

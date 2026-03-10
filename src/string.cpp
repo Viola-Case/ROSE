@@ -9,6 +9,8 @@
 
 **/
 
-namespace ROSE {
+#include <ROSE/ROSE.h>
 
+namespace ROSE {
+  
 }
