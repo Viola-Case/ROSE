@@ -7,10 +7,10 @@
 // 
 // 
 
-int ROSE_main(int argc, char **argv) {
+int main(int argc, char **argv) {
   
 
-  
+  std::cout << ROSE::ByteSwap(static_cast<uint16_t>(3));
   
 
 
