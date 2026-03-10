@@ -101,6 +101,7 @@
     <ClInclude Include="include\ROSE\preamble\ROSE_stdlib.h" />
     <ClInclude Include="include\ROSE\preamble\ROSE_typetraits.h" />
     <ClInclude Include="include\ROSE\ROSE.h" />
+    <ClInclude Include="include\ROSE\ROSE_application.h" />
     <ClInclude Include="include\ROSE\ROSE_behavior.h" />
     <ClInclude Include="include\ROSE\ROSE_input.h" />
     <ClInclude Include="include\ROSE\ROSE_log.h" />
@@ -122,11 +123,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\Rose\rtl\ROSE_string.h" />
+    <ClCompile Include="src\application.cpp" />
     <ClCompile Include="src\entry.cpp" />
     <ClCompile Include="src\input.cpp" />
     <ClCompile Include="src\log.cpp" />
     <ClCompile Include="src\object.cpp" />
     <ClCompile Include="src\rtl\buffer.cpp" />
+    <ClCompile Include="src\rtl\hashmap.cpp" />
     <ClCompile Include="src\string.cpp" />
     <ClCompile Include="src\utility.cpp" />
     <ClCompile Include="src\version.cpp" />

@@ -118,6 +118,9 @@
     <ClInclude Include="include\ROSE\ROSE_input.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\ROSE\ROSE_application.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\version.cpp">
@@ -145,6 +148,12 @@
       <Filter>Source Files\src</Filter>
     </ClCompile>
     <ClCompile Include="src\input.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rtl\hashmap.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
   </ItemGroup>
