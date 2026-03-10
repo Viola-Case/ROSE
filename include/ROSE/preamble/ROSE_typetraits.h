@@ -38,4 +38,8 @@ namespace ROSE {
     std::same_as<T, math::Comp<std::underlying_type_t<T>>> ||
     std::same_as<T, math::Quat<std::underlying_type_t<T>>> ||
     StdScalar<T>;
+
+  template<typename T>
+  concept MultiByteType =
+    sizeof(T) > 1;
 }
