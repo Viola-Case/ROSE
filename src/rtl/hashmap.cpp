@@ -1,4 +1,4 @@
-/**
+﻿/**
 
   @file      hashmap.cpp
   @brief     

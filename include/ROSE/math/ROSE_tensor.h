@@ -1,4 +1,4 @@
-/**
+﻿/**
 
   @file      ROSE_tensor.h
   @brief     

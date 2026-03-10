@@ -1,4 +1,4 @@
-/**
+﻿/**
 
     @file      ROSE_input.h
     @brief     

@@ -1,11 +1,11 @@
-/**
+﻿/**
 
   @file      Example 1 - main.cpp
   @brief     
   @details   ~
   @author    Viola Case
   @date      6.02.2026
-  @copyright � Viola Case, 2026. All right reserved.
+  @copyright © Viola Case, 2026. All right reserved.
 
 **/
 #define ROSE_MAIN_HANDLED

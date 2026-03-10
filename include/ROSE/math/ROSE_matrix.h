@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <ROSE/math/ROSE_vector.h>
 

@@ -1,11 +1,11 @@
-/**
+﻿/**
 
   @file      ROSE_version.h
   @brief     
   @details   ~
   @author    Viola Case
   @date      5.02.2026
-  @copyright � Viola Case, 2026. All right reserved.
+  @copyright © Viola Case, 2026. All right reserved.
 
 **/
 #pragma once

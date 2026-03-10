@@ -1,4 +1,4 @@
-/**
+﻿/**
 
   @file      ROSE_math.h
   @brief     

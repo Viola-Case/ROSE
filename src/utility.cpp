@@ -1,4 +1,4 @@
-#include <ROSE/ROSE.h>
+﻿#include <ROSE/ROSE.h>
 
 namespace ROSE {
   void MemCpy(void *_Dst, const void *_Src, size_t size) {
