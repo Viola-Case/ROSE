@@ -18,5 +18,6 @@
 #include <ROSE/ROSE_object.h>
 #include <ROSE/ROSE_behavior.h>
 #include <ROSE/ROSE_input.h>
-//#include <ROSE/ROSE_log.h>
+#include <ROSE/ROSE_application.h>
+#include <ROSE/ROSE_log.h>
 
