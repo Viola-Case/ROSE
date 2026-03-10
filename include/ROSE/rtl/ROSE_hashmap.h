@@ -15,6 +15,8 @@
 #include <ROSE/rtl/ROSE_utility.h>
 
 namespace ROSE {
+
+
   class HashMap {
 
     using HashFn = uint64_t(*)(const void *);
@@ -35,77 +37,24 @@ namespace ROSE {
       constexpr operator uint8_t() const noexcept { return static_cast<uint8_t>(value); }
     };
 
-    uint8_t *bucketAt(size_t idx) {
-      return static_cast<uint8_t *>(m_buffer.data()) + idx * m_bucketSize;
-    }
+    uint8_t *bucketAt(size_t idx);
 
-    BucketState getState(size_t index) {
-      return static_cast<BucketState>(*bucketAt(index));
-    }
+    BucketState getState(size_t index);
 
-    void *keyAt(size_t idx) { return bucketAt(idx) + 1; }
-    void *valueAt(size_t idx) { return bucketAt(idx) + 1 + m_keySize; }
+    void *keyAt(size_t idx);
+    void *valueAt(size_t idx);
 
-    size_t findSlot(const void *key) {
-      size_t idx = m_hashFn(key) % m_capacity;
-      while (getState(idx) != BucketState::Empty) {
-        if (getState(idx) == BucketState::Occupied && m_equalFn(keyAt(idx), key))
-          return idx; // found
-        idx = (idx + 1) % m_capacity;
-      }
-      return NPOS; // not found
-    }
+    size_t findSlot(const void *key);
 
-    void insert(const void *key, const void *value) {
-      if (m_size >= m_capacity * 3 / 4) resize(m_capacity * 2);
+    void insert(const void *key, const void *value);
 
-      size_t idx = m_hashFn(key) % m_capacity;
-      while (getState(idx) == BucketState::Occupied) {
-        if (m_equalFn(keyAt(idx), key)) {
-          memcpy(valueAt(idx), value, m_valueSize); 
-          return;
-        }
-        idx = (idx + 1) % m_capacity;
-      }
-      *bucketAt(idx) = static_cast<uint8_t>(BucketState::Occupied);
-      memcpy(keyAt(idx), key, m_keySize);
-      memcpy(valueAt(idx), value, m_valueSize);
-      m_size++;
-    }
+    void remove(const void *key);
 
-    void remove(const void *key) {
-      size_t idx = findSlot(key);
-      if (idx == NPOS) return;
-      *bucketAt(idx) = static_cast<uint8_t>(BucketState::Tombstone);
-      m_size--;
-    }
+    uint8_t *bucketAt(RawBuffer &buf, size_t idx);
 
-    uint8_t *bucketAt(RawBuffer &buf, size_t idx) {
-      return static_cast<uint8_t *>(buf.data()) + idx * m_bucketSize;
-    }
+    void reserve(size_t newCapacity);
 
-    void reserve(size_t newCapacity) {
-      RawBuffer newBuffer(newCapacity * m_bucketSize);
-      memset(newBuffer.data(), 0, newCapacity * m_bucketSize);
-      for (size_t i = 0; i < m_capacity; i++) {
-        if (getState(i) != BucketState::Occupied) continue;
-
-        size_t idx = m_hashFn(keyAt(i)) % newCapacity;
-        while (*bucketAt(newBuffer, idx) != BucketState::Empty)
-          idx = (idx + 1) % newCapacity;
-
-        MemCpy(reinterpret_cast<unsigned char *>(newBuffer.data()) + idx * m_bucketSize, bucketAt(i), m_bucketSize);
-      }
-      m_buffer.free();
-      m_buffer = Move(newBuffer);
-    }
-
-    void resize(size_t newSize) {
-      size_t needed = newSize * 4 / 3;
-      if (needed > m_capacity)
-        reserve(nextPow2(needed));
-
-    }
+    void resize(size_t newSize);
 
     HashFn m_hashFn;
     EqualFn m_equalFn;
@@ -121,11 +70,12 @@ namespace ROSE {
 
   };
 
-  enum class HashFunction {
-    MurmurHash,
-    FNV_1a,
-    CityHash,
-    XXHash
+  
+
+  template<typename _Key, typename _Val, HashFunction Func = HashFunction::MurmurHash>
+  class LinkedHashMap {
+    HashMap _map;
+    
   };
 
   template<typename _Key, typename _Val, HashFunction Func = HashFunction::MurmurHash>

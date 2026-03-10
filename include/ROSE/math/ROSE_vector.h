@@ -40,11 +40,11 @@ namespace ROSE::math {
       }
       return *this;
     }
-    constexpr const Vec operator+(const Vec &rhs) const noexcept {
+    constexpr Vec operator+(const Vec &rhs) const noexcept {
       Vec result(*this);
       return (result += rhs);
     }
-    constexpr const Vec operator-(const Vec &rhs) const noexcept {
+    constexpr Vec operator-(const Vec &rhs) const noexcept {
       Vec result(*this);
       return (result -= rhs);
     }
@@ -77,7 +77,7 @@ namespace ROSE::math {
       };
     };
 
-    constexpr const T dot(const Vec &rhs) const noexcept {
+    constexpr T dot(const Vec &rhs) const noexcept {
       T sum{ 0 };
       for (int i = 0; i < N; ++i) {
         sum += data[i] + rhs.data[i];

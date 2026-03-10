@@ -14,10 +14,6 @@
 #include <SDL3/SDL_scancode.h>
 
 namespace ROSE {
-  struct KeyState {
-    bool Pressed : 1;
-    bool Down : 7;
-  };
   /**
       @enum  ROSE::KeyCode
       @brief Think I'll sync it with SDL's scancodes or smth
@@ -233,11 +229,13 @@ namespace ROSE {
     bool *keyStatePrevious;
     InputSystem();
     ~InputSystem();
+    void Init() noexcept;
     void Poll() noexcept;
     InputSystem(InputSystem &) = delete;
     InputSystem(InputSystem &&) = delete;
+    static InputSystem inputSystem;
   public:
-    static InputSystem &get();
+    static InputSystem &GetInstance();
     static bool GetKeyDown(KeyCode) noexcept;
     static bool GetKeyUp(KeyCode) noexcept;
     static bool GetKey(KeyCode) noexcept;

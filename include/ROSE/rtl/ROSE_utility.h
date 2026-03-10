@@ -11,7 +11,7 @@
 #pragma once
 
 #include <utility>
-#include <bit>
+#include <ROSE/preamble/ROSE_typetraits.h>
 
 namespace ROSE {
 
@@ -44,12 +44,12 @@ namespace ROSE {
     return old;
   }
 
-  template<typename T>
+#pragma region Byte swapping
+
   constexpr uint16_t ByteSwap(uint16_t v) noexcept {
     return (v >> 8) | (v << 8);
   }
 
-  template<typename T>
   constexpr uint32_t ByteSwap(uint32_t v) noexcept {
     return
       (v >> 24) |
@@ -58,36 +58,32 @@ namespace ROSE {
       (v << 24);
   }
 
-  template<typename T>
   constexpr uint64_t ByteSwap(uint64_t v) noexcept {
     return
       (v >> 56) |
       ((v >> 40) & 0x000000000000ff00u) |
       ((v >> 24) & 0x0000000000ff0000u) |
-      ((v >> 8)  & 0x00000000ff000000u) |
-      ((v << 8)  & 0x000000ff00000000u) |
+      ((v >> 8) & 0x00000000ff000000u) |
+      ((v << 8) & 0x000000ff00000000u) |
       ((v << 24) & 0x0000ff0000000000u) |
       ((v << 40) & 0x00ff000000000000u) |
       (v << 56);
   }
 
-  template <typename T>
-  constexpr T ToLittleEndian(T v) noexcept {
-    if constexpr (std::endian::native == std::endian::little)
-      return v;
-    else
-      return byteswap(v);
-  }
+  template<typename T>
+  concept ByteSwapResult =
+    std::is_same_v<T, uint16_t> ||
+    std::is_same_v<T, uint32_t> ||
+    std::is_same_v<T, uint64_t>;
 
-  template <typename T>
-  constexpr T FromLittleEndian(T v) noexcept {
-    if constexpr (std::endian::native == std::endian::little)
-      return v;
-    else
-      return byteswap(v);
+  template<ByteSwapResult T, typename U>
+    requires std::is_fundamental_v<U>
+  constexpr T ByteSwap(U v) noexcept {
+    return ByteSwap(static_cast<T>(v));
   }
+#pragma endregion
 
-  constexpr const size_t nextPow2(size_t n) {
+  constexpr const size_t NextPow2(size_t n) {
     if (n == 0) return 1;
     n--;
     n |= n >> 1;
@@ -97,5 +93,26 @@ namespace ROSE {
     n |= n >> 16;
     n |= n >> 32;
     return n + 1;
+  }
+
+  enum class HashFunction {
+    MurmurHash,
+    FNV_1a,
+    CityHash,
+    XXHash
+  };
+
+  template<typename Key>
+  constexpr uint64_t Hash(HashFunction func, const Key &key) {
+    switch (func) {
+    case HashFunction::MurmurHash:
+      return;
+    case HashFunction::FNV_1a:
+      return;
+    case HashFunction::CityHash:
+      return;
+    case HashFunction::XXHash:
+      return;
+    }
   }
 }

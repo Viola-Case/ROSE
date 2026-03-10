@@ -21,9 +21,29 @@ namespace ROSE {
     delete[] keyStatePrevious;
   }
 
-  InputSystem &InputSystem::get() {
-    static InputSystem inputSystem;
+  InputSystem &InputSystem::GetInstance() {
+    static InputSystem &inputSystem = GetInstance();
     return inputSystem;
+  }
+
+  bool InputSystem::GetKeyDown(KeyCode code) noexcept {
+    static InputSystem &inputSystem = GetInstance();
+    if (!inputSystem.keyState) return 0;
+    return (inputSystem.keyState[code] && !inputSystem.keyStatePrevious[code]);
+  }
+  bool InputSystem::GetKeyUp(KeyCode code) noexcept {
+    static InputSystem &inputSystem = GetInstance();
+    if (!inputSystem.keyState) return 0;
+    return !(inputSystem.keyState[code] && !inputSystem.keyStatePrevious[code]);
+  }
+  bool InputSystem::GetKey(KeyCode code) noexcept {
+    static InputSystem &inputSystem = GetInstance();
+    if (!inputSystem.keyState) return 0;
+    return inputSystem.keyState[code];
+  }
+
+  void InputSystem::Init() noexcept {
+    static InputSystem &inputSystem = GetInstance();
   }
 
   void InputSystem::Poll() noexcept {
