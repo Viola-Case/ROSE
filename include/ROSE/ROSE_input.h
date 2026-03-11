@@ -11,7 +11,8 @@
 #pragma once
 
 #include <ROSE/ROSE_preamble.h>
-#include <SDL3/SDL_scancode.h>
+//#include <SDL3/SDL_scancode.h>
+#include <ROSE/ROSE_math.h>
 
 namespace ROSE {
   /**
@@ -222,6 +223,8 @@ namespace ROSE {
 
   };
 
+  // TODO set up gamepad system
+
   class InputSystem final {
   private:
     friend class Application;
@@ -239,6 +242,8 @@ namespace ROSE {
     static bool GetKeyDown(KeyCode) noexcept;
     static bool GetKeyUp(KeyCode) noexcept;
     static bool GetKey(KeyCode) noexcept;
+
+    // static Vec2f GetJoystick();
 
   };
 }

@@ -23,26 +23,10 @@ namespace ROSE {
     Fatal
   };
 
-  using LogCallback = void(*)(LogLevel, const char *message);
-
-  class LogSink {
-  public:
-    virtual void Write(LogLevel level, const char *message) = 0;
-  };
-
-  void Log(LogLevel level, const char *fmt, ...);
-  void SetLogCallback(LogCallback callback);
-
-  void LogTrace(const char *fmt, ...);
-  void LogInfo(const char *fmt, ...);
-  void LogWarn(const char *fmt, ...);
-  void LogError(const char *fmt, ...);
-  void LogFatal(const char *fmt, ...);
-
 }
 
-#define ROSE_TRACE(...)   //rose::Log(rose::LogLevel::Trace, __VA_ARGS__)
-#define ROSE_INFO(...)    //rose::Log(ROSE::LogLevel::Info, __VA_ARGS__)
-#define ROSE_WARN(...)    //rose::Log(ROSE::LogLevel::Warn, __VA_ARGS__)
-#define ROSE_ERROR(...)   //rose::Log(ROSE::LogLevel::Error, __VA_ARGS__)
-#define ROSE_FATAL(...)   //rose::Log(ROSE::LogLevel::Fatal, __VA_ARGS__)
+#define ROSE_LOG_TRACE(...)   //rose::Log(rose::LogLevel::Trace, __VA_ARGS__)
+#define ROSE_LOG_INFO(...)    //rose::Log(ROSE::LogLevel::Info, __VA_ARGS__)
+#define ROSE_LOG_WARN(...)    //rose::Log(ROSE::LogLevel::Warn, __VA_ARGS__)
+#define ROSE_LOG_ERROR(...)   //rose::Log(ROSE::LogLevel::Error, __VA_ARGS__)
+#define ROSE_LOG_FATAL(...)   //rose::Log(ROSE::LogLevel::Fatal, __VA_ARGS__)

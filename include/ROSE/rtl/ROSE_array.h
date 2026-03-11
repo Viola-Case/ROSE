@@ -34,7 +34,7 @@ namespace ROSE {
     }
 
     constexpr T *data() noexcept { return _data; }
-    constexpr const T *data() noexcept { return _data; }
+    //constexpr const T *data() noexcept { return _data; }
     constexpr size_t size() noexcept { return N; }
 
     constexpr T &operator[](size_t i) noexcept { return _data[i]; }
