@@ -6,7 +6,11 @@
   "description": "Radical Open Software Engine",
   "dependencies": [
     "sdl3",
-    "dear-imgui",
+    "imgui",
+    "imgui[sdl3-binding]",
+    "imgui[opengl3-binding]",
+    "imgui[sdl3-binding]",
+    "imgui[vulkan-binding]",
     "glad"
   ]
  }
