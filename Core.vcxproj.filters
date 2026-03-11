@@ -124,6 +124,9 @@
     <ClInclude Include="include\ROSE\ROSE_format.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\ROSE\math\ROSE_mathfunctions.h">
+      <Filter>Source Files\include\math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\version.cpp">

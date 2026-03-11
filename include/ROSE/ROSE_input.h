@@ -27,7 +27,7 @@ namespace ROSE {
     operator size_t() const noexcept;
   public:
 
-#pragma region static KeyCodes
+#pragma region static Key Codes
 
     /**
     * @defgroup Alphanumeric keys
@@ -223,13 +223,34 @@ namespace ROSE {
 
   };
 
-  // TODO set up gamepad system
+  class GamepadAxis {
+    unsigned int value;
+    explicit constexpr GamepadAxis(unsigned int v) : value(v) {}
+    friend class InputSystem;
+    operator size_t() const noexcept;
+
+  public:
+
+#pragma region static Gamepad Axes
+
+#pragma endregion
+
+  };
+
+  class GamepadButton {
+    unsigned int value;
+    explicit constexpr GamepadButton(unsigned int v) : value(v) {}
+    friend class InputSystem;
+    operator size_t() const noexcept;
+
+  };
 
   class InputSystem final {
   private:
     friend class Application;
     const bool *keyState;
     bool *keyStatePrevious;
+    void *gamepad{ nullptr };
     InputSystem();
     ~InputSystem();
     void Init() noexcept;
@@ -243,7 +264,7 @@ namespace ROSE {
     static bool GetKeyUp(KeyCode) noexcept;
     static bool GetKey(KeyCode) noexcept;
 
-    // static Vec2f GetJoystick();
+    static Vec2f GetStick();
 
   };
 }
