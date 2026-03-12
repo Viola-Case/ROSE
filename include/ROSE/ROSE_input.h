@@ -248,7 +248,34 @@ namespace ROSE {
     explicit constexpr GamepadButton(unsigned int v) : value(v) {}
     friend class InputSystem;
     operator size_t() const noexcept;
+  public:
+    static const GamepadButton A;
+    static const GamepadButton B;
+    static const GamepadButton X;
+    static const GamepadButton Y;
+    static const GamepadButton CROSS;
+    static const GamepadButton CIRCLE;
+    static const GamepadButton TRIANGLE;
+    static const GamepadButton SQUARE;
+    static const GamepadButton DPAD_UP;
+    static const GamepadButton DPAD_DOWN;
+    static const GamepadButton DPAD_LEFT;
+    static const GamepadButton DPAD_RIGHT;
+    static const GamepadButton RIGHT_STICK;
+    static const GamepadButton LEFT_STICK;
+    static const GamepadButton START;
+    static const GamepadButton SELECT;
+    //static const GamepadButton
+  };
 
+  class GamepadStick {
+    unsigned int value;
+    explicit constexpr GamepadStick(unsigned int v) : value(v) {}
+    friend class InputSystem;
+    operator size_t() const noexcept;
+  public:
+    static const GamepadStick Left;
+    static const GamepadStick Right;
   };
 
   class InputSystem final {
