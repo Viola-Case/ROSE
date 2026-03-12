@@ -97,11 +97,7 @@
 namespace ROSE {
   template<typename T>
   constexpr void SWAP(T &a, T &b) { T &c = a; a = b; b = c; }
-  template<typename T>
-  constexpr const T &MIN(const T &a, const T &b) noexcept requires(std::is_arithmetic_v<T>) { return (b < a ? b : a); }
-  template<typename T>
-  constexpr const T &MAX(const T &a, const T &b) noexcept requires(std::is_arithmetic_v<T>) { return (a < b ? b : a); }
-
+  
 }
 
 #pragma endregion

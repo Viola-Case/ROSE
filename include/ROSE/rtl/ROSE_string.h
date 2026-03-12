@@ -34,6 +34,9 @@ namespace ROSE {
   template <Character CharT>
   class BasicString {
   private:
+    template <Character U>
+    friend class BasicStringView;
+
     CharT *m_data;
     size_t m_size;
     size_t m_capacity;
@@ -205,14 +208,14 @@ namespace ROSE {
   template <Character CharT>
   class BasicStringView {
   public:
-    constexpr BasicStringView(BasicString<CharT> &string) : data(string.m_data), size(string.m_size) {}
+    constexpr BasicStringView(const BasicString<CharT> &string) : m_data(string.m_data), m_size(string.m_size) {}
 
-    constexpr const CharT *begin() const noexcept { return data(); }
-    constexpr const CharT *end()   const noexcept { return data() + m_size; }
+    constexpr const CharT *begin() const noexcept { return m_data; }
+    constexpr const CharT *end()   const noexcept { return m_data + m_size; }
 
     constexpr size_t size() { return m_size; }
     constexpr CharT *data() { return m_data; }
-    constexpr const CharT *c_str() { return m_data; }
+    constexpr const CharT *c_str() const { return m_data; }
 
 
   private:
@@ -225,12 +228,12 @@ namespace ROSE {
     return a.size() == b.size() && memcmp(a.data(), b.data(), a.size()) == 0;
   }
 
-  using String = BasicString<char>;
-  using WString = BasicString<wchar_t>;
+  using String = BasicString<char8_t>;
+  using WString = BasicString<char16_t>;
   //using UString = BasicString<char32_t>;
 
-  using StringView = BasicStringView<char>;
-  using WStringView = BasicStringView<wchar_t>;
+  using StringView = BasicStringView<char8_t>;
+  using WStringView = BasicStringView<char16_t>;
   //using UStringView = BasicStringView<char32_t>;
 
 }

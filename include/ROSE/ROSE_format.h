@@ -21,10 +21,16 @@
 //};
 
 namespace ROSE {
-  template<Character CharT, typename ...Args>
-  BasicString<CharT> Format(const BasicStringView<CharT> &fmt_str, Args &&...args) {
-    auto result = fmt::format(fmt_str.c_str(), Forward<Args>(args)...);
-    return BasicString<CharT>(result.c_str());
+  template<typename ...Args>
+  String Format(const StringView &fmt_str, Args &&...args) {
+    auto result = fmt::format(fmt::runtime(fmt_str.c_str()), Forward<Args>(args)...);
+    return String(result.c_str());
+  }
+
+  template<typename ...Args>
+  String Format(const char *fmt_str, Args &&...args) {
+    auto result = fmt::format(fmt::runtime(fmt_str), Forward<Args>(args)...);
+    return String(result.c_str());
   }
 
 }

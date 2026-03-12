@@ -14,7 +14,12 @@
 
 namespace ROSE::math {
   template<StdScalar T>
-  constexpr T clamp(T value, T min, T max) noexcept {
+  constexpr T Clamp(T value, T min, T max) noexcept {
     return (value > max ? max : (value < min ? min : value));
   }
+  template<typename T>
+  constexpr const T &Min(const T &a, const T &b) noexcept requires(std::is_arithmetic_v<T>) { return (b < a ? b : a); }
+  template<typename T>
+  constexpr const T &Max(const T &a, const T &b) noexcept requires(std::is_arithmetic_v<T>) { return (a < b ? b : a); }
+
 }

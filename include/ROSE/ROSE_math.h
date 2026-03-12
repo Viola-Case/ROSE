@@ -15,6 +15,8 @@
 #include <ROSE/math/ROSE_matrix.h>
 #include <ROSE/math/ROSE_complex.h>
 #include <ROSE/math/ROSE_quaternion.h>
+#include <ROSE/math/ROSE_mathfunctions.h>
+#include <ROSE/math/ROSE_constants.h>
 
 namespace ROSE {
   using math::Compf;
@@ -25,5 +27,6 @@ namespace ROSE {
   using math::Vec2d;
   using math::Vec3f;
   using math::Vec3d;
-  using math::Mat;
+  //using math::Mat;
+  
 }

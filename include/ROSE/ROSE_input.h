@@ -233,6 +233,12 @@ namespace ROSE {
 
 #pragma region static Gamepad Axes
 
+    static const GamepadAxis LeftStickX;
+    static const GamepadAxis LeftStickY;
+    static const GamepadAxis RightStickX;
+    static const GamepadAxis RightStickY;
+    static const GamepadAxis LeftTrigger;
+    static const GamepadAxis RightTrigger;
 #pragma endregion
 
   };
