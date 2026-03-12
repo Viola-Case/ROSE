@@ -144,9 +144,6 @@
     <ClCompile Include="src\entry.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\log.cpp">
-      <Filter>Source Files\src</Filter>
-    </ClCompile>
     <ClCompile Include="src\string.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>

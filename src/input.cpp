@@ -15,14 +15,28 @@
 constexpr size_t KEYSTATE_SIZE = 512;
 
 namespace ROSE {
-  InputSystem::InputSystem() : keyState(SDL_GetKeyboardState(nullptr)), keyStatePrevious(new bool[KEYSTATE_SIZE]) {}
+  InputSystem::InputSystem() : keyState(SDL_GetKeyboardState(nullptr)), keyStatePrevious(new bool[KEYSTATE_SIZE]), gamepad(nullptr) {
+    SDL_JoystickID *sticks = SDL_GetJoysticks(nullptr);
+    if (!sticks) return;
+
+    for (size_t i = 0; sticks[i] != 0; ++i) {
+      auto j = sticks[i];
+      if (SDL_IsGamepad(j)) gamepad = SDL_OpenGamepad(j);
+    }
+
+    SDL_free(sticks);
+  }
 
   InputSystem::~InputSystem() {
     delete[] keyStatePrevious;
   }
 
-  InputSystem &InputSystem::GetInstance() {
+  void InputSystem::Prime() {
     static InputSystem &inputSystem = GetInstance();
+  }
+
+  InputSystem &InputSystem::GetInstance() {
+    static InputSystem inputSystem;
     return inputSystem;
   }
 
@@ -51,6 +65,34 @@ namespace ROSE {
   }
 
   KeyCode::operator size_t() const noexcept { return value; }
+  GamepadAxis::operator size_t() const noexcept { return value; }
+  GamepadButton::operator size_t() const noexcept { return value; }
+
+  float InputSystem::GetGamepadAxis(GamepadAxis axis) noexcept {
+    static InputSystem &inputSystem = GetInstance();
+
+    return (SDL_GetGamepadAxis(static_cast<SDL_Gamepad *>(inputSystem.gamepad), static_cast<SDL_GamepadAxis>(axis.value)) / 32767.f);
+  }
+
+  Vec2f InputSystem::GetStickAxes(GamepadStick stick) noexcept {
+    static InputSystem &inputSystem = GetInstance();
+
+    switch (static_cast<size_t>(stick)) {
+    case static_cast<size_t>(GamepadStick::Left):
+      return Vec2f(GetGamepadAxis(GamepadAxis::LeftStickX), GetGamepadAxis(GamepadAxis::LeftStickY));
+    case static_cast<size_t>(GamepadStick::Right):
+      return Vec2f(GetGamepadAxis(GamepadAxis::RightStickX), GetGamepadAxis(GamepadAxis::RightStickY));
+    }
+  }
+  bool InputSystem::GetGamepadButton(GamepadButton button) noexcept {
+    static InputSystem &inputSystem = GetInstance();
+    return SDL_GetGamepadButton(static_cast<SDL_Gamepad *>(inputSystem.gamepad), static_cast<SDL_GamepadButton>(button.value));
+  }
+
+  String InputSystem::GetGamepadName() noexcept {
+    static InputSystem &inputSystem = GetInstance();
+    return SDL_GetGamepadName(static_cast<SDL_Gamepad *>(inputSystem.gamepad));
+  }
 
 #pragma region static KeyCodes
 
@@ -97,12 +139,30 @@ namespace ROSE {
 #pragma endregion
 
 
+  const GamepadButton GamepadButton::SOUTH{ SDL_GAMEPAD_BUTTON_SOUTH };
+  const GamepadButton GamepadButton::EAST{ SDL_GAMEPAD_BUTTON_EAST };
+  const GamepadButton GamepadButton::WEST{ SDL_GAMEPAD_BUTTON_WEST };
+  const GamepadButton GamepadButton::NORTH{ SDL_GAMEPAD_BUTTON_NORTH };
+
+  const GamepadButton GamepadButton::DPAD_UP{ SDL_GAMEPAD_BUTTON_DPAD_UP };
+  const GamepadButton GamepadButton::DPAD_DOWN{ SDL_GAMEPAD_BUTTON_DPAD_DOWN };
+  const GamepadButton GamepadButton::DPAD_LEFT{ SDL_GAMEPAD_BUTTON_DPAD_LEFT };
+  const GamepadButton GamepadButton::DPAD_RIGHT{ SDL_GAMEPAD_BUTTON_DPAD_RIGHT };
+
+  const GamepadButton GamepadButton::LEFT_STICK{ SDL_GAMEPAD_BUTTON_LEFT_STICK };
+  const GamepadButton GamepadButton::RIGHT_STICK{ SDL_GAMEPAD_BUTTON_RIGHT_STICK };
+
+  const GamepadButton GamepadButton::START{ SDL_GAMEPAD_BUTTON_START };
+  const GamepadButton GamepadButton::BACK{ SDL_GAMEPAD_BUTTON_BACK };
 
 
 
-
-
-
+  const GamepadAxis GamepadAxis::LeftStickX{ SDL_GAMEPAD_AXIS_LEFTX };
+  const GamepadAxis GamepadAxis::LeftStickY{ SDL_GAMEPAD_AXIS_LEFTY };
+  const GamepadAxis GamepadAxis::RightStickX{ SDL_GAMEPAD_AXIS_RIGHTX };
+  const GamepadAxis GamepadAxis::RightStickY{ SDL_GAMEPAD_AXIS_RIGHTY };
+  const GamepadAxis GamepadAxis::LeftTrigger{ SDL_GAMEPAD_AXIS_LEFT_TRIGGER };
+  const GamepadAxis GamepadAxis::RightTrigger{ SDL_GAMEPAD_AXIS_RIGHT_TRIGGER };
 
 
 

@@ -46,7 +46,9 @@ int main(int argc, char **argv) {
 
   SDL_Window *window = SDL_CreateWindow("window", 800, 800, NULL);
 
-  SDL_JoystickID *sticks = SDL_GetJoysticks(nullptr);
+  InputSystem::Prime();
+
+  /*SDL_JoystickID *sticks = SDL_GetJoysticks(nullptr);
   if (!sticks) {
     std::wcout << L"SDL joysticks problem: " << SDL_GetError() << std::endl;
     return -1;
@@ -58,6 +60,7 @@ int main(int argc, char **argv) {
     auto j = sticks[i];
     if (SDL_IsGamepad(j)) gamepad = SDL_OpenGamepad(j);
   }
+  SDL_free(sticks);*/
 
   const bool *keys = SDL_GetKeyboardState(nullptr);
 
@@ -75,7 +78,8 @@ int main(int argc, char **argv) {
   ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
   ImGui_ImplSDLRenderer3_Init(renderer);
 
-  String gamepadName = SDL_GetGamepadName(gamepad);
+  //String gamepadName = SDL_GetGamepadName(gamepad);
+  String gamepadName = InputSystem::GetGamepadName();
 
   std::chrono::time_point<std::chrono::high_resolution_clock> start = std::chrono::high_resolution_clock::now();
   SDL_Texture *texture{nullptr};
@@ -140,11 +144,11 @@ int main(int argc, char **argv) {
     //ImGui_ImplSDL3_NewFrame();
     //ImGui::NewFrame();
 
-    Vec2f GamepadLeft(SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTX) / 32767.f, SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTY) / 32767.f);
-    Vec2f GamepadRight(SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_RIGHTX) / 32767.f, SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_RIGHTY) / 32767.f);
+    Vec2f GamepadLeft{InputSystem::GetStickAxes(GamepadStick::Left)};
+    Vec2f GamepadRight{ InputSystem::GetStickAxes(GamepadStick::Right) };
     
-    float GamepadTriggerLeft = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) / 32767.f;
-    float GamepadTriggerRight = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) / 32767.f;
+    float GamepadTriggerLeft = InputSystem::GetGamepadAxis(GamepadAxis::LeftTrigger);
+    float GamepadTriggerRight = InputSystem::GetGamepadAxis(GamepadAxis::RightTrigger);
 
     ImGui::Begin("Gamepad Info", nullptr, 0);
     ImGui::Text("%s", gamepadName.c_str());
@@ -154,13 +158,12 @@ int main(int argc, char **argv) {
     ImGui::Text("Right Y: %f", GamepadRight.y);
     ImGui::Text("Trigger Left: %f", GamepadTriggerLeft);
     ImGui::Text("Trigger Right: %f", GamepadTriggerRight);
+    ImGui::Text("Start: %d", InputSystem::GetGamepadButton(GamepadButton::START));
+    ImGui::Text("Back: %d", InputSystem::GetGamepadButton(GamepadButton::BACK));
     ImGui::End();
     
     ImGui::Render();
 
-    if (!TTF_FAILED) {
-      
-    }
 
     //SDL_SetRenderDrawColor(renderer, 40, 120, 240, 255);
     //SDL_FRect rects[2]{ { 80,280,240,240 },{ 480,280,240,240 } };

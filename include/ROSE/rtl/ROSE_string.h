@@ -228,11 +228,11 @@ namespace ROSE {
     return a.size() == b.size() && memcmp(a.data(), b.data(), a.size()) == 0;
   }
 
-  using String = BasicString<char8_t>;
+  using String = BasicString<char>;
   using WString = BasicString<char16_t>;
   //using UString = BasicString<char32_t>;
 
-  using StringView = BasicStringView<char8_t>;
+  using StringView = BasicStringView<char>;
   using WStringView = BasicStringView<char16_t>;
   //using UStringView = BasicStringView<char32_t>;
 

@@ -131,7 +131,6 @@
     <ClCompile Include="src\application.cpp" />
     <ClCompile Include="src\entry.cpp" />
     <ClCompile Include="src\input.cpp" />
-    <ClCompile Include="src\log.cpp" />
     <ClCompile Include="src\object.cpp" />
     <ClCompile Include="src\rtl\buffer.cpp" />
     <ClCompile Include="src\rtl\hashmap.cpp" />

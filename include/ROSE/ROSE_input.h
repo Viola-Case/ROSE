@@ -249,33 +249,25 @@ namespace ROSE {
     friend class InputSystem;
     operator size_t() const noexcept;
   public:
-    static const GamepadButton A;
-    static const GamepadButton B;
-    static const GamepadButton X;
-    static const GamepadButton Y;
-    static const GamepadButton CROSS;
-    static const GamepadButton CIRCLE;
-    static const GamepadButton TRIANGLE;
-    static const GamepadButton SQUARE;
+    static const GamepadButton SOUTH;
+    static const GamepadButton EAST;
+    static const GamepadButton WEST;
+    static const GamepadButton NORTH;
     static const GamepadButton DPAD_UP;
     static const GamepadButton DPAD_DOWN;
     static const GamepadButton DPAD_LEFT;
     static const GamepadButton DPAD_RIGHT;
-    static const GamepadButton RIGHT_STICK;
     static const GamepadButton LEFT_STICK;
+    static const GamepadButton RIGHT_STICK;
     static const GamepadButton START;
-    static const GamepadButton SELECT;
-    //static const GamepadButton
+    static const GamepadButton BACK;
+    static const GamepadButton LEFT_BUMPER;
+    static const GamepadButton RIGHT_BUMPER;
   };
 
-  class GamepadStick {
-    unsigned int value;
-    explicit constexpr GamepadStick(unsigned int v) : value(v) {}
-    friend class InputSystem;
-    operator size_t() const noexcept;
-  public:
-    static const GamepadStick Left;
-    static const GamepadStick Right;
+  enum class GamepadStick {
+    Left,
+    Right
   };
 
   class InputSystem final {
@@ -292,12 +284,17 @@ namespace ROSE {
     InputSystem(InputSystem &&) = delete;
     static InputSystem inputSystem;
   public:
+    static void Prime();
     static InputSystem &GetInstance();
     static bool GetKeyDown(KeyCode) noexcept;
     static bool GetKeyUp(KeyCode) noexcept;
     static bool GetKey(KeyCode) noexcept;
 
-    static Vec2f GetStick();
+    static float GetGamepadAxis(GamepadAxis) noexcept;
+    static Vec2f GetStickAxes(GamepadStick) noexcept;
+    static bool GetGamepadButton(GamepadButton) noexcept;
+
+    static String GetGamepadName() noexcept;
 
   };
 }
