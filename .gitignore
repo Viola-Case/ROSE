@@ -477,3 +477,4 @@ CMakeUserPresets.json
 *.vcxproj
 *.vcxproj.filters
 imgui.ini
+*.ttf
