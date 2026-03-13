@@ -10,7 +10,7 @@
     "sdl3-ttf",
     {
       "name": "imgui",
-      "features": [ "sdl3-binding", "opengl3-binding", "vulkan-binding" ]
+      "features": [ "sdl3-binding", "opengl3-binding", "vulkan-binding", "sdl3-renderer-binding" ]
     },
     {
       "name": "glad",

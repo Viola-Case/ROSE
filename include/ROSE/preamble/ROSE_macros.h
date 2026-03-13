@@ -110,19 +110,3 @@ namespace ROSE {
 #define ROSE_API(MODULE) CASE_XCAT(ROSE_, CASE_XCAT(MODULE, _API))
 
 #pragma endregion
-
-#pragma region math symbols
-#define ≤ <=
-#define ≥ >=
-#define ≠ !=
-#define ≡ ==
-#define ¬ !
-#define ∧ &&
-#define ∨ ||
-#define × *
-#define ÷ /
-#define − -
-#define ⋅ *
-#define ⊗ %  
-#pragma endregion
-

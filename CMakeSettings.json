@@ -1,0 +1,15 @@
+﻿{
+  "configurations": [
+    {
+      "buildCommandArgs": "",
+      "buildRoot": "${projectDir}\\build",
+      "cmakeCommandArgs": "",
+      "cmakeExecutable": "C:\\Program Files\\CMake\\bin\\cmake.exe",
+      "configurationType": "Debug",
+      "ctestCommandArgs": "",
+      "generator": "Visual Studio 18 2026",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "name": "x64-Debug"
+    }
+  ]
+}
