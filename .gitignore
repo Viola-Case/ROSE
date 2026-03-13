@@ -451,3 +451,5 @@ FodyWeavers.xsd
 
 *.ttf
 imgui.ini
+[Bb]uild/
+[Oo]ut/
