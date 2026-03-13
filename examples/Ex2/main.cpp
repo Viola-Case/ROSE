@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
   bool TTF_FAILED{ 0 };
   if (!TTF_Init()) TTF_FAILED = true;
 
-  TTF_Font *font = TTF_OpenFont("CalibriL.ttf",24);
+  TTF_Font *font = TTF_OpenFont("C:/Windows/Fonts/CalibriL.ttf",24);
 
   SDL_Window *window = SDL_CreateWindow("window", 800, 800, NULL);
 
@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
 
     float w{ 50 }, h{ 10 };
     SDL_GetTextureSize(texture, &w, &h);
-    SDL_FRect dst = { 600, 600, w, h };
+    SDL_FRect dst = { 685, 15, w, h };
     SDL_RenderTexture(renderer, texture, nullptr, &dst);
 
     ImGui_ImplSDL3_NewFrame();

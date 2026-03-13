@@ -60,6 +60,7 @@ target_link_libraries(Example2 PRIVATE Core SDL3_ttf::SDL3_ttf)
 
 file(GLOB_RECURSE ROSE_EDITOR_SOURCES "Engine/Editor/*.cpp" "Editor/*.c" "Editor/*.h")
 add_executable(Editor ${ROSE_EDITOR_SOURCES})
+target_include_directories(Editor PUBLIC include/)
 set_property(TARGET Editor PROPERTY FOLDER "Engine")
 
 add_custom_target(ENGINE_BUILD)

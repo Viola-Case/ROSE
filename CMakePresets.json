@@ -1,5 +1,5 @@
 ﻿{
-  "version": 6,
+  "version": 6,/*
   "cmakeMinimumRequired": {
     "major": 4,
     "minor": 2,
@@ -93,5 +93,5 @@
       "displayName": "Build Linux Debug",
       "configurePreset": "linux-debug"
     }
-  ]
+  ]*/
 }
