@@ -478,3 +478,5 @@ CMakeUserPresets.json
 *.vcxproj.filters
 imgui.ini
 *.ttf
+[Bb]uild/
+[Oo]ut/
