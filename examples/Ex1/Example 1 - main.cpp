@@ -8,14 +8,9 @@
   @copyright © Viola Case, 2026. All right reserved.
 
 **/
-#define ROSE_MAIN_HANDLED
 
 #include <ROSE/ROSE.h>
 #include <iostream>
-
-#include <string>
-
-#include <Windows.h>
 
 using namespace ROSE;
 
