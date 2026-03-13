@@ -480,3 +480,5 @@ imgui.ini
 *.ttf
 [Bb]uild/
 [Oo]ut/
+
+CMakeSettings.json
