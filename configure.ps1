@@ -16,6 +16,10 @@ Set-Content -Path "build/reconfigure.ps1" -Value "cd ..`r.\configure.ps1"
 Set-Location build
 cmake -G "Visual Studio 18 2026" -A x64 ..
 
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "CMake configuration failed."
+    exit 1
+}
 
 $choices = @(
     [System.Management.Automation.Host.ChoiceDescription]::new('&Yes', 'Open solution in Visual Studio')
