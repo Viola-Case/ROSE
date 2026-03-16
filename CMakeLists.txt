@@ -33,6 +33,10 @@ set_target_properties(Core PROPERTIES
     DEBUG_POSTFIX "d"
 )
 
+set_target_properties(Core PROPERTIES
+    EDITOR_POSTFIX "e"
+)
+
 find_package(SDL3 REQUIRED)
 find_package(imgui REQUIRED)
 find_package(glad REQUIRED)
@@ -67,8 +71,17 @@ add_custom_target(ENGINE_BUILD)
 add_dependencies(ENGINE_BUILD Core Editor)
 
 target_compile_definitions(Core PRIVATE
+    $<$<CONFIG:Debug>:_DEBUG>
+    $<$<CONFIG:Release>:_NDEBUG>
+    $<$<CONFIG:Editor>:_NDEBUG>
     $<$<CONFIG:Editor>:ROSE_EDITOR>
 )
+
+target_compile_definitions(Editor PRIVATE
+    $<$<CONFIG:Editor>:_NDEBUG>
+    $<$<CONFIG:Editor>:ROSE_EDITOR>
+)
+
 target_compile_definitions(Editor PRIVATE
     $<$<CONFIG:Editor>:ROSE_EDITOR>
 )

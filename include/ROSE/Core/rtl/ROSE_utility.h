@@ -95,24 +95,5 @@ namespace ROSE {
     return n + 1;
   }
 
-  enum class HashFunction {
-    MurmurHash,
-    FNV_1a,
-    CityHash,
-    XXHash
-  };
-
-  template<typename Key>
-  constexpr uint64_t Hash(HashFunction func, const Key &key) {
-    switch (func) {
-    case HashFunction::MurmurHash:
-      return;
-    case HashFunction::FNV_1a:
-      return;
-    case HashFunction::CityHash:
-      return;
-    case HashFunction::XXHash:
-      return;
-    }
-  }
+  
 }
