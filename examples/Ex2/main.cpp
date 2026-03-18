@@ -15,6 +15,9 @@
 
 using namespace ROSE;
 
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 800
+
 void DrawNgon(SDL_Renderer *renderer, float cx, float cy, float radius, int n, SDL_FColor color) {
   std::vector<SDL_Vertex> verts;
 
@@ -44,7 +47,7 @@ int main(int argc, char **argv) {
 
   TTF_Font *font = TTF_OpenFont("C:/Windows/Fonts/CalibriL.ttf",24);
 
-  SDL_Window *window = SDL_CreateWindow("window", 800, 800, NULL);
+  SDL_Window *window = SDL_CreateWindow("window", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_BORDERLESS);
 
   InputSystem::Prime();
 
@@ -135,9 +138,47 @@ int main(int argc, char **argv) {
     SDL_FRect dst = { 685, 15, w, h };
     SDL_RenderTexture(renderer, texture, nullptr, &dst);
 
+
     ImGui_ImplSDL3_NewFrame();
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui::NewFrame();
+
+    ImGuiWindowFlags titlebar_flags =
+      ImGuiWindowFlags_NoDecoration |
+      ImGuiWindowFlags_NoMove |
+      ImGuiWindowFlags_NoScrollbar |
+      ImGuiWindowFlags_NoSavedSettings;
+
+    ImGui::SetNextWindowPos({ 0, 0 });
+    ImGui::SetNextWindowSize({ (float) WINDOW_WIDTH, 30.0f });
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+
+    if (ImGui::Begin("##titlebar", nullptr, titlebar_flags)) {
+      ImGui::Text(SDL_GetWindowTitle(window));
+      // buttons will go here
+      ImGui::SameLine(WINDOW_WIDTH - 30.0f);
+      if (ImGui::Button("X", { 20.0f, 20.0f })) {
+        quit = true;
+      }
+      ImGui::End();
+      if (ImGui::IsItemHovered() && ImGui::IsMouseDragging(0)) {
+        ImVec2 delta = ImGui::GetMouseDragDelta();
+        math::Vec2<int> windowPos;
+        SDL_GetWindowPosition(window, &(windowPos.x), &(windowPos.y));
+        SDL_SetWindowPosition(window, windowPos.x + delta.x, windowPos.y + delta.y);
+      }
+    }
+    ImGui::PopStyleVar();
+    
+    //if (ImGui::BeginMainMenuBar()) {
+    //
+    //  if (ImGui::BeginMenu("File")) {
+    //    if (ImGui::MenuItem("Exit")) quit = true;
+    //    ImGui::EndMenu();
+    //  }
+    //  ImGui::EndMainMenuBar();
+    //
+    //}
 
     if (keys[SDL_SCANCODE_ESCAPE]) quit = true;
 
@@ -168,11 +209,11 @@ int main(int argc, char **argv) {
     //SDL_SetRenderDrawColor(renderer, 40, 120, 240, 255);
     //SDL_FRect rects[2]{ { 80,280,240,240 },{ 480,280,240,240 } };
     
-    DrawNgon(renderer, 200, 400, 100, 100, { 20 / 255.f, 60 / 255.f, 120 / 255.f, 255 / 255.f });
-    DrawNgon(renderer, 600, 400, 100, 100, { 20 / 255.f, 60 / 255.f, 120 / 255.f, 255 / 255.f });
+    DrawNgon(renderer, WINDOW_WIDTH / 4, WINDOW_WIDTH / 2, 100, 100, { 20 / 255.f, 60 / 255.f, 120 / 255.f, 255 / 255.f });
+    DrawNgon(renderer, WINDOW_WIDTH / 4 * 3, WINDOW_WIDTH / 2, 100, 100, { 20 / 255.f, 60 / 255.f, 120 / 255.f, 255 / 255.f });
 
-    DrawNgon(renderer, 200 + (100 * GamepadLeft.x), 400 + (100 * GamepadLeft.y), 20, 20, { 40/255.f, 120/255.f, 240/255.f, 255 });
-    DrawNgon(renderer, 600 + (100 * GamepadRight.x), 400 + (100 * GamepadRight.y), 20, 20, { 40/255.f, 120/255.f, 240/255.f, 255 });
+    DrawNgon(renderer, WINDOW_WIDTH / 4 + (100 * GamepadLeft.x), WINDOW_WIDTH / 2 + (100 * GamepadLeft.y), 20, 20, { 40/255.f, 120/255.f, 240/255.f, 255 });
+    DrawNgon(renderer, 3 * WINDOW_WIDTH / 4 + (100 * GamepadRight.x), WINDOW_WIDTH / 2 + (100 * GamepadRight.y), 20, 20, { 40/255.f, 120/255.f, 240/255.f, 255 });
 
     
     //SDL_RenderRects(renderer, rects, 2);
