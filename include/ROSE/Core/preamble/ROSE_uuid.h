@@ -10,7 +10,7 @@
 **/
 #pragma once
 
-#include <ROSE/Core/ROSE_preamble.h>
+#include <ROSE/Core/preamble/ROSE_stdlib.h>
 
 namespace ROSE {
   union UUID {

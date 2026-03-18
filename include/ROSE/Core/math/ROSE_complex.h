@@ -24,7 +24,7 @@ namespace ROSE::math {
     constexpr Comp(T re_) : Re(re_), Im(T{}) {}
     constexpr Comp(T _re, T _im) : Re(_re), Im(_im) {}
 
-    static const Comp I{ 0, -1 };
+    //static inline const Comp I{ 0, -1 };
 
 
 

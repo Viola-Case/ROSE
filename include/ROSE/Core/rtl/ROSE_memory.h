@@ -18,59 +18,59 @@ namespace ROSE {
   template<typename T>
   class UniquePtr {
   public:
-    explicit UniquePtr(T *p_ = nullptr) : ptr(p_) {}
+    explicit UniquePtr(T *p_ = nullptr) : m_ptr(p_) {}
 
-    ~UniquePtr() { delete ptr; }
+    ~UniquePtr() { delete m_ptr; }
 
     UniquePtr(const UniquePtr &) = delete;
     UniquePtr &operator=(const UniquePtr &) = delete;
 
     UniquePtr(UniquePtr &&other) noexcept {
       if (this != &other) {
-        delete ptr;
-        ptr = other.ptr;
-        other.ptr = nullptr;
+        delete m_ptr;
+        m_ptr = other.m_ptr;
+        other.m_ptr = nullptr;
       }
       return *this;
     }
 
     template<typename U, typename = std::enable_if_t<std::is_convertible<U *, T *>::value>>
-    UniquePtr(UniquePtr<U> &&other) noexcept : ptr(other.release()) {}
+    UniquePtr(UniquePtr<U> &&other) noexcept : m_ptr(other.release()) {}
 
     /**
       @warning dont call `delete` on this
       @retval
     **/
-    T *get() noexcept { return ptr; }
+    T *get() noexcept { return m_ptr; }
     /**
       @warning dont call `delete` on this
       @retval
     **/
-    const T *get() const noexcept { return ptr; }
+    const T *get() const noexcept { return m_ptr; }
 
-    T &operator*() const { return *ptr; }
-    T *operator->() const { return ptr; }
+    T &operator*() const { return *m_ptr; }
+    T *operator->() const { return m_ptr; }
 
-    explicit operator bool() const { return ptr != nullptr; }
+    explicit operator bool() const { return m_ptr != nullptr; }
 
     void reset(T *p = nullptr) {
-      delete ptr;
-      ptr = p;
+      delete m_ptr;
+      m_ptr = p;
     }
 
     T *release() {
-      T *tmp = ptr;
-      ptr = nullptr;
+      T *tmp = m_ptr;
+      m_ptr = nullptr;
       return tmp;
     }
 
   private:
-    T *ptr;
+    T *m_ptr;
   };
 
   template<typename T, typename ...Args>
   UniquePtr<T> MakeUnique(Args&&... args) {
-    return UniquePtr<T>(new T(std::forward<Args>(args)...));
+    return UniquePtr<T>(new T(Forward<Args>(args)...));
   }
 
   template<typename T>
@@ -83,11 +83,11 @@ namespace ROSE {
       size_t strong_count{ 1 };
       size_t weak_count{ 0 };
 
-      explicit ControlBlock(T *p) : ptr(p) {}
+      explicit ControlBlock(T *p) : m_ptr(p) {}
 
-      ~ControlBlock() { delete ptr; }
+      ~ControlBlock() { delete m_ptr; }
 
-      T *ptr;
+      T *m_ptr;
     };
 
     ControlBlock *ctrl{ nullptr };
@@ -95,8 +95,8 @@ namespace ROSE {
     void release() {
       if (ctrl) {
         if (--ctrl->strong_count == 0) {
-          delete ctrl->ptr;
-          ctrl->ptr = nullptr;
+          delete ctrl->m_ptr;
+          ctrl->m_ptr = nullptr;
           if (ctrl->weak_count == 0) {
             delete ctrl;
           }
@@ -146,15 +146,15 @@ namespace ROSE {
         @warning dont call `delete` on this
         @retval  pointer to managed object
     **/
-    T *get() const noexcept { return ctrl ? ctrl->ptr : nullptr; }
-    T &operator*() const noexcept { return *ctrl->ptr; }
-    T *operator*() const noexcept { return ctrl->ptr; }
+    T *get() const noexcept { return ctrl ? ctrl->m_ptr : nullptr; }
+    T &operator*() const noexcept { return *ctrl->m_ptr; }
+    T *operator*() const noexcept { return ctrl->m_ptr; }
 
     size_t use_count() const noexcept {
       return ctrl ? ctrl->strong_count : 0;
     }
 
-    explicit operator bool() const noexcept { return ctrl && ctrl->ptr; }
+    explicit operator bool() const noexcept { return ctrl && ctrl->m_ptr; }
 
   };
 

@@ -72,14 +72,14 @@ namespace ROSE {
 
   
 
-  template<typename _Key, typename _Val, HashFunction Func = HashFunction::MurmurHash>
+  template<typename _Key, typename _Val>
   class LinkedHashMap {
-    HashMap _map;
+    HashMap m_map;
     
   };
 
-  template<typename _Key, typename _Val, HashFunction Func = HashFunction::MurmurHash>
+  template<typename _Key, typename _Val>
   class TypedHashMap {
-    HashMap _map;
+    HashMap m_map;
   };
 }

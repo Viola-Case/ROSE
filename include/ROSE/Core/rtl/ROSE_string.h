@@ -236,4 +236,7 @@ namespace ROSE {
   using WStringView = BasicStringView<char16_t>;
   //using UStringView = BasicStringView<char32_t>;
 
+
+  uint64_t FNV1A(const String &str);
+  uint64_t FNV1A(const WString &str);
 }

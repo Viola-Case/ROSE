@@ -20,17 +20,12 @@ int main(int argc, char** argv) {
 
   //std::string g;
 
-  List<int> integers{1,2,3};
+  uint8_t a = '1';
 
-  std::printf("integers is at %p.\n", reinterpret_cast<int>(integers.data()));
+  std::printf("The FNV1a hash of 1 is %llx.\n", FNV1A(&a,1));
 
-  List<int> newList(Move(integers));
 
-  std::printf("integers is at %p, newList is at %p.", reinterpret_cast<int>(integers.data()), reinterpret_cast<int>(newList.data()));
 
-  //for (auto &i : integers) {
-  //  std::cout << i << '\t';
-  //}
   std::cout << std::endl;
 
 	return 0;
