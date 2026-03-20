@@ -87,7 +87,7 @@ target_compile_definitions(Editor PRIVATE
     $<$<CONFIG:Editor>:ROSE_EDITOR>
 )
 
-set(CMAKE_CONFIGURATION_TYPES Editor "Debug;Release;Editor")
+set(CMAKE_CONFIGURATION_TYPES Editor "Editor")
 
 #target_compile_options(Editor PRIVATE
 #        $<$<NOT:$<CONFIG:Editor>>:-invalid-config-do-not-build-outside-editor>
