@@ -38,17 +38,12 @@ namespace ROSE::math {
         T w, x, y, z;
       };
       T data[4];
-      struct {
-        Comp<T> c;
-        T y, z;
-      };
     };
     constexpr Quat() = default;
     constexpr Quat(T _w, T _x = T{}, T _y = T{}, T _z = T{}) noexcept : w(_w), x(_x), y(_y), z(_z) {}
-    constexpr Quat(Comp<T> _c, T _y = T{}, T _z = T{}) noexcept : c(_c), y(_y), z(_z) {}
+    constexpr Quat(Comp<T> _c, T _y = T{}, T _z = T{}) noexcept : w(_c.Re), x(_c.Im), y(_y), z(_z) {}
 
-    template<typename T>
-    static constexpr Quat<T> AxisAngle(T angle, T ax, T ay, T az) {
+    static constexpr Quat AxisAngle(T angle, T ax, T ay, T az) {
       T half = angle * T(0.5);
       T s = std::sin(half);
       return {
@@ -59,8 +54,7 @@ namespace ROSE::math {
       };
     }
 
-    template<typename T>
-    static constexpr Quat<T> FromEuler(Vec<T, 3> v, EulerOrder order = EulerOrder::ZXY) {
+    static constexpr Quat FromEuler(Vec<T, 3> v, EulerOrder order = EulerOrder::ZXY) {
       Quat<T> qx = AxisAngle(v.x, T(1), T(0), T(0));
       Quat<T> qy = AxisAngle(v.y, T(0), T(1), T(0));
       Quat<T> qz = AxisAngle(v.z, T(0), T(0), T(1));

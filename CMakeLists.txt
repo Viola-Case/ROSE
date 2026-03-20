@@ -42,6 +42,7 @@ find_package(imgui REQUIRED)
 find_package(glad REQUIRED)
 find_package(fmt REQUIRED)
 find_package(SDL3_ttf REQUIRED)
+find_package(SDL3_image REQUIRED)
 
 target_include_directories(Core PUBLIC include/)
 
@@ -60,7 +61,7 @@ target_link_libraries(Example1 PRIVATE Core SDL3_ttf::SDL3_ttf)
 
 add_executable(Example2 "examples/Ex2/main.cpp")
 set_property(TARGET Example2 PROPERTY FOLDER "Examples")
-target_link_libraries(Example2 PRIVATE Core SDL3_ttf::SDL3_ttf)
+target_link_libraries(Example2 PRIVATE Core SDL3_ttf::SDL3_ttf SDL3_image::SDL3_image)
 
 file(GLOB_RECURSE ROSE_EDITOR_SOURCES "Engine/Editor/*.cpp" "Editor/*.c" "Editor/*.h")
 add_executable(Editor ${ROSE_EDITOR_SOURCES})
@@ -86,7 +87,9 @@ target_compile_definitions(Editor PRIVATE
     $<$<CONFIG:Editor>:ROSE_EDITOR>
 )
 
-target_compile_options(Editor PRIVATE
-    $<$<NOT:$<CONFIG:Editor>>:-invalid-config-do-not-build-outside-editor>
-)
+set(CMAKE_CONFIGURATION_TYPES Editor "Debug;Release;Editor")
+
+#target_compile_options(Editor PRIVATE
+#        $<$<NOT:$<CONFIG:Editor>>:-invalid-config-do-not-build-outside-editor>
+#)
 

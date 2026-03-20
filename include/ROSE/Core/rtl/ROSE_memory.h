@@ -148,7 +148,7 @@ namespace ROSE {
     **/
     T *get() const noexcept { return ctrl ? ctrl->m_ptr : nullptr; }
     T &operator*() const noexcept { return *ctrl->m_ptr; }
-    T *operator*() const noexcept { return ctrl->m_ptr; }
+    T *operator->() const noexcept { return ctrl->m_ptr; }
 
     size_t use_count() const noexcept {
       return ctrl ? ctrl->strong_count : 0;

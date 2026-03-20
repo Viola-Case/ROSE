@@ -12,6 +12,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3_image/SDL_image.h>
 
 using namespace ROSE;
 
@@ -45,25 +46,38 @@ int main(int argc, char **argv) {
   bool TTF_FAILED{ 0 };
   if (!TTF_Init()) TTF_FAILED = true;
 
-  TTF_Font *font = TTF_OpenFont("C:/Windows/Fonts/CalibriL.ttf",24);
+  String path;
+#if defined(_WIN32)
+  path = "C:/Windows/Fonts/CalibriL.ttf";
+#elif defined(__linux__)
+  path = "/usr/share/fonts/gnu-free/FreeMono.otf";
+#endif
 
-  SDL_Window *window = SDL_CreateWindow("window", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_BORDERLESS);
+
+  TTF_Font *font = TTF_OpenFont(path.c_str(),24);
+
+  SDL_Window *window = SDL_CreateWindow("window", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_HIGH_PIXEL_DENSITY);
+
+
+
+  String PATH = SDL_GetBasePath();
+  SDL_Surface* ROSE_LOGO_SURFACE;
+
+  {
+    String ICON_PATH = PATH;
+    ICON_PATH += "rose.png";
+    std::wcout << ICON_PATH.c_str() << std::endl;
+    ROSE_LOGO_SURFACE = IMG_Load(ICON_PATH.c_str());
+    if (!ROSE_LOGO_SURFACE)
+      std::wcout << "problem: " << SDL_GetError() << std::endl;
+  }
+
+  if (!SDL_SetWindowIcon(window,ROSE_LOGO_SURFACE))
+    std::wcout << "problem: " << SDL_GetError() << std::endl;
+
+  //getchar();
 
   InputSystem::Prime();
-
-  /*SDL_JoystickID *sticks = SDL_GetJoysticks(nullptr);
-  if (!sticks) {
-    std::wcout << L"SDL joysticks problem: " << SDL_GetError() << std::endl;
-    return -1;
-  }
-
-  SDL_Gamepad *gamepad = nullptr;
-
-  for (size_t i = 0; sticks[i] != 0; ++i) {
-    auto j = sticks[i];
-    if (SDL_IsGamepad(j)) gamepad = SDL_OpenGamepad(j);
-  }
-  SDL_free(sticks);*/
 
   const bool *keys = SDL_GetKeyboardState(nullptr);
 
@@ -143,33 +157,6 @@ int main(int argc, char **argv) {
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui::NewFrame();
 
-    ImGuiWindowFlags titlebar_flags =
-      ImGuiWindowFlags_NoDecoration |
-      ImGuiWindowFlags_NoMove |
-      ImGuiWindowFlags_NoScrollbar |
-      ImGuiWindowFlags_NoSavedSettings;
-
-    ImGui::SetNextWindowPos({ 0, 0 });
-    ImGui::SetNextWindowSize({ (float) WINDOW_WIDTH, 30.0f });
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-
-    if (ImGui::Begin("##titlebar", nullptr, titlebar_flags)) {
-      ImGui::Text(SDL_GetWindowTitle(window));
-      // buttons will go here
-      ImGui::SameLine(WINDOW_WIDTH - 30.0f);
-      if (ImGui::Button("X", { 20.0f, 20.0f })) {
-        quit = true;
-      }
-      ImGui::End();
-      if (ImGui::IsItemHovered() && ImGui::IsMouseDragging(0)) {
-        ImVec2 delta = ImGui::GetMouseDragDelta();
-        math::Vec2<int> windowPos;
-        SDL_GetWindowPosition(window, &(windowPos.x), &(windowPos.y));
-        SDL_SetWindowPosition(window, windowPos.x + delta.x, windowPos.y + delta.y);
-      }
-    }
-    ImGui::PopStyleVar();
-    
     //if (ImGui::BeginMainMenuBar()) {
     //
     //  if (ImGui::BeginMenu("File")) {

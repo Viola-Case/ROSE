@@ -16,6 +16,8 @@
 namespace ROSE {
   using AppID = size_t;
 
+  class Application;
+
   static class ApplicationManager {
   public:
     ApplicationManager();

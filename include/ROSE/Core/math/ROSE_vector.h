@@ -23,9 +23,10 @@ namespace ROSE::math {
   struct Vec {
     FixedArray<T,N> data;
     Vec() = default;
-    constexpr const T dot(const Vec &rhs) const noexcept {
+    constexpr T dot(const Vec &rhs) const noexcept {
       T sum{ 0 };
       for (int i = 0; i < N; ++i) sum += data[i] * rhs.data[i];
+      return sum;
     }
 
     constexpr Vec &operator+=(const Vec &rhs) noexcept {
@@ -49,7 +50,7 @@ namespace ROSE::math {
       return (result -= rhs);
     }
 
-    constexpr const T &operator[](const size_t idx) {
+    constexpr const T &operator[](const size_t idx) const {
       ROSE_ASSERT(idx < N);
       ROSE_ASSERT_MSG(data != nullptr, "Vector storage must not be null");
       return data[idx];
@@ -69,7 +70,6 @@ namespace ROSE::math {
   template<Scalar T>
   struct Vec<T, 2> {
     static constexpr size_t N = 2;
-    Vec() = default;
     union {
       FixedArray<T, N> data;
       struct {
@@ -81,9 +81,10 @@ namespace ROSE::math {
 
     constexpr Vec(T _x = T{}, T _y = T{}) : x(_x), y(_y) {}
 
-    constexpr const T dot(const Vec &rhs) const noexcept {
+    constexpr T dot(const Vec &rhs) const noexcept {
       T sum{ 0 };
       for (int i = 0; i < N; ++i) sum += data[i] * rhs.data[i];
+      return sum;
     }
 
     constexpr Vec &operator+=(const Vec &rhs) noexcept {
@@ -107,6 +108,11 @@ namespace ROSE::math {
       return (result -= rhs);
     }
 
+    constexpr const T &operator[](const size_t idx) const {
+      ROSE_ASSERT(idx < N);
+      ROSE_ASSERT_MSG(data != nullptr, "Vector storage must not be null");
+      return data[idx];
+    }
     constexpr T &operator[](const size_t idx) {
       ROSE_ASSERT(idx < N);
       ROSE_ASSERT_MSG(data != nullptr, "Vector storage must not be null");
@@ -117,14 +123,11 @@ namespace ROSE::math {
     constexpr T &at() noexcept {
       return data[I];
     }
-
-    //const 
   };
 
   template<Scalar T>
   struct Vec<T, 3> {
     static constexpr size_t N = 3;
-    Vec() = default;
     union {
       FixedArray<T,N> data;
       struct {
@@ -134,9 +137,10 @@ namespace ROSE::math {
 
     constexpr Vec(T _x = T{0}, T _y = T{0}, T _z = T{0}) : x(_x), y(_y), z(_z) {}
 
-    constexpr const T dot(const Vec &rhs) const noexcept {
+    constexpr T dot(const Vec &rhs) const noexcept {
       T sum{ 0 };
       for (int i = 0; i < N; ++i) sum += data[i] * rhs.data[i];
+      return sum;
     }
 
     constexpr Vec &operator+=(const Vec &rhs) noexcept {
@@ -160,6 +164,11 @@ namespace ROSE::math {
       return (result -= rhs);
     }
 
+    constexpr const T &operator[](const size_t idx) const {
+      ROSE_ASSERT(idx < N);
+      ROSE_ASSERT_MSG(data != nullptr, "Vector storage must not be null");
+      return data[idx];
+    }
     constexpr T &operator[](const size_t idx) {
       ROSE_ASSERT(idx < N);
       ROSE_ASSERT_MSG(data != nullptr, "Vector storage must not be null");

@@ -9,8 +9,18 @@
     "sdl3",
     "sdl3-ttf",
     {
+      "name": "sdl3-image",
+      "features": [
+        "jpeg",
+        "png",
+        "tiff"
+      ]
+    },
+    {
       "name": "imgui",
-      "features": [ "sdl3-binding", "opengl3-binding", "vulkan-binding", "sdl3-renderer-binding" ]
+      "features": [
+        "sdl3-binding", "opengl3-binding", "vulkan-binding", "sdl3-renderer-binding"
+      ]
     },
     {
       "name": "glad",

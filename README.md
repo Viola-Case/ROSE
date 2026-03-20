@@ -3,7 +3,7 @@ The Radical Open Software Engine (ROSE) is a game and software engine built in C
 
 
 ## Building ROSE
-Use the configure scripts. For the love of God use the configure scripts. As of me writing this, Visual Studio's built-in CMake is a version behind the bare minimum functionality I need.
+Use the configure scripts. For the love of God use the configure scripts. As of me writing this, Visual Studio's built-in CMake is at least a version behind the bare minimum functionality I need. Also it won't let me use a goddamn custom CMake output directory so I am doing my got dang best here 
 ### Dependencies
 - SDL
 - ImGui

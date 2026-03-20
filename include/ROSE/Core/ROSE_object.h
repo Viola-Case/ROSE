@@ -13,6 +13,8 @@
 #include <ROSE/Core/ROSE_preamble.h>
 
 namespace ROSE {
+
+  class Scene;
   class Behavior;
   template <class T>
   concept BehaviorType = std::derived_from<T, Behavior>;

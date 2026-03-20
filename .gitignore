@@ -482,3 +482,5 @@ imgui.ini
 [Oo]ut/
 
 CMakeSettings.json
+
+.idea/
