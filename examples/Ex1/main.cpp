@@ -22,7 +22,9 @@ int main(int argc, char** argv) {
 
   uint8_t a = '1';
 
-  std::printf("The FNV1a hash of 1 is %llx.\n", FNV1A(&a,1));
+  if (argc > 1) a = std::atoi(argv[1]);
+
+  std::printf("The FNV1a hash of %d is %llx.\n", a, FNV1A(&a,1));
 
 
 

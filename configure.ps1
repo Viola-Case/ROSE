@@ -4,11 +4,15 @@
 
 $vcvars = Join-Path $vsPath 'VC\Auxiliary\Build\vcvars64.bat'
 cmd /c "`"$vcvars`" && set" | ForEach-Object {
-    if ($_ -match '^(.*?)=(.*)$') {
-        if (-not [System.Environment]::GetEnvironmentVariable($matches[1])) {
-            [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2])
+    if ($_ -match '^([^=]+)=(.*)$') {
+        if (-not (Get-Item "env:$($matches[1])" -ErrorAction SilentlyContinue)) {
+            Set-Item "env:$($matches[1])" $matches[2]
+        }
+        if ($matches[1] -eq 'PATH') {
+            $env:PATH = $matches[2] + ';' + $env:PATH
         }
     }
+
 }
 
 if (-not (Test-Path build)) { mkdir build }
