@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
 
   {
     String ICON_PATH = PATH;
-    ICON_PATH += "rose.png";
+    ICON_PATH += "rose_icon.png";
     std::wcout << ICON_PATH.c_str() << std::endl;
     ROSE_LOGO_SURFACE = IMG_Load(ICON_PATH.c_str());
     if (!ROSE_LOGO_SURFACE)
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
 
   const bool *keys = SDL_GetKeyboardState(nullptr);
 
-  SDL_SetHint(SDL_HINT_RENDER_VSYNC, "3");
+  SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
   SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL);
 
   IMGUI_CHECKVERSION();

@@ -75,21 +75,10 @@ target_compile_definitions(Core PRIVATE
     $<$<CONFIG:Debug>:_DEBUG>
     $<$<CONFIG:Release>:_NDEBUG>
     $<$<CONFIG:Editor>:_NDEBUG>
-    $<$<CONFIG:Editor>:ROSE_EDITOR>
 )
 
-target_compile_definitions(Editor PRIVATE
-    $<$<CONFIG:Editor>:_NDEBUG>
+target_compile_definitions(Core PUBLIC
     $<$<CONFIG:Editor>:ROSE_EDITOR>
+	PRIVATE $<$<CONFIG:Editor>:_NDEBUG>
 )
-
-target_compile_definitions(Editor PRIVATE
-    $<$<CONFIG:Editor>:ROSE_EDITOR>
-)
-
-set(CMAKE_CONFIGURATION_TYPES Editor "Editor")
-
-#target_compile_options(Editor PRIVATE
-#        $<$<NOT:$<CONFIG:Editor>>:-invalid-config-do-not-build-outside-editor>
-#)
 

@@ -1,19 +1,23 @@
-﻿$vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" `
-    -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
-    -property installationPath
+﻿if (-not (Get-Command cl.exe -ErrorAction SilentlyContinue)) {
+    $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" `
+		-latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+		-property installationPath
 
-$vcvars = Join-Path $vsPath 'VC\Auxiliary\Build\vcvars64.bat'
-cmd /c "`"$vcvars`" && set" | ForEach-Object {
-    if ($_ -match '^([^=]+)=(.*)$') {
-        if (-not (Get-Item "env:$($matches[1])" -ErrorAction SilentlyContinue)) {
-            Set-Item "env:$($matches[1])" $matches[2]
-        }
-        if ($matches[1] -eq 'PATH') {
-            $env:PATH = $matches[2] + ';' + $env:PATH
-        }
-    }
+	$vcvars = Join-Path $vsPath 'VC\Auxiliary\Build\vcvars64.bat'
+	cmd /c "`"$vcvars`" && set" | ForEach-Object {
+		if ($_ -match '^([^=]+)=(.*)$') {
+			if (-not (Get-Item "env:$($matches[1])" -ErrorAction SilentlyContinue)) {
+				Set-Item "env:$($matches[1])" $matches[2]
+			}
+			if ($matches[1] -eq 'PATH') {
+				$env:PATH = $matches[2] + ';' + $env:PATH
+			}
+		}
 
+	}
 }
+
+
 
 if (-not (Test-Path build)) { mkdir build }
 Set-Content -Path "build/reconfigure.ps1" -Value "cd ..`r.\configure.ps1"
