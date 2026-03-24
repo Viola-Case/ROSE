@@ -12,6 +12,10 @@
 
 #include <ROSE/Core/ROSE_preamble.h>
 namespace ROSE::math {
+  /*!
+   * @brief Complex number
+   * @tparam T - Underlying arithmetic type
+   */
   template <StdScalar T>
   struct Comp {
     union {
@@ -27,7 +31,11 @@ namespace ROSE::math {
     //static inline const Comp I{ 0, -1 };
 
 
-
+    /*!
+     * @defgroup Operators
+     * @param rhs - right-hand side complex number
+     * @{
+     */
     constexpr Comp &operator+=(const Comp &rhs) noexcept {
       Re += rhs.Re;
       Im += rhs.Im;
@@ -107,6 +115,7 @@ namespace ROSE::math {
       return (result /= rhs);
     }
 
+    /*!@}*/
 
 
   };
