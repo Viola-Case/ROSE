@@ -64,7 +64,9 @@ int main(int argc, char **argv) {
   SDL_Surface* ROSE_LOGO_SURFACE;
 
   {
-    String ICON_PATH = PATH;
+    String ICON_PATH;
+    ICON_PATH.reserve(128);
+    ICON_PATH = PATH;
     ICON_PATH += "rose_icon.png";
     std::wcout << ICON_PATH.c_str() << std::endl;
     ROSE_LOGO_SURFACE = IMG_Load(ICON_PATH.c_str());

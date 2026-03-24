@@ -64,10 +64,8 @@ namespace ROSE {
       if (str) copy(m_data, str, m_size);
       m_data[m_size] = CharT(0);
     }
-    BasicString(const BasicString &other) {
-      m_size = other.m_size;
-      m_capacity = other.m_size + 1;
-      m_data = allocate(m_size);
+    BasicString(const BasicString &other) : m_size(other.m_size), m_capacity(other.m_size+1) {
+      m_data = allocate(m_capacity);
       copy(m_data, other.m_data, m_size);
       m_data[m_size] = CharT{ 0 };
     }
@@ -85,6 +83,7 @@ namespace ROSE {
         BasicString tmp(lvalue);
         swap(tmp);
       }
+      return *this;
     }
 
 
