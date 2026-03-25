@@ -38,6 +38,7 @@ namespace ROSE {
     //}
 
   private:
+    WString name{u"Object"};
     TypedHashMap<UUID, UniquePtr<Behavior>> behaviors;
     Scene *const Parent{ nullptr };
 

@@ -57,6 +57,7 @@ namespace ROSE {
     using value_type = CharT;
 
     BasicString() noexcept : m_data(nullptr), m_size(0), m_capacity(0) {}
+
     BasicString(const CharT *str) {
       m_size = StrLen(str);
       m_capacity = m_size + 1;
@@ -138,6 +139,7 @@ namespace ROSE {
       m_data = newData;
       m_capacity = newCapacity;
     }
+
     void resize(size_t newSize) {
       if (newSize > m_capacity) reserve(newSize + 1);
       if (newSize > m_size)
