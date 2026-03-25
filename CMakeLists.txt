@@ -63,7 +63,7 @@ add_executable(Example2 "examples/Ex2/main.cpp")
 set_property(TARGET Example2 PROPERTY FOLDER "Examples")
 target_link_libraries(Example2 PRIVATE Core SDL3_ttf::SDL3_ttf SDL3_image::SDL3_image)
 
-file(GLOB_RECURSE ROSE_EDITOR_SOURCES "Engine/Editor/*.cpp" "Editor/*.c" "Editor/*.h")
+file(GLOB_RECURSE ROSE_EDITOR_SOURCES "Engine/Editor/*.cpp" "Engine/Editor/*.c" "Engine/Editor/*.h")
 add_executable(Editor ${ROSE_EDITOR_SOURCES})
 target_include_directories(Editor PUBLIC include/)
 set_property(TARGET Editor PROPERTY FOLDER "Engine")
@@ -77,8 +77,13 @@ target_compile_definitions(Core PRIVATE
     $<$<CONFIG:Editor>:_NDEBUG>
 )
 
-target_compile_definitions(Core PUBLIC
-    $<$<CONFIG:Editor>:ROSE_EDITOR>
+target_compile_definitions(Core
+    PUBLIC  $<$<CONFIG:Editor>:ROSE_EDITOR>
 	PRIVATE $<$<CONFIG:Editor>:_NDEBUG>
+)
+
+target_compile_definitions(Editor
+    PUBLIC  $<$<CONFIG:Editor>:ROSE_EDITOR>
+    PRIVATE $<$<CONFIG:Editor>:_NDEBUG>
 )
 
