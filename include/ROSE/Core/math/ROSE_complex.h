@@ -52,12 +52,7 @@ namespace ROSE::math {
     //static inline const Comp I{ 0, -1 };
 
 
-    /*!
-     * @defgroup Operators
-     * @param rhs - right-hand side complex number
-     * @addtogroup Operators
-     * @{
-     */
+
     constexpr Comp &operator+=(const Comp &rhs) noexcept {
       Re += rhs.Re;
       Im += rhs.Im;
@@ -136,8 +131,6 @@ namespace ROSE::math {
       Comp result(*this);
       return (result /= rhs);
     }
-
-    /*!@}*/
 
 
   };

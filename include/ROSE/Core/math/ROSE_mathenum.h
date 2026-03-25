@@ -33,6 +33,16 @@ namespace ROSE::math {
 		return (s == Sign::Positive) || (incZero && s == Sign::Zero);
 	}
 
+	constexpr bool IsNegative(const Sign s, bool incZero = false) noexcept {
+		return (s == Sign::Negative) || (incZero && s == Sign::Zero);
+	}
+
+	/*!
+	 * Behold, the most useless fucking function in any API in the universe.
+	 * Rendered obsolete by the comparison operator *_WHICH IT CALLS_*
+	 *
+	 *
+	 */
 	template<typename T>
 	constexpr bool KDelta(T a, T b) { return (a == b); }
 
@@ -40,7 +50,8 @@ namespace ROSE::math {
 		@brief  Returns the sign of the permutation of arguments (aka "Levi-Civita symbol")
 		@tparam Args - template parameter pack type
 		@param  args - template parameter pack, use `size_t`
-		@retval      -
+		@retval      - sign of the permutation
+		@note Why did I put this here? Stupid ass physics major
 	**/
 
 	template <typename... Args>

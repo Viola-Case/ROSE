@@ -5,6 +5,6 @@
 namespace ROSE::math {
   template<Scalar T, size_t Rows, size_t Cols>
   class Mat {
-    
+    static constexpr size_t size = Rows * Cols;
   };
 }

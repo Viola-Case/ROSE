@@ -15,6 +15,8 @@
 #include <ROSE/Core/math/ROSE_complex.h>
 #include <ROSE/Core/math/ROSE_vector.h>
 
+#include "ROSE/Core/ROSE_math.h"
+
 namespace ROSE::math {
   enum class EulerOrder {
     ZXY,
@@ -31,6 +33,10 @@ namespace ROSE::math {
     ZYZ
   };
 
+  /*!
+   *
+   * @tparam T - Underlying arithmetic type
+   */
   template<StdScalar T>
   struct Quat {
     union {
@@ -39,9 +45,11 @@ namespace ROSE::math {
       };
       T data[4];
     };
-    constexpr Quat() = default;
+    constexpr Quat() noexcept = default;
     constexpr Quat(T _w, T _x = T{}, T _y = T{}, T _z = T{}) noexcept : w(_w), x(_x), y(_y), z(_z) {}
     constexpr Quat(Comp<T> _c, T _y = T{}, T _z = T{}) noexcept : w(_c.Re), x(_c.Im), y(_y), z(_z) {}
+    constexpr Quat(const Quat &rhs) noexcept = default;
+    constexpr explicit Quat(Vec4<T> vec) : {}
 
     static constexpr Quat AxisAngle(T angle, T ax, T ay, T az) {
       T half = angle * T(0.5);

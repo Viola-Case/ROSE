@@ -14,6 +14,8 @@
 
 namespace ROSE::math {
 
+  //! @todo probably get rid of this
+
   template<typename Derived, Scalar T, size_t ...Dims>
   struct TensorBase {
     constexpr T &operator[](size_t i) {
