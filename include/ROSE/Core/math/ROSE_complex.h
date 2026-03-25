@@ -15,18 +15,39 @@ namespace ROSE::math {
   /*!
    * @brief Complex number
    * @tparam T - Underlying arithmetic type
+   * @
    */
   template <StdScalar T>
   struct Comp {
     union {
       struct {
+
         T Re, Im;
       };
       T data[2];
     };
+
+    /*!
+     * @brief Zero in the complex basis
+     */
     constexpr Comp() = default;
+
+    /*!
+     * @brief Real value in the complex basis
+     * @param re_ Real number
+     */
     constexpr Comp(T re_) : Re(re_), Im(T{}) {}
+    /*!
+     * @brief Complex number construction
+     * @param _re Real component
+     * @param _im Imaginary component
+     */
     constexpr Comp(T _re, T _im) : Re(_re), Im(_im) {}
+    /*!
+     * @brief Change of basis from \f$\mathbb{R}^2\f$ to \f$\mathbb{C}\f$
+     * @param vec Vector in \f$\mathbb{R}^2\f$ basis
+     */
+    constexpr explicit Comp(Vec2<T> vec) : Re(vec.x), Im(vec.y) {}
 
     //static inline const Comp I{ 0, -1 };
 
@@ -34,6 +55,7 @@ namespace ROSE::math {
     /*!
      * @defgroup Operators
      * @param rhs - right-hand side complex number
+     * @addtogroup Operators
      * @{
      */
     constexpr Comp &operator+=(const Comp &rhs) noexcept {
