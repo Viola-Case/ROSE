@@ -40,7 +40,7 @@ set_target_properties(Core PROPERTIES
 find_package(SDL3 REQUIRED)
 find_package(imgui REQUIRED)
 find_package(glad REQUIRED)
-find_package(fmt REQUIRED)
+#find_package(fmt REQUIRED)
 find_package(SDL3_ttf REQUIRED)
 find_package(SDL3_image REQUIRED)
 
@@ -52,7 +52,7 @@ target_link_libraries(Core
     PRIVATE SDL3::SDL3
     PRIVATE imgui::imgui
     PRIVATE glad::glad
-    PUBLIC  fmt::fmt
+    #PUBLIC  fmt::fmt
 )
 
 add_executable(Example1 "examples/Ex1/main.cpp")
@@ -61,7 +61,11 @@ target_link_libraries(Example1 PRIVATE Core SDL3_ttf::SDL3_ttf)
 
 add_executable(Example2 "examples/Ex2/main.cpp")
 set_property(TARGET Example2 PROPERTY FOLDER "Examples")
-target_link_libraries(Example2 PRIVATE Core SDL3_ttf::SDL3_ttf SDL3_image::SDL3_image)
+target_link_libraries(Example2 PRIVATE
+        Core
+        SDL3_ttf::SDL3_ttf
+        SDL3_image::SDL3_image
+)
 
 file(GLOB_RECURSE ROSE_EDITOR_SOURCES "Engine/Editor/*.cpp" "Engine/Editor/*.c" "Engine/Editor/*.h")
 add_executable(Editor ${ROSE_EDITOR_SOURCES})

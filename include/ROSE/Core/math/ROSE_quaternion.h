@@ -49,7 +49,7 @@ namespace ROSE::math {
     constexpr Quat(T _w, T _x = T{}, T _y = T{}, T _z = T{}) noexcept : w(_w), x(_x), y(_y), z(_z) {}
     constexpr Quat(Comp<T> _c, T _y = T{}, T _z = T{}) noexcept : w(_c.Re), x(_c.Im), y(_y), z(_z) {}
     constexpr Quat(const Quat &rhs) noexcept = default;
-    constexpr explicit Quat(Vec4<T> vec) : {}
+    constexpr explicit Quat(Vec4<T> vec) : w(vec.w), x(vec.x), y(vec.y), z(vec.z) {}
 
     static constexpr Quat AxisAngle(T angle, T ax, T ay, T az) {
       T half = angle * T(0.5);
@@ -62,7 +62,7 @@ namespace ROSE::math {
       };
     }
 
-    static constexpr Quat FromEuler(Vec<T, 3> v, EulerOrder order = EulerOrder::ZXY) {
+    static constexpr Quat FromEuler(Vec<T, 3> v, EulerOrder order = EulerOrder::XYZ) {
       Quat<T> qx = AxisAngle(v.x, T(1), T(0), T(0));
       Quat<T> qy = AxisAngle(v.y, T(0), T(1), T(0));
       Quat<T> qz = AxisAngle(v.z, T(0), T(0), T(1));

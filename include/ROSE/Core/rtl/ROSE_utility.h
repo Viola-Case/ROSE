@@ -12,6 +12,9 @@
 
 #include <utility>
 #include <ROSE/Core/preamble/ROSE_typetraits.h>
+#include <ROSE/Core/preamble/ROSE_macros.h>
+
+#include "ROSE/Core/ROSE_input.h"
 
 namespace ROSE {
 
@@ -36,6 +39,12 @@ namespace ROSE {
     A = Move(B);
     B = Move(temp);
   }
+
+  template<typename T>
+  constexpr T Min(T a, T b) { return a < b ? a : b; }
+
+  template<typename T>
+  constexpr T Max(T a, T b) { return a > b ? a : b; }
 
   template<typename T, typename U = T>
   constexpr T Exchange(T &obj, U &&newval) {

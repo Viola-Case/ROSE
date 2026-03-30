@@ -11,26 +11,31 @@
 #pragma once
 
 #include <ROSE/Core/ROSE_preamble.h>
-#pragma warning(push)
-#pragma warning(disable: 4828)
-#include <fmt/core.h>
-#pragma warning(pop)
-//template<>
-//struct fmt::formatter<ROSE::String> {
-//
-//};
+
 
 namespace ROSE {
   template<typename ...Args>
   String Format(const StringView &fmt_str, Args &&...args) {
-    auto result = fmt::format(fmt::runtime(fmt_str.c_str()), Forward<Args>(args)...);
+    auto result = std::vformat(fmt_str.c_str(), std::make_format_args(args...));
     return String(result.c_str());
   }
 
   template<typename ...Args>
   String Format(const char *fmt_str, Args &&...args) {
-    auto result = fmt::format(fmt::runtime(fmt_str), Forward<Args>(args)...);
+    auto result = std::vformat(fmt_str, std::make_format_args(args...));
     return String(result.c_str());
+  }
+
+  template<typename ...Args>
+  WString Format(const WStringView &fmt_str, Args &&...args) {
+    auto result = std::vformat(fmt_str, std::make_format_args(args...));
+    return WString(result.c_str());
+  }
+
+  template<typename ...Args>
+  WString Format(const char16_t *fmt_str, Args &&...args) {
+    auto result = std::vformat(fmt_str, std::make_format_args(args...));
+    return WString(result.c_str());
   }
 
 }

@@ -18,16 +18,14 @@ namespace ROSE {
 
   class Application;
 
-  static class ApplicationManager {
+  class ApplicationManager {
   public:
-    ApplicationManager();
-    ~ApplicationManager();
-    void Close(AppID);
-    void CloseAll();
-    Application &GetApplication(AppID idx = 0);
-    void LinkApplication(Application &app);
+    static void Close(AppID);
+    static void CloseAll();
+    static Application &GetApplication(AppID idx = 0);
+    static void LinkApplication(Application &app);
   private:
-
+    static TypedHashMap<AppID, Application *> m_applications;
   };
 
   class Application {
@@ -39,7 +37,9 @@ namespace ROSE {
     int Init();
     void Run();
     void CleanUp();
-    
+
+    void *GetWindow() const noexcept;
+
     WString m_name;
     ApplicationManager *m_parent;
 

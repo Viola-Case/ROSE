@@ -27,6 +27,8 @@ namespace ROSE {
   using math::Vec2d;
   using math::Vec3f;
   using math::Vec3d;
+  using math::Vec4f;
+  using math::Vec4d;
   //using math::Mat;
   
 }

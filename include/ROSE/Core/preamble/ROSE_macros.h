@@ -92,9 +92,8 @@
 #pragma region logic
 
 namespace ROSE {
-  template<typename T>
-  constexpr void SWAP(T &a, T &b) { T &c = a; a = b; b = c; }
-  
+
+
 }
 
 #pragma endregion
