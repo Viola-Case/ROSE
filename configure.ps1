@@ -17,7 +17,13 @@
 	}
 }
 
+$err_result = & doxygen ./api.Doxyfile 2>&1
 
+if ($LASTEXITCODE -ne 0) { 
+    Write-Error "API docs generation failed: $err_result" 
+} else {
+    Write-Output "API docs generated"
+}
 
 if (-not (Test-Path build)) { mkdir build }
 Set-Content -Path "build/reconfigure.ps1" -Value "cd ..`r.\configure.ps1"
