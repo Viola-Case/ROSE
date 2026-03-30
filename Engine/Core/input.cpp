@@ -21,7 +21,9 @@ namespace ROSE {
 
     for (size_t i = 0; sticks[i] != 0; ++i) {
       auto j = sticks[i];
-      if (SDL_IsGamepad(j)) gamepad = SDL_OpenGamepad(j);
+      if (SDL_IsGamepad(j)) {
+        gamepad = SDL_OpenGamepad(j); break;
+      }
     }
 
     SDL_free(sticks);
@@ -91,7 +93,7 @@ namespace ROSE {
 
   String InputSystem::GetGamepadName() noexcept {
     static InputSystem &inputSystem = GetInstance();
-    return SDL_GetGamepadName(static_cast<SDL_Gamepad *>(inputSystem.gamepad));
+    return String(SDL_GetGamepadName(static_cast<SDL_Gamepad *>(inputSystem.gamepad)));
   }
 
 #pragma region static KeyCodes

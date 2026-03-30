@@ -13,6 +13,7 @@
 #include <ROSE/Core/ROSE_preamble.h>
 //#include <SDL3/SDL_scancode.h>
 #include <ROSE/Core/ROSE_math.h>
+#include <ROSE/Core/rtl/ROSE_string.h>
 
 namespace ROSE {
   /**
