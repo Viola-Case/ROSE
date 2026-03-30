@@ -14,8 +14,6 @@
 #include <ROSE/Core/preamble/ROSE_typetraits.h>
 #include <ROSE/Core/preamble/ROSE_macros.h>
 
-#include "ROSE/Core/ROSE_input.h"
-
 namespace ROSE {
 
   void MemCpy(void *_Dst, const void *_Src, size_t size);
