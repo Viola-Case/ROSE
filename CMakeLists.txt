@@ -55,6 +55,15 @@ target_link_libraries(Core
     #PUBLIC  fmt::fmt
 )
 
+if (CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
+    target_compile_options(Core PRIVATE -mavx2)
+endif()
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    target_compile_options(Core PRIVATE /arch:AVX2)
+endif()
+
+
 add_executable(Example1 "examples/Ex1/main.cpp")
 set_property(TARGET Example1 PROPERTY FOLDER "Examples")
 target_link_libraries(Example1 PRIVATE Core SDL3_ttf::SDL3_ttf)
