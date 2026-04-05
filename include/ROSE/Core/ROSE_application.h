@@ -33,14 +33,14 @@ namespace ROSE {
   //public:
   private:
     Application();
-    Application(const wchar_t *);
+    Application(const char *);
     int Init();
     void Run();
     void CleanUp();
 
     void *GetWindow() const noexcept;
 
-    WString m_name;
+    String m_name;
     ApplicationManager *m_parent;
 
     AppID m_id;

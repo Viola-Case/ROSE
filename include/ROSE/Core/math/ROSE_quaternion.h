@@ -19,22 +19,16 @@
 
 namespace ROSE::math {
   enum class EulerOrder {
-    ZXY,
-    ZXZ,
     XYZ,
     XZY,
     YXZ,
     YZX,
-    ZYX,
-    XYX,
-    XZX,
-    YXY,
-    YZY,
-    ZYZ
+    ZXY,
+    ZYX
   };
 
   /*!
-   *
+   * @brief Quaternion
    * @tparam T - Underlying arithmetic type
    */
   template<StdScalar T>
@@ -45,7 +39,7 @@ namespace ROSE::math {
       };
       T data[4];
     };
-    constexpr Quat() noexcept = default;
+    constexpr Quat() noexcept : w(1), x(0), y(0), z(0) {}
     constexpr Quat(T _w, T _x = T{}, T _y = T{}, T _z = T{}) noexcept : w(_w), x(_x), y(_y), z(_z) {}
     constexpr Quat(Comp<T> _c, T _y = T{}, T _z = T{}) noexcept : w(_c.Re), x(_c.Im), y(_y), z(_z) {}
     constexpr Quat(const Quat &rhs) noexcept = default;
@@ -75,16 +69,7 @@ namespace ROSE::math {
       case EulerOrder::YZX: return qy * qz * qx;
 
       case EulerOrder::ZXY: return qz * qx * qy;
-      case EulerOrder::ZYX: return qz * qy * qz; // careful — typo bait
-
-      case EulerOrder::XYX: return qx * qy * qx;
-      case EulerOrder::XZX: return qx * qz * qx;
-
-      case EulerOrder::YXY: return qy * qx * qy;
-      case EulerOrder::YZY: return qy * qz * qy;
-
-      case EulerOrder::ZXZ: return qz * qx * qz;
-      case EulerOrder::ZYZ: return qz * qy * qz;
+      case EulerOrder::ZYX: return qz * qy * qx;
       }
 
       return Quat<T>{1, 0, 0, 0}; // fallback identity

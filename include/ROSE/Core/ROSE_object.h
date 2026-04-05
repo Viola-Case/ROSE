@@ -11,6 +11,7 @@
 #pragma once
 
 #include <ROSE/Core/ROSE_preamble.h>
+#include <ROSE/Core/ROSE_transform.h>
 
 namespace ROSE {
 
@@ -27,6 +28,7 @@ namespace ROSE {
   public:
     Object();
 
+
     Scene *const GetParentScene() const noexcept;
     
     //template<BehaviorType T>
@@ -38,9 +40,10 @@ namespace ROSE {
     //}
 
   private:
-    WString name{u"Object"};
-    TypedHashMap<UUID, UniquePtr<Behavior>> behaviors;
-    Scene *const Parent{ nullptr };
-
+    String m_name{"Object"};
+    TypedHashMap<UUID, UniquePtr<Behavior>> m_behaviors;
+    Scene *const m_scene{ nullptr };
+    Object *m_parent{ nullptr };
+    Transform m_transform{0,1};
   };
 }

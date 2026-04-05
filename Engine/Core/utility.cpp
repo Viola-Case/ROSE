@@ -19,7 +19,7 @@ namespace ROSE {
     }
     return hash;
   }
-  uint64_t FNV1A(const char8_t *str) {
+  uint64_t FNV1A(const char *str) {
     uint64_t hash = math::FNVOFFSET64;
     auto len = StrLen(str);
     for (int i = 0; i < len; ++i) {
@@ -28,18 +28,6 @@ namespace ROSE {
     }
     return hash;
   }
-  uint64_t FNV1A(const char16_t *str) {
-    uint64_t hash = math::FNVOFFSET64;
-    auto len = StrLen(str);
-    for (int i = 0; i < len; ++i) {
-      hash ^= (str[i] & 0xFF);
-      hash *= math::FNVPRIME64;
-      hash ^= (str[i] >> 8) & 0xFF;
-      hash *= math::FNVPRIME64;
-    }
-    return hash;
-  }
 
-  uint64_t FNV1A(const String &str) { return FNV1A(str.c_str()); }
-  uint64_t FNV1A(const WString &str) { return FNV1A(str.c_str()); }
+  uint64_t FNV1A(const StringView &str) { return FNV1A(str.c_str()); }
 }

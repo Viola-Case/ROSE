@@ -41,14 +41,14 @@ namespace ROSE {
     size_t m_size;
     size_t m_capacity;
 
-    static CharT *allocate(size_t count) {
+    static CharT *allocate(const size_t count) {
       return static_cast<CharT *>(::operator new(count * sizeof(CharT)));
     }
     static void deallocate(CharT *ptr) noexcept {
       ::operator delete(ptr);
     }
     // Copy `count` characters from `src` into `dst` (no null terminator added)
-    static void copy(CharT *dst, const CharT *src, size_t count) noexcept {
+    static void copy(CharT *dst, const CharT *src, const size_t count) noexcept {
       for (size_t i = 0; i < count; ++i)
         dst[i] = src[i];
     }
@@ -230,14 +230,13 @@ namespace ROSE {
   }
 
   using String = BasicString<char>;
-  using WString = BasicString<char16_t>;
+  //using WString = BasicString<char16_t>;
   //using UString = BasicString<char32_t>;
 
   using StringView = BasicStringView<char>;
-  using WStringView = BasicStringView<char16_t>;
+  //using WStringView = BasicStringView<char16_t>;
   //using UStringView = BasicStringView<char32_t>;
 
 
-  uint64_t FNV1A(const String &str);
-  uint64_t FNV1A(const WString &str);
+  uint64_t FNV1A(const StringView &str);
 }

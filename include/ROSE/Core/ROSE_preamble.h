@@ -15,6 +15,10 @@
 #include <type_traits>
 #include <utility>
 
+#if defined (_MSC_VER)
+#include <intrin.h>
+#endif
+
 #include <ROSE/Core/preamble/ROSE_stdlib.h>
 #include <ROSE/Core/preamble/ROSE_macros.h>
 #include <ROSE/Core/preamble/ROSE_rtl.h>

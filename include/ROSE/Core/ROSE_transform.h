@@ -17,7 +17,7 @@ namespace ROSE {
   /*!
    * Transform struct for 6dof position/rotation in 3D space
    */
-  struct Transform3D {
+  struct Transform {
     Vec3d position;
     Quatd rotation;
   };
