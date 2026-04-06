@@ -10,15 +10,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Editor" CACHE STRING "" FORCE)
 
@@ -64,13 +57,13 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 endif()
 
 
-add_executable(Example1 "examples/Ex1/main.cpp")
-set_property(TARGET Example1 PROPERTY FOLDER "Examples")
-target_link_libraries(Example1 PRIVATE Core SDL3_ttf::SDL3_ttf)
+# add_executable(Example1 "examples/Ex1/main.cpp")
+# set_property(TARGET Example1 PROPERTY FOLDER "Examples")
+# target_link_libraries(Example1 PRIVATE Core SDL3_ttf::SDL3_ttf)
 
-add_executable(Example2 "examples/Ex2/main.cpp")
-set_property(TARGET Example2 PROPERTY FOLDER "Examples")
-target_link_libraries(Example2 PRIVATE
+add_executable(ControllerTest "examples/ControllerTest/main.cpp")
+set_property(TARGET ControllerTest PROPERTY FOLDER "Examples")
+target_link_libraries(ControllerTest PRIVATE
         Core
         SDL3_ttf::SDL3_ttf
         SDL3_image::SDL3_image

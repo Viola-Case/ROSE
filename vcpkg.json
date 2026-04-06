@@ -37,6 +37,17 @@
       ]
     },
     {
+      "name": "sdl3-mixer",
+      "features": [
+        "libflac",
+        "libvorbis",
+        "libxmp",
+        "mpg123",
+        "opusfile",
+        "wavpack"
+      ]
+    },
+    {
       "name": "imgui",
       "features": [
         "sdl3-binding", "opengl3-binding", "vulkan-binding", "sdl3-renderer-binding"
@@ -44,10 +55,20 @@
     },
     {
       "name": "glad",
-      "features": [ "gl-api-45" ]
+      "features": [
+        "gl-api-45"
+      ]
     },
     {
-      "name": "fmt"
+      "name": "spirv-cross"
+    },
+    {
+      "name": "glslang",
+      "features": [
+        "opt",
+        "tools"
+      ]
     }
+
   ]
 }
