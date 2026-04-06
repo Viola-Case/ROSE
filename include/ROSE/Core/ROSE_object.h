@@ -29,12 +29,16 @@ namespace ROSE {
     Object();
 
 
-    Scene *const GetParentScene() const noexcept;
-    
+    Scene *const GetScene() const noexcept;
+
+    Object *const GetParent() const noexcept;
+
+    TypedHashMap<UUID, UniquePtr<Behavior>> &GetBehaviors() const noexcept;
+
     //template<BehaviorType T>
     //T *GetBehaviorOfType() {
-    //  auto it = behaviors.find(TypeIdOf<T>());
-    //  if (it != behaviors.end())
+    //  auto it = m_behaviors.find(TypeIdOf<T>());
+    //  if (it != m_behaviors.end())
     //    return static_cast<T *>(it->second.get());
     //  return nullptr;
     //}

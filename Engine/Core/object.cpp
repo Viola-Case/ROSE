@@ -13,5 +13,5 @@
 #include <ROSE/ROSE.h>
 
 namespace ROSE {
-  Scene *const Object::GetParentScene() const noexcept { return Parent; }
+  Scene *const Object::GetParentScene() const noexcept { return m_scene; }
 }

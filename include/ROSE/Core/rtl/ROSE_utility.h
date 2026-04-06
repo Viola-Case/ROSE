@@ -16,8 +16,6 @@
 
 namespace ROSE {
 
-  void MemCpy(void *_Dst, const void *_Src, size_t size);
-
   template<typename T>
   constexpr std::remove_reference_t<T> &&Move(T &t) noexcept { return static_cast<std::remove_reference_t<T> &&>(t); }
 
@@ -49,6 +47,13 @@ namespace ROSE {
     T old = Move(obj);
     obj = Forward<U>(newval);
     return old;
+  }
+
+  void MemCpy(void *_Dst, const void *_Src, size_t size);
+
+  template<typename T, typename U>
+  constexpr void SmartMemCpy(T *_Dst, U *_Src, size_t count = 1) {
+    MemCpy(_Dst, _Src, Min(sizeof(T), sizeof(U)));
   }
 
 #pragma region Byte swapping
