@@ -13,5 +13,7 @@
 #include <ROSE/ROSE.h>
 
 namespace ROSE {
-  Scene *const Object::GetParentScene() const noexcept { return m_scene; }
+  Scene *const Object::GetScene() const noexcept { return m_scene; }
+  Object *const Object::GetParent() const noexcept { return m_parent; }
+  TypedHashMap<UUID, UniquePtr<Behavior>> &Object::GetBehaviors() noexcept { return m_behaviors; }
 }

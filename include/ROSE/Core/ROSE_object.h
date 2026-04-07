@@ -33,7 +33,7 @@ namespace ROSE {
 
     Object *const GetParent() const noexcept;
 
-    TypedHashMap<UUID, UniquePtr<Behavior>> &GetBehaviors() const noexcept;
+    TypedHashMap<UUID, UniquePtr<Behavior>> &GetBehaviors() noexcept;
 
     //template<BehaviorType T>
     //T *GetBehaviorOfType() {

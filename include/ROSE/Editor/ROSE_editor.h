@@ -3,7 +3,7 @@
 #error ROSE EDITOR MUST BE BUILT WITH EDITOR CONFIG
 #endif
 
-
+#include <ROSE/Editor/ROSE_metadata.h>
 
 namespace ROSE::Editor {
 

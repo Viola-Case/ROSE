@@ -34,6 +34,7 @@ find_package(SDL3 REQUIRED)
 find_package(imgui REQUIRED)
 find_package(glad REQUIRED)
 #find_package(fmt REQUIRED)
+find_package(SDL3_mixer REQUIRED)
 find_package(SDL3_ttf REQUIRED)
 find_package(SDL3_image REQUIRED)
 
@@ -43,6 +44,9 @@ set_property(TARGET ROSE_Core PROPERTY FOLDER "Engine")
 
 target_link_libraries(ROSE_Core
     PRIVATE SDL3::SDL3
+    PRIVATE SDL3_image::SDL3_image
+    PRIVATE SDL3_mixer::SDL3_mixer
+    PRIVATE SDL3_ttf::SDL3_ttf
     PRIVATE imgui::imgui
     PRIVATE glad::glad
     #PUBLIC  fmt::fmt
@@ -76,12 +80,12 @@ target_link_libraries(Game1 PRIVATE
 )
 
 file(GLOB_RECURSE ROSE_EDITOR_SOURCES "Engine/Editor/*.cpp" "Engine/Editor/*.c" "Engine/Editor/*.h")
-add_executable(Editor ${ROSE_EDITOR_SOURCES})
-target_include_directories(Editor PUBLIC include/)
-set_property(TARGET Editor PROPERTY FOLDER "Engine")
+add_executable(ROSE_Editor ${ROSE_EDITOR_SOURCES})
+target_include_directories(ROSE_Editor PUBLIC include/)
+set_property(TARGET ROSE_Editor PROPERTY FOLDER "Engine")
 
 add_custom_target(ENGINE_BUILD)
-add_dependencies(ENGINE_BUILD ROSE_Core Editor)
+add_dependencies(ENGINE_BUILD ROSE_Core ROSE_Editor)
 
 target_compile_definitions(ROSE_Core PRIVATE
     $<$<CONFIG:Debug>:_DEBUG>
@@ -94,8 +98,12 @@ target_compile_definitions(ROSE_Core
 	PRIVATE $<$<CONFIG:Editor>:_NDEBUG>
 )
 
-target_compile_definitions(Editor
+target_compile_definitions(ROSE_Editor
     PUBLIC  $<$<CONFIG:Editor>:ROSE_EDITOR>
     PRIVATE $<$<CONFIG:Editor>:_NDEBUG>
 )
 
+target_link_libraries(ROSE_Editor
+        PUBLIC ROSE_Core
+        PRIVATE SDL3::SDL3
+)
