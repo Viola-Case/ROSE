@@ -17,9 +17,6 @@ namespace ROSE {
 
   void PrintF(const StringView &fmt_str, const std::format_args args);
   void PrintF(const char *fmt_str, const std::format_args args);
-  //void PrintF(const WStringView fmt_str, const std::wformat_args args);
-  //void PrintF(const char16_t *fmt_str, const std::wformat_args args);
-
 
   template<typename ...Args>
   String Format(const StringView &fmt_str, Args &&...args) {
@@ -33,34 +30,14 @@ namespace ROSE {
     return String(result.c_str());
   }
 
-  //template<typename ...Args>
-  //WString Format(const WStringView &fmt_str, Args &&...args) {
-  //  auto result = std::vformat(fmt_str, std::make_wformat_args(args...));
-  //  return WString(result.c_str());
-  //}
-
-  //template<typename ...Args>
-  //WString Format(const char16_t *fmt_str, Args &&...args) {
-  //  auto result = std::vformat(fmt_str, std::make_wformat_args(args...));
-  //  return WString(result.c_str());
-  //}
-
   template<typename ...Args>
   void PrintF(const StringView fmt_str, Args &&...args) {
-    PrintF(fmt_str, std::make_format_args(args...));
+    PrintF(fmt_str, std::format_args(std::make_format_args(args...)));
   }
   template<typename ...Args>
   void PrintF(const char *fmt_str, Args &&...args) {
-    PrintF(fmt_str, std::make_format_args(args...));
+    PrintF(fmt_str, std::format_args(std::make_format_args(args...)));
   }
-  //template<typename ...Args>
-  //void PrintF(const WStringView fmt_str, Args &&...args) {
-  //  PrintF(fmt_str, std::make_wformat_args(args...));
-  //}
-  //template<typename ...Args>
-  //void PrintF(const char16_t *fmt_str, Args &&...args) {
-  //  PrintF(fmt_str, std::make_wformat_args(args...));
-  //}
 
 
 }

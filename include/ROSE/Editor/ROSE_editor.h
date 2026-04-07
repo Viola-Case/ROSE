@@ -4,16 +4,5 @@
 #endif
 
 #include <ROSE/Editor/ROSE_metadata.h>
+#include <ROSE/Editor/ROSE_editorapplication.h>
 
-namespace ROSE::Editor {
-
-
-  class EditorApplication {
-    
-    void Run();
-    void CleanUp();
-
-    void GetWindow();
-
-  };
-}

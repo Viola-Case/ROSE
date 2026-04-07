@@ -10,6 +10,8 @@
 **/
 #pragma once
 
+#include <cstdint>
+
 namespace ROSE::Editor {
   struct GameMetaData {
     const char *c_compiler;
