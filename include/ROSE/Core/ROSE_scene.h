@@ -9,11 +9,13 @@
 
 **/
 #pragma once
-#include <ROSE/Core/ROSE_application.h>
 #include <ROSE/Core/ROSE_object.h>
+
+//class Application;
 
 namespace ROSE {
   class Scene {
+    friend class Application;
     TypedHashMap<UUID, UniquePtr<Object>> m_objects{};
 
     Application *m_application{nullptr};

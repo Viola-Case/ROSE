@@ -20,7 +20,8 @@ if(MSVC)
 endif()
 
 file(GLOB_RECURSE ROSE_CORE_SOURCES "Engine/Core/*.cpp" "Core/*.c" "Core/*.h")
-add_library(ROSE_Core STATIC ${ROSE_CORE_SOURCES})
+add_library(ROSE_Core STATIC ${ROSE_CORE_SOURCES}
+        Engine/Core/behavior.cpp)
 
 set_target_properties(ROSE_Core PROPERTIES
     DEBUG_POSTFIX "d"
@@ -65,7 +66,8 @@ endif()
 # set_property(TARGET Example1 PROPERTY FOLDER "Examples")
 # target_link_libraries(Example1 PRIVATE ROSE_Core SDL3_ttf::SDL3_ttf)
 
-add_executable(ControllerTest "examples/ControllerTest/main.cpp")
+add_executable(ControllerTest "examples/ControllerTest/main.cpp"
+)
 set_property(TARGET ControllerTest PROPERTY FOLDER "Examples")
 target_link_libraries(ControllerTest PRIVATE
         ROSE_Core

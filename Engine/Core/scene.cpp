@@ -13,6 +13,6 @@
 #include <ROSE/ROSE.h>
 
 namespace ROSE {
-  Application &Application::GetApplication() const noexcept;
+  Application &Scene::GetApplication() const noexcept {return *m_application;}
 
 }

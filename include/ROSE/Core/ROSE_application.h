@@ -12,6 +12,7 @@
 
 #include <ROSE/Core/ROSE_preamble.h>
 #include <ROSE/Core/ROSE_input.h>
+#include <ROSE/Core/ROSE_scene.h>
 
 namespace ROSE {
   using AppID = size_t;

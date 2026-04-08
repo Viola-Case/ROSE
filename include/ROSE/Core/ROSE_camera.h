@@ -10,10 +10,13 @@
 **/
 
 #pragma once
-#include "ROSE_behavior.h"
+#include <ROSE/Core/ROSE_behavior.h>
+#include <ROSE/Core/ROSE_math.h>
+
 
 namespace ROSE {
   class Camera : public Behavior {
+    math::Vec2<int16_t> m_AspectRatio;
     [[bounds({0,inf})]]
     float m_FocalLength{30}; //!< millimeters
     bool m_Orthographic{false};
