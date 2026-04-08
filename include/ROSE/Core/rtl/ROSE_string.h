@@ -10,7 +10,7 @@
 **/
 #pragma once
 
-#include <ROSE/Core/preamble/ROSE_typetraits.h>
+#include <ROSE/Core/ROSE_typetraits.h>
 #include <ROSE/Core/rtl/ROSE_list.h>
 
 namespace ROSE {

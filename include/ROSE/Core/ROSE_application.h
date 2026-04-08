@@ -16,6 +16,18 @@
 namespace ROSE {
   using AppID = size_t;
 
+  using ApplicationFlags = uint64_t;
+  constexpr ApplicationFlags APPLICATION_HEADLESS     = 1 << 0;
+  constexpr ApplicationFlags APPLICATION_NO_RENDERER  = 1 << 1;
+  constexpr ApplicationFlags APPLICATION_SERVER       = 1 << 2;
+  constexpr ApplicationFlags APPLICATION_LIGHTWEIGHT  = 1 << 4;
+  constexpr ApplicationFlags APPLICATION_SOFTWARE_RENDERER = 1 << 5;
+
+  //constexpr ApplicationFlags AAA_GAME = APPLICATION_DIRECTX
+
+
+
+
   class Application;
 
   class ApplicationManager {
@@ -30,21 +42,34 @@ namespace ROSE {
 
   class Application {
     friend class ApplicationManager;
-  //public:
-  private:
+  public:
     Application();
-    Application(const char *);
+    Application(const char *_title);
+    Application(const char *_title, ApplicationFlags);
+    ~Application();
     int Init();
     void Run();
+    void Quit() noexcept;
     void CleanUp();
+
+    const char *GetTitle() const noexcept;
 
     void *GetWindow() const noexcept;
 
-    String m_name;
-    ApplicationManager *m_parent;
+  private:
+    String m_title{"game"};
+    ApplicationManager *m_parent{nullptr};
 
-    AppID m_id;
+    List<Scene> m_scenes{};
 
-    bool m_ShouldClose;
+    AppID m_id{0};
+
+    void *m_window{nullptr};
+
+    ApplicationFlags m_flags{0};
+
+    void *m_renderer{nullptr};
+
+    bool m_shouldClose{false};
   };
 }

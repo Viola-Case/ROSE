@@ -10,7 +10,7 @@
 **/
 #pragma once
 
-#include <ROSE/Core/preamble/ROSE_stdlib.h>
+#include <ROSE/Core/ROSE_stdlib.h>
 
 #include <ROSE/Core/math/ROSE_complex.h>
 #include <ROSE/Core/math/ROSE_vector.h>

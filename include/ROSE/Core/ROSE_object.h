@@ -29,9 +29,9 @@ namespace ROSE {
     Object();
 
 
-    Scene *const GetScene() const noexcept;
+    Scene &GetScene() const noexcept;
 
-    Object *const GetParent() const noexcept;
+    Object &GetParent() const noexcept;
 
     TypedHashMap<UUID, UniquePtr<Behavior>> &GetBehaviors() noexcept;
 

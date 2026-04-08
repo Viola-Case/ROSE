@@ -10,7 +10,7 @@
 **/
 #pragma once
 
-#include <ROSE/Core/preamble/ROSE_typetraits.h>
+#include <ROSE/Core/ROSE_typetraits.h>
 
 namespace ROSE::math {
   template<StdScalar T>

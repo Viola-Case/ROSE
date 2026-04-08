@@ -19,10 +19,10 @@
 #include <intrin.h>
 #endif
 
-#include <ROSE/Core/preamble/ROSE_stdlib.h>
-#include <ROSE/Core/preamble/ROSE_macros.h>
-#include <ROSE/Core/preamble/ROSE_rtl.h>
-#include <ROSE/Core/preamble/ROSE_typetraits.h>
-#include <ROSE/Core/preamble/ROSE_uuid.h>
+#include <ROSE/Core/ROSE_stdlib.h>
+#include <ROSE/Core/ROSE_macros.h>
+#include <ROSE/Core/ROSE_rtl.h>
+#include <ROSE/Core/ROSE_typetraits.h>
+#include <ROSE/Core/ROSE_uuid.h>
 
 namespace rose = ROSE;

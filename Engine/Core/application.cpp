@@ -13,6 +13,14 @@
 #include <SDL3/SDL.h>
 
 namespace ROSE {
+  Application::Application(const char *_title, ApplicationFlags flags): m_title(_title), m_flags(flags) {
+
+  }
+
+  Application::Application(const char *_title) : Application(_title, APPLICATION_LIGHTWEIGHT) {}
+
+  Application::Application() : Application("Game Title") {}
+
   int Application::Init() {
     if (ROSE_VERSION != ROSE::GetVersion()) {
       ROSE_LOG_FATAL("ROSE API version and linked version mismatch!");
@@ -27,11 +35,28 @@ namespace ROSE {
       return -3;
     }
     InputSystem::GetInstance().Init();
+
+
   }
 
   void Application::Run() {
-    while (true) {
-
+    while (!m_shouldClose) {
+      SDL_Event e;
+      while (SDL_PollEvent(&e)) {
+        if (e.type == SDL_EVENT_QUIT) m_shouldClose = true;
+        
+      }
     }
+  }
+
+  void Application::Quit() noexcept {
+    m_shouldClose = true;
+  }
+
+  Application::~Application() {
+    if (!SDL_WasInit(SDL_INIT_VIDEO)) {
+      return;
+    }
+    SDL_Quit();
   }
 }

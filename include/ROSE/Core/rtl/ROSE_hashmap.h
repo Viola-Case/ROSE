@@ -11,7 +11,7 @@
 #pragma once
 
 #include <ROSE/Core/rtl/ROSE_buffer.h>
-#include <ROSE/Core/preamble/ROSE_stdlib.h>
+#include <ROSE/Core/ROSE_stdlib.h>
 #include <ROSE/Core/rtl/ROSE_utility.h>
 
 namespace ROSE {

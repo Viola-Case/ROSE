@@ -9,4 +9,16 @@
 
 **/
 #pragma once
+#include <ROSE/Core/ROSE_application.h>
+#include <ROSE/Core/ROSE_object.h>
+
+namespace ROSE {
+  class Scene {
+    TypedHashMap<UUID, UniquePtr<Object>> m_objects{};
+
+    Application *m_application{nullptr};
+  public:
+    Application &GetApplication() const noexcept;
+  };
+}
 

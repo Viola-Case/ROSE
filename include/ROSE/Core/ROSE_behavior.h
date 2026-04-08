@@ -12,9 +12,16 @@
 
 namespace ROSE {
   class Behavior {
+    friend class Object;
+  protected:
     virtual void OnStart() = 0;
     virtual void FrameUpdate() = 0;
     virtual void FixedUpdate() = 0;
+    void SetObject() const noexcept;
+  public:
+    Scene &GetScene() noexcept;
+    Object &GetObject() noexcept;
+
   };
 
   using Behaviour = Behavior;
