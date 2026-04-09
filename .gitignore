@@ -484,3 +484,4 @@ imgui.ini
 CMakeSettings.json
 
 .idea/
+.clang-format
