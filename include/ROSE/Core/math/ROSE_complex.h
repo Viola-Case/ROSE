@@ -10,7 +10,8 @@
 **/
 #pragma once
 
-#include <ROSE/Core/ROSE_preamble.h>
+#include <ROSE/Core/ROSE_typetraits.h>
+
 namespace ROSE::math {
   /*!
    * @brief Complex number

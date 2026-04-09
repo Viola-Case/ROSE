@@ -10,8 +10,9 @@
 **/
 #pragma once
 
-#include <ROSE/Core/ROSE_preamble.h>
-#include <ROSE/Core/ROSE_input.h>
+#include <cstdlib>
+#include <cstdint>
+#include <ROSE/Core/ROSE_rtl.h>
 #include <ROSE/Core/ROSE_scene.h>
 
 namespace ROSE {

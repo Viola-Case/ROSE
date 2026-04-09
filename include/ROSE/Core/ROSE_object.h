@@ -10,7 +10,9 @@
 **/
 #pragma once
 
-#include <ROSE/Core/ROSE_preamble.h>
+#include <utility>
+#include <ROSE/Core/ROSE_rtl.h>
+#include <ROSE/Core/ROSE_uuid.h>
 #include <ROSE/Core/ROSE_transform.h>
 
 namespace ROSE {

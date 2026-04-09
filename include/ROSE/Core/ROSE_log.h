@@ -10,7 +10,7 @@
 **/
 #pragma once
 
-#include <ROSE/Core/ROSE_preamble.h>
+#include <cstdint>
 
 // todo figure out how this will actually work
 

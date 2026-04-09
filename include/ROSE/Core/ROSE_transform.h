@@ -10,7 +10,6 @@
 **/
 #pragma once
 
-#include <ROSE/Core/ROSE_preamble.h>
 #include <ROSE/Core/ROSE_math.h>
 
 namespace ROSE {

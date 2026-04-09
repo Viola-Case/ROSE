@@ -10,7 +10,9 @@
 **/
 #pragma once
 
-#include <ROSE/Core/ROSE_preamble.h>
+#include <cstdlib>
+#include <cstdint>
+#include <type_traits>
 
 namespace ROSE::math {
 	/**

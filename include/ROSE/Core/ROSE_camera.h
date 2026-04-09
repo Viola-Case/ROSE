@@ -20,5 +20,7 @@ namespace ROSE {
     [[bounds({0,inf})]]
     float m_FocalLength{30}; //!< millimeters
     bool m_Orthographic{false};
+  public:
+
   };
 }

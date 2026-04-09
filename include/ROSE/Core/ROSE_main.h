@@ -10,8 +10,7 @@
 **/
 #pragma once
 
-//#include <ROSE/Core/ROSE_preamble.h>
-//
+
 //extern int ROSE_main(int argc, char **argv);
 //
 //#if !defined(ROSE_MAIN_HANDLED)

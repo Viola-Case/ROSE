@@ -10,7 +10,8 @@
 **/
 #pragma once
 
-#include <ROSE/Core/ROSE_preamble.h>
+#include <ROSE/Core/ROSE_macros.h>
+#include <ROSE/Core/ROSE_rtl.h>
 
 #define ROSE_VERSION_MAJOR 0
 #define ROSE_VERSION_MINOR 0

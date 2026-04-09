@@ -15,8 +15,6 @@
 #include <ROSE/Core/math/ROSE_complex.h>
 #include <ROSE/Core/math/ROSE_vector.h>
 
-#include "ROSE/Core/ROSE_math.h"
-
 namespace ROSE::math {
   enum class EulerOrder {
     XYZ,

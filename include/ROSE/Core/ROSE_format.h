@@ -10,7 +10,8 @@
 **/
 #pragma once
 
-#include <ROSE/Core/ROSE_preamble.h>
+#include <ROSE/Core/ROSE_stdlib.h>
+#include <ROSE/Core/ROSE_rtl.h>
 
 
 namespace ROSE {
@@ -38,6 +39,5 @@ namespace ROSE {
   void PrintF(const char *fmt_str, Args &&...args) {
     PrintF(fmt_str, std::format_args(std::make_format_args(args...)));
   }
-
 
 }
