@@ -66,6 +66,16 @@ namespace ROSE::math {
     constexpr T &at() noexcept {
       return data[I];
     }
+
+    template<Scalar U>
+    constexpr operator Vec<U, N>() {
+      Vec<U, N> v;
+      for (size_t i = 0; i < N; ++i) {
+        v.data[i] = static_cast<U>(data[i]);
+      }
+      return v;
+    }
+
   };
 
   template<Scalar T>
@@ -124,6 +134,15 @@ namespace ROSE::math {
     constexpr T &at() noexcept {
       return data[I];
     }
+
+    template<Scalar U>
+    constexpr operator Vec<U, N>() {
+      Vec<U, N> v;
+      for (size_t i = 0; i < N; ++i) {
+        v.data[i] = static_cast<U>(data[i]);
+      }
+      return v;
+    }
   };
 
   template<Scalar T>
@@ -179,6 +198,15 @@ namespace ROSE::math {
       requires (I < N)
     constexpr T &at() noexcept {
       return data[I];
+    }
+
+    template<Scalar U>
+    constexpr operator Vec<U, N>() {
+      Vec<U, N> v;
+      for (size_t i = 0; i < N; ++i) {
+        v.data[i] = static_cast<U>(data[i]);
+      }
+      return v;
     }
 
     constexpr Vec<T, 3> cross(const Vec<T, 3> &rhs) const noexcept {
@@ -245,6 +273,15 @@ namespace ROSE::math {
       requires (I < N)
     constexpr T &at() noexcept {
       return data[I];
+    }
+
+    template<Scalar U>
+    constexpr operator Vec<U, N>() {
+      Vec<U, N> v;
+      for (size_t i = 0; i < N; ++i) {
+        v.data[i] = static_cast<U>(data[i]);
+      }
+      return v;
     }
   };
 
