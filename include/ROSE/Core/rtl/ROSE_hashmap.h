@@ -10,6 +10,7 @@
 **/
 #pragma once
 
+#include <unordered_map>
 #include <ROSE/Core/rtl/ROSE_buffer.h>
 #include <ROSE/Core/ROSE_stdlib.h>
 #include <ROSE/Core/rtl/ROSE_utility.h>
@@ -59,7 +60,7 @@ namespace ROSE {
     HashFn m_hashFn;
     EqualFn m_equalFn;
 
-    RawBuffer m_buffer;
+    RawBuffer m_buffer; //!< [state | key | value]
 
     size_t m_keySize;
     size_t m_valueSize;
@@ -78,8 +79,11 @@ namespace ROSE {
     
   };
 
+
   template<typename _Key, typename _Val>
-  class TypedHashMap {
-    HashMap m_map;
-  };
+  // Temporary fix. Will completely replace later.
+  using TypedHashMap = std::unordered_map<_Key, _Val>;
+  //class TypedHashMap {
+  //  HashMap m_map;
+  //};
 }

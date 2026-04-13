@@ -15,4 +15,9 @@
 namespace ROSE {
   Application &Scene::GetApplication() const noexcept {return *m_application;}
 
+  void Scene::FrameUpdate() noexcept {
+    for (auto &o : m_objects) {
+      o.second->FrameUpdate();
+    }
+  }
 }

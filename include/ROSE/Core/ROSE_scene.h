@@ -16,11 +16,14 @@
 namespace ROSE {
   class Scene {
     friend class Application;
+  public:
+    [[nodiscard]] Application &GetApplication() const noexcept;
+  private:
     TypedHashMap<UUID, UniquePtr<Object>> m_objects{};
 
+    void FrameUpdate() noexcept;
     Application *m_application{nullptr};
-  public:
-    Application &GetApplication() const noexcept;
+
   };
 }
 

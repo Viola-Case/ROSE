@@ -13,5 +13,5 @@
 
 void AppCloser::FrameUpdate() {
   if (ROSE::InputSystem::GetKey(ROSE::KeyCode::ESCAPE))
-    GetObject().GetScene()->GetApplication().
+    GetObject().GetScene().GetApplication().Quit();
 }

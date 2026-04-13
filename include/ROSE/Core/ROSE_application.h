@@ -26,21 +26,21 @@ namespace ROSE {
   constexpr ApplicationFlags APPLICATION_SOFTWARE_RENDERER = 1 << 5;
 
   //constexpr ApplicationFlags AAA_GAME = APPLICATION_DIRECTX
-
-
-
-
-  class Application;
-
-  class ApplicationManager {
-  public:
-    static void Close(AppID);
-    static void CloseAll();
-    static Application &GetApplication(AppID idx = 0);
-    static void LinkApplication(Application &app);
-  private:
-    static TypedHashMap<AppID, Application *> m_applications;
-  };
+  //
+  //
+  //
+  //
+  // class Application;
+  //
+  // class ApplicationManager {
+  // public:
+  //   static void Close(AppID);
+  //   static void CloseAll();
+  //   static Application &GetApplication(AppID idx = 0);
+  //   static void LinkApplication(Application &app);
+  // private:
+  //   static TypedHashMap<AppID, Application *> m_applications;
+  // };
 
   class Application {
     friend class ApplicationManager;
@@ -48,21 +48,23 @@ namespace ROSE {
     Application();
     Application(const char *_title);
     Application(const char *_title, ApplicationFlags);
+    Application(const char *_title, ApplicationFlags, List<Scene> &&);
     ~Application();
     int Init();
     void Run();
     void Quit() noexcept;
     void CleanUp();
 
-    const char *GetTitle() const noexcept;
+    [[nodiscard]] const char *GetTitle() const noexcept;
 
-    void *GetWindow() const noexcept;
+    [[nodiscard]] void *GetWindow() const noexcept;
 
   private:
     String m_title{"game"};
     ApplicationManager *m_parent{nullptr};
 
     List<Scene> m_scenes{};
+    Scene *m_currentScene{nullptr};
 
     AppID m_id{0};
 

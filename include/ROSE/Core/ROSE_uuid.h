@@ -22,3 +22,12 @@ namespace ROSE {
 
   };
 }
+
+template<>
+struct std::hash<ROSE::UUID> {
+  size_t operator()(const ROSE::UUID& uuid) const noexcept {
+    size_t h1 = std::hash<uint64_t>{}(uuid.high);
+    size_t h2 = std::hash<uint64_t>{}(uuid.low);
+    return h1 ^ (h2 * 0x9e3779b97f4a7c15ULL + (h1 << 6) + (h1 >> 2));
+  }
+};

@@ -46,8 +46,12 @@ namespace ROSE {
     //}
 
   private:
+
+    void OnStart() noexcept;
+    void FrameUpdate() noexcept;
+
     String m_name{"Object"};
-    TypedHashMap<UUID, UniquePtr<Behavior>> m_behaviors;
+    TypedHashMap<UUID, UniquePtr<Behavior>> m_behaviors {};
     Scene *const m_scene{ nullptr };
     Object *m_parent{ nullptr };
     Transform m_transform{0,1};

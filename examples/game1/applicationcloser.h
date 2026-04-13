@@ -13,5 +13,6 @@
 #include "ROSE/ROSE.h"
 
 class AppCloser : public ROSE::Behavior {
+protected:
   void FrameUpdate() override;
 };
