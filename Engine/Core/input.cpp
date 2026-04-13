@@ -50,7 +50,7 @@ namespace ROSE {
   bool InputSystem::GetKeyUp(KeyCode code) noexcept {
     static InputSystem &inputSystem = GetInstance();
     if (!inputSystem.keyState) return 0;
-    return !(inputSystem.keyState[code] && !inputSystem.keyStatePrevious[code]);
+    return (!inputSystem.keyState[code] && inputSystem.keyStatePrevious[code]);
   }
   bool InputSystem::GetKey(KeyCode code) noexcept {
     static InputSystem &inputSystem = GetInstance();
