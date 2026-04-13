@@ -485,3 +485,7 @@ CMakeSettings.json
 
 .idea/
 .clang-format
+
+*.local.md
+
+.claude
