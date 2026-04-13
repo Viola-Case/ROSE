@@ -63,14 +63,23 @@ int main() {
     ImGui::NewFrame();
 
     if (ImGui::BeginMainMenuBar()) {
-      math::Vec2<int> windowPos{};
+      static SDL_Point dragStartMouse{};
+      static SDL_Point dragStartWindow{};
 
-      SDL_GetWindowPosition(window, &windowPos.x, &windowPos.y);
+      if (ImGui::IsMouseClicked(0)) {
+        float mx, my;
+        SDL_GetGlobalMouseState(&mx, &my);
+        dragStartMouse = { (int) mx, (int) my };
+        SDL_GetWindowPosition(window, &dragStartWindow.x, &dragStartWindow.y);
+      }
 
-      ImVec2 dragVec = ImGui::GetMouseDragDelta();
-
-      windowPos += math::Vec2<int>(dragVec.x, dragVec.y);
-      SDL_SetWindowPosition(window, windowPos.x, windowPos.y);
+      if (ImGui::IsMouseDragging(0, 1)) {
+        float mx, my;
+        SDL_GetGlobalMouseState(&mx, &my);
+        SDL_SetWindowPosition(window,
+          dragStartWindow.x + ((int) mx - dragStartMouse.x),
+          dragStartWindow.y + ((int) my - dragStartMouse.y));
+      }
 
       if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Exit")) quit = true;
