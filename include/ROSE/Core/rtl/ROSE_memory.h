@@ -25,13 +25,8 @@ namespace ROSE {
     UniquePtr(const UniquePtr &) = delete;
     UniquePtr &operator=(const UniquePtr &) = delete;
 
-    UniquePtr(UniquePtr &&other) noexcept {
-      if (this != &other) {
-        delete m_ptr;
-        m_ptr = other.m_ptr;
-        other.m_ptr = nullptr;
-      }
-      return *this;
+    UniquePtr(UniquePtr &&other) noexcept : m_ptr(other.m_ptr) {
+      other.m_ptr = nullptr;
     }
 
     template<typename U, typename = std::enable_if_t<std::is_convertible<U *, T *>::value>>

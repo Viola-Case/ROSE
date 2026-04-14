@@ -25,6 +25,9 @@ namespace ROSE {
   }
 
   RawBuffer &RawBuffer::operator=(RawBuffer &&other) noexcept {
+    if (this == &other)
+      return *this;
+    ::operator delete(m_data);
     m_data = other.m_data;
     m_size = other.m_size;
     other.m_data = nullptr;
