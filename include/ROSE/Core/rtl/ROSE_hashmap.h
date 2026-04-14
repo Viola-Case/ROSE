@@ -10,8 +10,11 @@
 **/
 #pragma once
 
+#include <initializer_list>
+
 #include <ROSE/Core/ROSE_stdlib.h>
 #include <ROSE/Core/rtl/ROSE_buffer.h>
+#include <ROSE/Core/rtl/ROSE_pair.h>
 #include <ROSE/Core/rtl/ROSE_utility.h>
 
 namespace ROSE {
@@ -158,10 +161,7 @@ namespace ROSE {
   class TypedHashMap {
   public:
 
-    struct Entry {
-      K first;
-      V second;
-    };
+    using Entry = Pair<K, V>;
 
     class Iterator {
       friend class TypedHashMap;
@@ -195,6 +195,19 @@ namespace ROSE {
 
     TypedHashMap(TypedHashMap &&) noexcept = default;
     TypedHashMap &operator=(TypedHashMap &&) noexcept = default;
+
+    /**
+      @brief   Brace-list construction: TypedHashMap<K, V> m{{k0, v0}, {k1, v1}}.
+      @details Requires both K and V to be copy-constructible. For move-only V
+               (e.g. UniquePtr), build the map with repeated insert() /
+               emplace() calls instead.
+    **/
+    TypedHashMap(std::initializer_list<Pair<K, V>> _init) : m_map(&ops()) {
+      for (const Pair<K, V> &entry : _init) {
+        Entry tmp{entry.first, entry.second};
+        m_map.insert(&tmp);
+      }
+    }
 
     [[nodiscard]] Iterator begin() noexcept { return Iterator{m_map.begin()}; }
     [[nodiscard]] Iterator end() noexcept { return Iterator{m_map.end()}; }
