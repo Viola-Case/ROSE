@@ -11,10 +11,12 @@
 #pragma once
 
 #include <initializer_list>
+#include <type_traits>
 
 #include <ROSE/Core/ROSE_stdlib.h>
 #include <ROSE/Core/rtl/ROSE_buffer.h>
 #include <ROSE/Core/rtl/ROSE_pair.h>
+#include <ROSE/Core/rtl/ROSE_string.h>
 #include <ROSE/Core/rtl/ROSE_utility.h>
 
 namespace ROSE {
@@ -136,14 +138,37 @@ namespace ROSE {
 
       @struct  Hasher
       @brief   Default hash functor used by TypedHashMap.
-      @details Bit-hashes the key via FNV1A over its raw bytes. Specialize
-               for key types that need something smarter.
+      @details Bit-hashes the key via FNV1A over its raw bytes. This is only
+               meaningful for trivially-copyable keys (POD / UUID / scalars)
+               where byte-equality matches value-equality. Any key type with
+               indirection (BasicString, List, etc.) needs its own Hasher
+               specialization so the hash reflects the logical content,
+               otherwise two equal keys with different heap pointers will
+               hash to different buckets.
 
   **/
   template<typename K>
   struct Hasher {
+    static_assert(std::is_trivially_copyable_v<K>,
+                  "Default ROSE::Hasher<K> only supports trivially-copyable "
+                  "keys. Provide a specialization of ROSE::Hasher<K> for "
+                  "types with indirection (strings, containers, etc.).");
     uint64_t operator()(const K &_key) const noexcept {
       return FNV1A(&_key, sizeof(K));
+    }
+  };
+
+  /**
+      @brief   Content-based hash for BasicString keys.
+      @details Hashes the string bytes, so two BasicString instances with the
+               same text hash to the same bucket even if their m_data
+               allocations differ. Required for TypedHashMap<String, V> to
+               behave correctly across the insert/find boundary.
+  **/
+  template<Character CharT>
+  struct Hasher<BasicString<CharT>> {
+    uint64_t operator()(const BasicString<CharT> &_key) const noexcept {
+      return FNV1A(_key.data(), _key.size() * sizeof(CharT));
     }
   };
 
