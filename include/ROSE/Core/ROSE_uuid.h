@@ -20,6 +20,9 @@ namespace ROSE {
     };
     uint64_t data[2];
 
+    [[nodiscard]] constexpr bool operator==(const UUID &_other) const noexcept {
+      return data[0] == _other.data[0] && data[1] == _other.data[1];
+    }
   };
 }
 
