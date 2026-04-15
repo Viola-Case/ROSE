@@ -107,9 +107,11 @@ namespace ROSE {
     return n + 1;
   }
 
-  uint64_t FNV1A(const void *data, size_t len);
+  uint64_t FNV1A64(const void *data, size_t len);
 
-  uint64_t FNV1A(const char *str);
-  uint64_t FNV1A(const char16_t *str);
+  uint64_t FNV1A64(const char *str);
+  uint64_t FNV1A64(const char16_t *str);
+
+
 
 }

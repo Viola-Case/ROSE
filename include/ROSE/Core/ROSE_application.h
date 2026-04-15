@@ -42,6 +42,8 @@ namespace ROSE {
   //   static TypedHashMap<AppID, Application *> m_applications;
   // };
 
+  class SceneManager;
+
   class Application {
     friend class ApplicationManager;
   public:
@@ -59,6 +61,9 @@ namespace ROSE {
 
     [[nodiscard]] void *GetWindow() const noexcept;
 
+    Scene &GetCurrentScene() noexcept;
+    List<Scene> &GetScenes() noexcept;
+
   private:
     String m_title{"game"};
     ApplicationManager *m_parent{nullptr};
@@ -74,6 +79,11 @@ namespace ROSE {
 
     void *m_renderer{nullptr};
 
+    UniquePtr<SceneManager> m_manager {};
+
     bool m_shouldClose{false};
+
+
+
   };
 }

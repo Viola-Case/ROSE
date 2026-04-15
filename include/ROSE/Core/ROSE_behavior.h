@@ -19,6 +19,7 @@ namespace ROSE {
     virtual void FrameUpdate() = 0;
     virtual void FixedUpdate() = 0;
     void SetObject() const noexcept;
+
   public:
     virtual ~Behavior() = default;
 
@@ -26,6 +27,7 @@ namespace ROSE {
     Object &GetObject() noexcept;
 
   protected:
+    UUID m_uuid;
     Object *m_object;
 
 

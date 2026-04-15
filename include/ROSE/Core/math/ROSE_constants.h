@@ -22,7 +22,9 @@ namespace ROSE::math {
   constexpr Compd I{ 0,1 };                       //!< i (sqrt -1)
   constexpr uint32_t FNVPRIME32 = 0x01000193;           //!< 32-bit FNV prime
   constexpr uint64_t FNVPRIME64 = 0x00000100000001b3;   //!< 64-bit FNV prime
-  constexpr uint32_t FNVOFFSET32 = 0x811c9dc5;          //!< 32-bit FNV prime
-  constexpr uint64_t FNVOFFSET64 = 0xcbf29ce484222325;  //!< 64-bit FNV prime
+  constexpr uint32_t FNVOFFSET32 = 0x811c9dc5;          //!< 32-bit FNV offset basis
+  constexpr uint64_t FNVOFFSET64 = 0xcbf29ce484222325;  //!< 64-bit FNV offset basis
+  constexpr __uint128_t FNVPRIME128  = ((__uint128_t)0x0000000001000000ULL << 64) | 0x000000000000013BULL;  //!< 128-bit FNV prime
+  constexpr __uint128_t FNVOFFSET128 = ((__uint128_t)0x6C62272E07BB0142ULL << 64) | 0x62B821756295C58DULL; //!< 128-bit FNV offset basis
 
 }

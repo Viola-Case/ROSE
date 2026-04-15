@@ -13,8 +13,9 @@
 #include <SDL3/SDL.h>
 
 namespace ROSE {
-  Application::Application(const char *_title, ApplicationFlags flags, List<Scene> &&scenes) : m_title(_title), m_flags(flags), m_scenes(Move(scenes)) {}
-  
+  Application::Application(const char *_title, ApplicationFlags flags, List<Scene> &&scenes) : m_title(_title),
+    m_flags(flags), m_scenes(Move(scenes)) {}
+
   Application::Application(const char *_title, ApplicationFlags flags) : Application(_title, flags, {}) {}
 
   Application::Application(const char *_title) : Application(_title, APPLICATION_LIGHTWEIGHT) {}
@@ -46,7 +47,6 @@ namespace ROSE {
       SDL_Event e;
       while (SDL_PollEvent(&e)) {
         if (e.type == SDL_EVENT_QUIT) m_shouldClose = true;
-        
       }
       Scene &curScene = *m_currentScene;
       curScene.FrameUpdate();
@@ -68,7 +68,10 @@ namespace ROSE {
     return m_title.c_str();
   }
 
-  void* Application::GetWindow() const noexcept {
+  void *Application::GetWindow() const noexcept {
     return m_window;
   }
+
+  List<Scene> &Application::GetScenes() noexcept { return m_scenes; }
+  Scene &Application::GetCurrentScene() noexcept { return *m_currentScene; }
 }

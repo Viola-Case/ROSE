@@ -23,6 +23,8 @@ namespace ROSE {
     [[nodiscard]] constexpr bool operator==(const UUID &_other) const noexcept {
       return data[0] == _other.data[0] && data[1] == _other.data[1];
     }
+
+    [[nodiscard]] static UUID Generate() noexcept;
   };
 }
 

@@ -14,16 +14,26 @@
 //class Application;
 
 namespace ROSE {
-  class Scene {
+  class Scene final {
     friend class Application;
+    friend class Object;
   public:
-    [[nodiscard]] Application &GetApplication() const noexcept;
+    Application &GetApplication() const noexcept;
+  private:
+    void AddObject(Object &&) noexcept;
+    void DestroyObject(const UUID &u) noexcept;
+
+    void OnStart() noexcept;
+    void FrameUpdate() noexcept;
+
+    Object *GetObject(const UUID &) noexcept;
+
+
   private:
     TypedHashMap<UUID, UniquePtr<Object>> m_objects{};
-
-    void FrameUpdate() noexcept;
+    List<UniquePtr<Object>> m_pendingAdd{};
+    List<const UUID> m_pendingDestroy{};
     Application *m_application{nullptr};
-
   };
 }
 

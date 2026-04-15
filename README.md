@@ -3,6 +3,8 @@ The Radical Open Software Engine (ROSE) is a game and software engine built in C
 
 
 ## Building ROSE
+**Compiler: LLVM is required.** Compile with either `clang++` or `clang-cl`. MSVC (`cl.exe`) is not supported. Install the [LLVM toolchain](https://releases.llvm.org/) and ensure it is on your PATH.
+
 Do not use Visual Studio's CMake integration. For the love of God do not use Visual Studio's CMake integration. Use the configure scripts, or better yet use JetBrains. As of me writing this, Visual Studio's built-in CMake is at least a version behind the bare minimum functionality I need. Also it won't let me use a goddamn custom CMake output directory so I am doing my got dang best here 
 ### Dependencies
 - SDL3

@@ -238,5 +238,5 @@ namespace ROSE {
   //using UStringView = BasicStringView<char32_t>;
 
 
-  uint64_t FNV1A(const StringView &str);
+  uint64_t FNV1A64(const StringView &str);
 }

@@ -16,26 +16,23 @@
 #include <ROSE/Core/ROSE_transform.h>
 
 namespace ROSE {
-
   class Scene;
   class Behavior;
   template <class T>
   concept BehaviorType = std::derived_from<T, Behavior>;
 
 
-  class Object {
+  class Object final {
     friend class Behavior;
     friend class Scene;
 
   public:
     Object();
+    explicit Object(const char*);
+    Object(const char*, const Transform &);
+    Object(const char*, const Transform &, List<Behavior> &&);
 
 
-    Scene &GetScene() const noexcept;
-
-    Object &GetParent() const noexcept;
-
-    TypedHashMap<UUID, UniquePtr<Behavior>> &GetBehaviors() noexcept;
 
     //template<BehaviorType T>
     //T *GetBehaviorOfType() {
@@ -46,14 +43,29 @@ namespace ROSE {
     //}
 
   private:
-
     void OnStart() noexcept;
     void FrameUpdate() noexcept;
 
-    String m_name{"Object"};
-    TypedHashMap<UUID, UniquePtr<Behavior>> m_behaviors {};
-    Scene *const m_scene{ nullptr };
-    Object *m_parent{ nullptr };
-    Transform m_transform{0,1};
+    void AddBehavior(UniquePtr<Behavior>&& behavior) noexcept;
+    void DestroyBehavior(const UUID &) noexcept;
+
+    Scene& GetScene() const noexcept;
+    Object& GetParent() const noexcept;
+
+    Behavior *GetBehavior(const UUID &) noexcept;
+
+
+
+  private:
+
+    String m_name{ "Object" };
+    TypedHashMap<UUID, UniquePtr<Behavior>> m_behaviors{};
+    List<UniquePtr<Behavior>> m_pendingAdd{};
+    List<UUID> m_pendingDestroy{};
+
+    UUID m_uuid{};
+    Scene* const m_scene{ nullptr };
+    Object* m_parent{ nullptr };
+    Transform m_transform{ 0, 1 };
   };
 }
