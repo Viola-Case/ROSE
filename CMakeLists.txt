@@ -38,6 +38,7 @@ find_package(glad REQUIRED)
 find_package(SDL3_mixer REQUIRED)
 find_package(SDL3_ttf REQUIRED)
 find_package(SDL3_image REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 target_include_directories(ROSE_Core PUBLIC include/)
 
@@ -51,6 +52,7 @@ target_link_libraries(ROSE_Core
     PRIVATE imgui::imgui
     PRIVATE glad::glad
     #PUBLIC  fmt::fmt
+    PUBLIC  nlohmann_json::nlohmann_json
 )
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")

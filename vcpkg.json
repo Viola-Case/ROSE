@@ -68,6 +68,9 @@
         "opt",
         "tools"
       ]
+    },
+    {
+      "name": "nlohmann-json"
     }
 
   ]
