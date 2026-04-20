@@ -42,6 +42,12 @@ namespace ROSE::math {
       }
       return *this;
     }
+    constexpr Vec &operator*=(const T rhs) noexcept {
+      for (int i{ 0 }; i < N; ++i) {
+        data[i] *= rhs;
+      }
+      return *this;
+    }
     constexpr Vec operator+(const Vec &rhs) const noexcept {
       Vec result(*this);
       return (result += rhs);
@@ -49,6 +55,10 @@ namespace ROSE::math {
     constexpr Vec operator-(const Vec &rhs) const noexcept {
       Vec result(*this);
       return (result -= rhs);
+    }
+    constexpr Vec operator*(const T rhs) const noexcept {
+      Vec result(*this);
+      return (result *= rhs);
     }
 
     constexpr const T &operator[](const size_t idx) const {
@@ -110,6 +120,12 @@ namespace ROSE::math {
       }
       return *this;
     }
+    constexpr Vec &operator*=(const T rhs) noexcept {
+      for (int i{ 0 }; i < N; ++i) {
+        data[i] *= rhs;
+      }
+      return *this;
+    }
     constexpr Vec operator+(const Vec &rhs) const noexcept {
       Vec result(*this);
       return (result += rhs);
@@ -117,6 +133,10 @@ namespace ROSE::math {
     constexpr Vec operator-(const Vec &rhs) const noexcept {
       Vec result(*this);
       return (result -= rhs);
+    }
+    constexpr Vec operator*(const T rhs) const noexcept {
+      Vec result(*this);
+      return (result *= rhs);
     }
 
     constexpr const T &operator[](const size_t idx) const {
@@ -175,6 +195,12 @@ namespace ROSE::math {
       }
       return *this;
     }
+    constexpr Vec &operator*=(const T rhs) noexcept {
+      for (int i{ 0 }; i < N; ++i) {
+        data[i] *= rhs;
+      }
+      return *this;
+    }
     constexpr Vec operator+(const Vec &rhs) const noexcept {
       Vec result(*this);
       return (result += rhs);
@@ -182,6 +208,10 @@ namespace ROSE::math {
     constexpr Vec operator-(const Vec &rhs) const noexcept {
       Vec result(*this);
       return (result -= rhs);
+    }
+    constexpr Vec operator*(const T rhs) const noexcept {
+      Vec result(*this);
+      return (result *= rhs);
     }
 
     constexpr const T &operator[](const size_t idx) const {
@@ -250,6 +280,12 @@ namespace ROSE::math {
       }
       return *this;
     }
+    constexpr Vec &operator*=(const T rhs) noexcept {
+      for (int i{ 0 }; i < N; ++i) {
+        data[i] *= rhs;
+      }
+      return *this;
+    }
     constexpr Vec operator+(const Vec &rhs) const noexcept {
       Vec result(*this);
       return (result += rhs);
@@ -257,6 +293,10 @@ namespace ROSE::math {
     constexpr Vec operator-(const Vec &rhs) const noexcept {
       Vec result(*this);
       return (result -= rhs);
+    }
+    constexpr Vec operator*(const T rhs) const noexcept {
+      Vec result(*this);
+      return (result *= rhs);
     }
 
     constexpr const T &operator[](const size_t idx) const {
