@@ -15,10 +15,10 @@
     {
       "name": "sdl3-mixer",
       "features": [
-        "fluidsynth",
         "libflac",
         "libvorbis",
         "mpg123",
+        "opusfile",
         "wavpack"
       ]
     },
@@ -34,17 +34,6 @@
         "jpeg",
         "png",
         "tiff"
-      ]
-    },
-    {
-      "name": "sdl3-mixer",
-      "features": [
-        "libflac",
-        "libvorbis",
-        "libxmp",
-        "mpg123",
-        "opusfile",
-        "wavpack"
       ]
     },
     {

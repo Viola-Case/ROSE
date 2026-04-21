@@ -1,7 +1,3 @@
-﻿set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-    CACHE STRING "Vcpkg toolchain file")
-set(VCPKG_MANIFEST_MODE ON)
-
 cmake_minimum_required(VERSION 4.2)
 
 project(ROSE VERSION 0.1)
