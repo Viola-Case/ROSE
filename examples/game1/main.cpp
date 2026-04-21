@@ -6,15 +6,15 @@ int main() {
 
   auto scenes = List<Scene>();
 
-  Application &Game = *(new Application("Game 1", 0, Move(scenes)));
+  scenes.push_back(Scene());
+
+  Application Game("Game 1", 0, Move(scenes));
 
   Game.Init();
 
 
 
   Game.Run();
-
-  delete &Game;
 
 
 }

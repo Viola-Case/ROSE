@@ -1,7 +1,3 @@
-﻿set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-    CACHE STRING "Vcpkg toolchain file")
-set(VCPKG_MANIFEST_MODE ON)
-
 cmake_minimum_required(VERSION 4.2)
 
 project(ROSE VERSION 0.1)
@@ -54,7 +50,7 @@ target_link_libraries(ROSE_Core
 )
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
-    target_compile_options(ROSE_Core PRIVATE -mavx2)
+    target_compile_options(ROSE_Core PRIVATE -mavx2 -mfma)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")

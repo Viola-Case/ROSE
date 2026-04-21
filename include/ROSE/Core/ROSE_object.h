@@ -31,7 +31,7 @@ namespace ROSE {
     Object();
     explicit Object(const char*);
     Object(const char*, const Transform &);
-    Object(const char*, const Transform &, List<Behavior> &&);
+    Object(const char*, const Transform &, List<UniquePtr<Behavior>> &&);
 
 
 
