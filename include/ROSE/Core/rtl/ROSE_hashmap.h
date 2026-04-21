@@ -1,8 +1,10 @@
 /**
 
     @file      ROSE_hashmap.h
-    @brief
-    @details   ~
+    @brief     HashMap and TypedHashMap — open-addressed hash map containers
+    @details   HashMap is a type-erased implementation whose heavy lifting is
+               compiled once in hashmap.cpp. TypedHashMap<K,V> is a thin
+               type-safe wrapper that supplies the TypeOps table at construction.
     @author    Viola Case
     @date      18.02.2026
     @copyright © Viola Case, 2026. All right reserved.
@@ -86,10 +88,22 @@ namespace ROSE {
     HashMap(HashMap &&_other) noexcept;
     HashMap &operator=(HashMap &&_other) noexcept;
 
+    /// @brief Returns an iterator to the first occupied bucket.
     [[nodiscard]] Iterator begin() noexcept;
+    /// @brief Returns a past-the-end sentinel iterator.
     [[nodiscard]] Iterator end() noexcept;
 
+    /**
+      @brief   Finds an entry by key.
+      @param   _key  Pointer to the key value to search for.
+      @retval  Iterator to the matching entry, or end() if not found.
+    **/
     [[nodiscard]] Iterator find(const void *_key) noexcept;
+
+    /**
+      @brief   Returns true if an entry with the given key exists.
+      @param   _key  Pointer to the key value to check.
+    **/
     [[nodiscard]] bool contains(const void *_key) const noexcept;
 
     /**
@@ -101,7 +115,14 @@ namespace ROSE {
     **/
     void *insert(void *_entrySrc);
 
+    /**
+      @brief   Removes the entry with the given key.
+      @param   _key  Pointer to the key of the entry to remove.
+      @retval  true if the entry existed and was removed; false if not found.
+    **/
     bool erase(const void *_key) noexcept;
+
+    /// @brief Removes all entries. Capacity is retained.
     void clear() noexcept;
 
     [[nodiscard]] size_t size() const noexcept { return m_size; }
@@ -234,29 +255,53 @@ namespace ROSE {
       }
     }
 
+    /// @brief Returns an iterator to the first entry.
     [[nodiscard]] Iterator begin() noexcept { return Iterator{m_map.begin()}; }
+    /// @brief Returns a past-the-end sentinel iterator.
     [[nodiscard]] Iterator end() noexcept { return Iterator{m_map.end()}; }
 
+    /**
+      @brief   Finds an entry by key.
+      @param   _key  Key to search for.
+      @retval  Iterator to the matching entry, or end() if not found.
+    **/
     [[nodiscard]] Iterator find(const K &_key) noexcept {
       return Iterator{m_map.find(&_key)};
     }
 
+    /**
+      @brief   Returns true if an entry with the given key exists.
+      @param   _key  Key to check.
+    **/
     [[nodiscard]] bool contains(const K &_key) const noexcept {
       return m_map.contains(&_key);
     }
 
+    /**
+      @brief   Inserts or overwrites an entry with the given key and move-constructed value.
+      @retval  Iterator to the inserted/updated entry.
+    **/
     Iterator insert(const K &_key, V &&_value) {
       Entry tmp{_key, Move(_value)};
       m_map.insert(&tmp);
       return Iterator{m_map.find(&_key)};
     }
 
+    /**
+      @brief   Inserts or overwrites an entry with the given key and copied value.
+      @retval  Iterator to the inserted/updated entry.
+    **/
     Iterator insert(const K &_key, const V &_value) {
       Entry tmp{_key, _value};
       m_map.insert(&tmp);
       return Iterator{m_map.find(&_key)};
     }
 
+    /**
+      @brief   Constructs a value in-place at the given key using the supplied arguments.
+      @tparam  Args  Constructor argument types (deduced).
+      @retval  Iterator to the inserted entry.
+    **/
     template<class... Args>
     Iterator emplace(const K &_key, Args &&..._args) {
       Entry tmp{_key, V(Forward<Args>(_args)...)};
@@ -264,7 +309,13 @@ namespace ROSE {
       return Iterator{m_map.find(&_key)};
     }
 
+    /**
+      @brief   Removes the entry with the given key.
+      @retval  true if the entry existed and was removed; false if not found.
+    **/
     bool erase(const K &_key) noexcept { return m_map.erase(&_key); }
+
+    /// @brief Removes all entries. Capacity is retained.
     void clear() noexcept { m_map.clear(); }
 
     [[nodiscard]] size_t size() const noexcept { return m_map.size(); }

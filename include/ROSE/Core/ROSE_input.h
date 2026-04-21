@@ -1,8 +1,11 @@
-﻿/**
+/**
 
     @file      ROSE_input.h
-    @brief     
-    @details   ~
+    @brief     Input system providing keyboard and gamepad state queries
+    @details   InputSystem is a singleton that mirrors the current-frame and
+               previous-frame key/button states. Call Prime() (done automatically
+               by Application::Init()) before querying any state. Poll() is
+               driven by Application each frame.
     @author    Viola Case
     @date      3.03.2026
     @copyright © Viola Case, 2026. All rights reserved.
@@ -16,8 +19,10 @@
 
 namespace ROSE {
   /**
-      @enum  ROSE::KeyCode
-      @brief Think I'll sync it with SDL's scancodes or smth
+      @class   KeyCode
+      @brief   Opaque keyboard scancode token.
+      @details Compare against the static constants (KeyCode::A, KeyCode::SPACE,
+               etc.) to identify keys. Values are mapped from SDL scancodes.
 
   **/
   class KeyCode {
@@ -231,6 +236,12 @@ namespace ROSE {
 
   };
 
+  /**
+    @class   GamepadAxis
+    @brief   Opaque token identifying one analog axis on a connected gamepad.
+    @details Compare against the static constants (LeftStickX, RightTrigger, etc.)
+             to select an axis, then read its value via InputSystem::GetGamepadAxis().
+  **/
   class GamepadAxis {
     unsigned int value;
     explicit constexpr GamepadAxis(unsigned int v) : value(v) {}
@@ -241,43 +252,63 @@ namespace ROSE {
 
 #pragma region static Gamepad Axes
 
-    static const GamepadAxis LeftStickX;
-    static const GamepadAxis LeftStickY;
-    static const GamepadAxis RightStickX;
-    static const GamepadAxis RightStickY;
-    static const GamepadAxis LeftTrigger;
-    static const GamepadAxis RightTrigger;
+    static const GamepadAxis LeftStickX;   //!< Left analog stick horizontal axis [-1, 1]
+    static const GamepadAxis LeftStickY;   //!< Left analog stick vertical axis [-1, 1]
+    static const GamepadAxis RightStickX;  //!< Right analog stick horizontal axis [-1, 1]
+    static const GamepadAxis RightStickY;  //!< Right analog stick vertical axis [-1, 1]
+    static const GamepadAxis LeftTrigger;  //!< Left trigger [0, 1]
+    static const GamepadAxis RightTrigger; //!< Right trigger [0, 1]
 #pragma endregion
 
   };
 
+  /**
+    @class   GamepadButton
+    @brief   Opaque token identifying one digital button on a connected gamepad.
+    @details Compare against the static constants and read button state via
+             InputSystem::GetGamepadButton(). Button naming uses generic labels
+             (SOUTH/EAST/WEST/NORTH) to remain controller-agnostic
+             (e.g. SOUTH = A on Xbox, Cross on PlayStation).
+  **/
   class GamepadButton {
     unsigned int value;
     explicit constexpr GamepadButton(unsigned int v) : value(v) {}
     friend class InputSystem;
     operator size_t() const noexcept;
   public:
-    static const GamepadButton SOUTH;
-    static const GamepadButton EAST;
-    static const GamepadButton WEST;
-    static const GamepadButton NORTH;
-    static const GamepadButton DPAD_UP;
-    static const GamepadButton DPAD_DOWN;
-    static const GamepadButton DPAD_LEFT;
-    static const GamepadButton DPAD_RIGHT;
-    static const GamepadButton LEFT_STICK;
-    static const GamepadButton RIGHT_STICK;
-    static const GamepadButton START;
-    static const GamepadButton BACK;
-    static const GamepadButton LEFT_BUMPER;
-    static const GamepadButton RIGHT_BUMPER;
+    static const GamepadButton SOUTH;        //!< Bottom face button (A / Cross)
+    static const GamepadButton EAST;         //!< Right face button (B / Circle)
+    static const GamepadButton WEST;         //!< Left face button (X / Square)
+    static const GamepadButton NORTH;        //!< Top face button (Y / Triangle)
+    static const GamepadButton DPAD_UP;      //!< D-pad up
+    static const GamepadButton DPAD_DOWN;    //!< D-pad down
+    static const GamepadButton DPAD_LEFT;    //!< D-pad left
+    static const GamepadButton DPAD_RIGHT;   //!< D-pad right
+    static const GamepadButton LEFT_STICK;   //!< Left analog stick click (L3)
+    static const GamepadButton RIGHT_STICK;  //!< Right analog stick click (R3)
+    static const GamepadButton START;        //!< Start / Options button
+    static const GamepadButton BACK;         //!< Back / Share / Select button
+    static const GamepadButton LEFT_BUMPER;  //!< Left shoulder button (LB / L1)
+    static const GamepadButton RIGHT_BUMPER; //!< Right shoulder button (RB / R1)
   };
 
+  /**
+    @enum  GamepadStick
+    @brief Identifies which analog stick to read via InputSystem::GetStickAxes().
+  **/
   enum class GamepadStick {
-    Left,
-    Right
+    Left,  //!< Left analog stick
+    Right  //!< Right analog stick
   };
 
+  /**
+    @class   InputSystem
+    @brief   Singleton that provides per-frame keyboard and gamepad state.
+    @details All query methods are static and safe to call from any context
+             after Prime() has been invoked. The system distinguishes between
+             a key/button being pressed this frame only (GetKeyDown), released
+             this frame only (GetKeyUp), and continuously held (GetKey).
+  **/
   class InputSystem final {
   private:
     friend class Application;
@@ -286,22 +317,73 @@ namespace ROSE {
     void *gamepad{ nullptr };
     InputSystem();
     ~InputSystem();
+
+    /**
+      @brief   Initialises SDL keyboard state pointers; called by Prime().
+    **/
     void Init() noexcept;
+
+    /**
+      @brief   Copies current key state into the previous-frame buffer; called by Application each frame.
+    **/
     void Poll() noexcept;
     InputSystem(InputSystem &) = delete;
     InputSystem(InputSystem &&) = delete;
     static InputSystem inputSystem;
   public:
+    /**
+      @brief   One-time initialisation; must be called before any query.
+               Invoked automatically by Application::Init().
+    **/
     static void Prime();
+
+    /**
+      @brief   Returns the singleton InputSystem instance.
+    **/
     static InputSystem &GetInstance();
+
+    /**
+      @brief   Returns true on the first frame a key is pressed down.
+      @param   Key code to query.
+    **/
     static bool GetKeyDown(KeyCode) noexcept;
+
+    /**
+      @brief   Returns true on the first frame a key is released.
+      @param   Key code to query.
+    **/
     static bool GetKeyUp(KeyCode) noexcept;
+
+    /**
+      @brief   Returns true every frame the key is held down.
+      @param   Key code to query.
+    **/
     static bool GetKey(KeyCode) noexcept;
 
+    /**
+      @brief   Returns the normalized value of a single gamepad axis.
+      @param   Axis to query.
+      @retval  Value in [-1, 1] for sticks or [0, 1] for triggers; 0 if no gamepad is connected.
+    **/
     static float GetGamepadAxis(GamepadAxis) noexcept;
+
+    /**
+      @brief   Returns both axes of an analog stick as a Vec2f.
+      @param   Stick to query (Left or Right).
+      @retval  {x, y} in [-1, 1]; {0, 0} if no gamepad is connected.
+    **/
     static Vec2f GetStickAxes(GamepadStick) noexcept;
+
+    /**
+      @brief   Returns true every frame a gamepad button is held.
+      @param   Button to query.
+    **/
     static bool GetGamepadButton(GamepadButton) noexcept;
 
+    /**
+      @brief   Returns the product name of the first connected gamepad.
+      @retval  Empty string if no gamepad is connected.
+    **/
     static String GetGamepadName() noexcept;
 
   };

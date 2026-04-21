@@ -1,8 +1,10 @@
-﻿/**
+/**
 
   @file      ROSE_string.h
-  @brief     
-  @details   ~
+  @brief     BasicString<CharT> and BasicStringView<CharT> — owning and non-owning string types
+  @details   ROSE's string types are built entirely on heap allocation without
+             any stdlib dependency at the API boundary. The char specialisations
+             are aliased as String and StringView.
   @author    Viola Case
   @date      6.02.2026
   @copyright © Viola Case, 2026. All right reserved.
@@ -16,10 +18,10 @@
 namespace ROSE {
 
   /**
-      @brief  General StrLen template for any Character type
-      @tparam CharT - character type
-      @param  str   - input string
-      @retval       - length of string
+      @brief   Returns the length of a null-terminated character string.
+      @tparam  CharT - character type
+      @param   str   - null-terminated input string
+      @retval        - number of characters before the null terminator; 0 if str is null
   **/
   template<Character CharT>
   constexpr size_t StrLen(const CharT *str) noexcept {
@@ -31,6 +33,14 @@ namespace ROSE {
   }
 
 
+  /**
+    @class   BasicString
+    @brief   Owning, heap-allocated null-terminated character string.
+    @details Stores characters contiguously with a capacity/size split similar
+             to std::basic_string. Grows by doubling on append. Non-copyable
+             in the move-only sense — copies are explicit via the copy constructor.
+    @tparam  CharT - character element type (e.g. char)
+  **/
   template <Character CharT>
   class BasicString {
   private:
@@ -78,7 +88,7 @@ namespace ROSE {
     ~BasicString() {
       deallocate(m_data);
     }
-    
+
     BasicString &operator=(const BasicString &lvalue) {
       if (this != &lvalue) {
         BasicString tmp(lvalue);
@@ -101,6 +111,9 @@ namespace ROSE {
       return *this;
     }
 
+    /**
+      @brief   Exchanges the contents of this string with another in O(1).
+    **/
     void swap(BasicString &other) noexcept {
       CharT *d = m_data;
       m_data = other.m_data;
@@ -113,18 +126,38 @@ namespace ROSE {
       other.m_capacity = c;
     }
 
+    /**
+      @brief   Returns a mutable pointer to the character buffer (not null-terminated if empty).
+    **/
     const CharT *data() const noexcept { return m_data; }
+
+    /**
+      @brief   Returns a read-only pointer to the character buffer.
+    **/
     CharT *data() noexcept { return m_data; }
 
+    /**
+      @brief   Returns a null-terminated C string; never returns nullptr.
+    **/
     const CharT *c_str() const noexcept {
       static constexpr CharT null = CharT{ 0 };
       return m_data ? m_data : &null;
     }
 
+    /// @brief Number of characters (not including the null terminator).
     size_t size() const noexcept { return m_size; }
+
+    /// @brief Allocated capacity in characters (including space for the null terminator).
     size_t capacity() const noexcept { return m_capacity; }
+
+    /// @brief Returns true if the string contains no characters.
     bool empty() const noexcept { return m_size == 0; }
 
+    /**
+      @brief   Ensures the internal buffer can hold at least newCapacity characters.
+               Does nothing if current capacity is already sufficient.
+      @param   newCapacity  Minimum desired capacity.
+    **/
     void reserve(size_t newCapacity) {
       if (newCapacity <= m_capacity) return;
 
@@ -140,6 +173,11 @@ namespace ROSE {
       m_capacity = newCapacity;
     }
 
+    /**
+      @brief   Resizes the string to newSize characters.
+               New characters are zero-initialised; excess characters are dropped.
+      @param   newSize  Target character count.
+    **/
     void resize(size_t newSize) {
       if (newSize > m_capacity) reserve(newSize + 1);
       if (newSize > m_size)
@@ -150,12 +188,16 @@ namespace ROSE {
       m_data[m_size] = CharT(0);
     }
 
+    /**
+      @brief   Appends a null-terminated string to the end of this string.
+      @param   str  Null-terminated string to append; no-op if null.
+    **/
     void append(const CharT *str) {
       if (!str) return;
 
       size_t addLen = StrLen(str);
       size_t newSize = m_size + addLen;
-      
+
       if (newSize + 1 > m_capacity) {
         size_t newCap = m_capacity == 0 ? newSize + 1
           : m_capacity;
@@ -169,8 +211,14 @@ namespace ROSE {
       m_data[m_size] = CharT(0);
     }
 
+    /**
+      @brief   Appends another BasicString to the end of this string.
+    **/
     void append(const BasicString &other) { append(other.c_str()); }
 
+    /**
+      @brief   Appends a single character to the end of this string.
+    **/
     void push_back(CharT ch) {
       CharT buf[2] = { ch, CharT(0) };
       append(buf);
@@ -206,6 +254,13 @@ namespace ROSE {
 
   };
 
+  /**
+    @class   BasicStringView
+    @brief   Non-owning view over a BasicString's character buffer.
+    @details Lifetime is tied to the source BasicString; invalidated if the
+             source is destroyed or reallocated.
+    @tparam  CharT - character element type
+  **/
   template <Character CharT>
   class BasicStringView {
   public:
@@ -238,5 +293,10 @@ namespace ROSE {
   //using UStringView = BasicStringView<char32_t>;
 
 
+  /**
+    @brief   Computes a 64-bit FNV-1a hash of the string's contents.
+    @param   str  String to hash.
+    @retval       64-bit hash value; two strings with equal content produce the same hash.
+  **/
   uint64_t FNV1A64(const StringView &str);
 }

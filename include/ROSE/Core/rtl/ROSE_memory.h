@@ -99,18 +99,30 @@ namespace ROSE {
     // Modifiers
     // -------------------------
 
+    /**
+      @brief   Destroys the currently managed object and optionally adopts a new one.
+      @param   _p  New raw pointer to manage (defaults to nullptr, leaving the pointer empty).
+    **/
     void reset(T *_p = nullptr) noexcept {
       T *old = m_ptr;
       m_ptr = _p;
       delete old;
     }
 
+    /**
+      @brief   Releases ownership of the managed object without destroying it.
+      @retval  Raw pointer to the previously managed object; caller is now responsible for deletion.
+    **/
     [[nodiscard]] T *release() noexcept {
       T *tmp = m_ptr;
       m_ptr = nullptr;
       return tmp;
     }
 
+    /**
+      @brief   Swaps ownership with another UniquePtr in O(1).
+      @param   _other  UniquePtr to exchange ownership with.
+    **/
     void swap(UniquePtr &_other) noexcept {
       T *tmp = m_ptr;
       m_ptr = _other.m_ptr;
@@ -155,6 +167,13 @@ namespace ROSE {
     _a.swap(_b);
   }
 
+  /**
+    @brief   Allocates a new T constructed from _args and wraps it in a UniquePtr.
+    @tparam  T     Type to allocate.
+    @tparam  Args  Constructor argument types (deduced).
+    @param   _args Arguments forwarded to T's constructor.
+    @retval  UniquePtr<T> owning the newly allocated object.
+  **/
   template<typename T, typename ...Args>
   [[nodiscard]] UniquePtr<T> MakeUnique(Args&&... _args) {
     return UniquePtr<T>(new T(Forward<Args>(_args)...));
@@ -260,10 +279,17 @@ namespace ROSE {
     T &operator*() const noexcept { return *m_ctrl->m_ptr; }
     T *operator->() const noexcept { return m_ctrl->m_ptr; }
 
+    /**
+      @brief   Returns the number of SharedPtr instances sharing this object.
+      @retval  0 if this SharedPtr is empty.
+    **/
     [[nodiscard]] size_t use_count() const noexcept {
       return m_ctrl ? m_ctrl->strong_count : 0;
     }
 
+    /**
+      @brief   Returns true if this is the sole SharedPtr owning the managed object.
+    **/
     [[nodiscard]] bool unique() const noexcept {
       return use_count() == 1;
     }
@@ -274,13 +300,25 @@ namespace ROSE {
     // Modifiers
     // -------------------------
 
+    /**
+      @brief   Releases ownership of the managed object (decrements ref-count).
+               Leaves this SharedPtr empty.
+    **/
     void reset() noexcept { decrement(); }
 
+    /**
+      @brief   Releases the current object and adopts a new raw pointer.
+      @param   _p  New raw pointer to manage.
+    **/
     void reset(T *_p) {
       decrement();
       if (_p) m_ctrl = new ControlBlock(_p);
     }
 
+    /**
+      @brief   Swaps ownership with another SharedPtr in O(1).
+      @param   _other  SharedPtr to exchange with.
+    **/
     void swap(SharedPtr &_other) noexcept {
       ControlBlock *tmp = m_ctrl;
       m_ctrl = _other.m_ctrl;
@@ -323,6 +361,13 @@ namespace ROSE {
     _a.swap(_b);
   }
 
+  /**
+    @brief   Allocates a new T constructed from _args and wraps it in a SharedPtr.
+    @tparam  T     Type to allocate.
+    @tparam  Args  Constructor argument types (deduced).
+    @param   _args Arguments forwarded to T's constructor.
+    @retval  SharedPtr<T> with a ref-count of 1.
+  **/
   template<typename T, typename... Args>
   [[nodiscard]] SharedPtr<T> MakeShared(Args&&... _args) {
     return SharedPtr<T>(new T(Forward<Args>(_args)...));
@@ -407,14 +452,25 @@ namespace ROSE {
     // Observers
     // -------------------------
 
+    /**
+      @brief   Returns true if the SharedPtr-managed object has been destroyed.
+    **/
     [[nodiscard]] bool expired() const noexcept {
       return !m_ctrl || m_ctrl->strong_count == 0;
     }
 
+    /**
+      @brief   Returns the number of active SharedPtr instances owning the object.
+      @retval  0 if expired or empty.
+    **/
     [[nodiscard]] size_t use_count() const noexcept {
       return m_ctrl ? m_ctrl->strong_count : 0;
     }
 
+    /**
+      @brief   Attempts to acquire a SharedPtr from this WeakPtr.
+      @retval  A valid SharedPtr if the object is still alive; an empty SharedPtr if expired.
+    **/
     [[nodiscard]] SharedPtr<T> lock() const noexcept {
       if (expired()) return SharedPtr<T>();
       SharedPtr<T> sp;
@@ -427,8 +483,14 @@ namespace ROSE {
     // Modifiers
     // -------------------------
 
+    /**
+      @brief   Releases this weak reference.
+    **/
     void reset() noexcept { decrement(); }
 
+    /**
+      @brief   Swaps this weak reference with another in O(1).
+    **/
     void swap(WeakPtr &_other) noexcept {
       ControlBlock *tmp = m_ctrl;
       m_ctrl = _other.m_ctrl;

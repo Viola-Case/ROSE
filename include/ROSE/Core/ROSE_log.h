@@ -1,8 +1,10 @@
-﻿/**
+/**
 
     @file      ROSE_log.h
-    @brief     
-    @details   ~
+    @brief     Logging severity levels and compile-time log macros
+    @details   The logging subsystem is not yet fully implemented; the macros
+               are currently no-ops. LogLevel values are ordered from least
+               to most severe.
     @author    Viola Case
     @date      12.02.2026
     @copyright © Viola Case, 2026. All right reserved.
@@ -15,12 +17,16 @@
 // todo figure out how this will actually work
 
 namespace ROSE {
+  /**
+    @enum  LogLevel
+    @brief Severity levels for the ROSE logging subsystem.
+  **/
   enum class LogLevel :uint8_t {
-    Trace,
-    Info,
-    Warn,
-    Error,
-    Fatal
+    Trace, //!< Fine-grained diagnostic messages (highest verbosity)
+    Info,  //!< General informational messages
+    Warn,  //!< Recoverable conditions that may indicate a problem
+    Error, //!< Errors that impair functionality but do not halt execution
+    Fatal  //!< Unrecoverable errors; execution should stop after logging
   };
 
 }

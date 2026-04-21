@@ -1,8 +1,11 @@
-﻿/**
+/**
 
   @file      ROSE_list.h
-  @brief     
-  @details   ~
+  @brief     List<T> — contiguous dynamic array (ROSE equivalent of std::vector)
+  @details   List uses a RawBuffer as its backing store and grows by doubling.
+             Trivially-copyable elements are copied with memcpy; non-trivial
+             elements are move-constructed during reallocation and properly
+             destroyed on clear/resize/destruction.
   @author    Viola Case
   @date      4.02.2026
   @copyright © Viola Case, 2026. All right reserved.
@@ -20,9 +23,11 @@ namespace ROSE {
   /**
 
       @class   List
-      @brief   
-      @details ~
-      @tparam  T - 
+      @brief   Contiguous dynamic array, analogous to std::vector.
+      @details Backed by a RawBuffer; capacity doubles on overflow.
+               Elements are stored in-place; non-trivially-destructible
+               elements are properly destroyed on clear/resize/destruction.
+      @tparam  T - element type (must be move-constructible)
 
   **/
   template<typename T>
@@ -36,8 +41,13 @@ namespace ROSE {
     // Constructors
     // -------------------------
 
+    /// @brief Default constructor; creates an empty list with no allocation.
     List() noexcept = default;
 
+    /**
+      @brief   Constructs an empty list with space pre-reserved for at least initial_capacity elements.
+      @param   initial_capacity  Number of elements to reserve space for upfront.
+    **/
     explicit List(size_t initial_capacity) {
       reserve(initial_capacity);
     }
@@ -56,6 +66,11 @@ namespace ROSE {
       }
     }
 
+    /**
+      @brief   Constructs a list with count copies of value.
+      @param   count  Number of elements to create.
+      @param   value  Value to copy into each element.
+    **/
     List(size_type count, const T &value) {
       reserve(count);
 
@@ -65,7 +80,9 @@ namespace ROSE {
       m_count = count;
     }
 
-
+    /**
+      @brief   Constructs a list from a brace-initializer list.
+    **/
     List(std::initializer_list<T> init) {
       reserve(init.size());
 
@@ -76,14 +93,19 @@ namespace ROSE {
       m_count = init.size();
     }
 
-
+    /**
+      @brief   Move-constructs from another list, taking its backing storage.
+               The source is left empty.
+    **/
     List(List &&other) noexcept
       : m_buffer(Move(other.m_buffer)),
       m_count(other.m_count) {
       other.m_count = 0;
     }
 
-
+    /**
+      @brief   Constructs a list from a fixed-size array, copying all N elements.
+    **/
     template<size_t N>
     List(const FixedArray<T, N> &arr) {
       reserve(N);
@@ -135,18 +157,26 @@ namespace ROSE {
     // Capacity
     // -------------------------
 
+    /// @brief Number of elements currently stored.
     constexpr size_t size() const noexcept {
       return m_count;
     }
 
+    /// @brief Number of elements that can be stored without reallocation.
     constexpr size_t capacity() const noexcept {
       return m_buffer.size_bytes() / sizeof(T);
     }
 
+    /// @brief Returns true if the list contains no elements.
     constexpr bool empty() const noexcept {
       return m_count == 0;
     }
 
+    /**
+      @brief   Ensures the list can hold at least new_capacity elements without reallocation.
+               Does nothing if current capacity is already sufficient.
+      @param   new_capacity  Minimum desired capacity.
+    **/
     void reserve(size_t new_capacity) {
       if (new_capacity <= capacity())
         return;
@@ -154,6 +184,11 @@ namespace ROSE {
       reallocate(new_capacity);
     }
 
+    /**
+      @brief   Resizes the list to new_size elements.
+               New elements are default-constructed; excess elements are destroyed.
+      @param   new_size  Target element count.
+    **/
     void resize(size_t new_size) {
       if (new_size < m_count) {
         destroy_range(new_size, m_count);
@@ -166,6 +201,7 @@ namespace ROSE {
       }
     }
 
+    /// @brief Destroys all elements and sets the size to zero. Capacity is retained.
     void clear() noexcept {
       destroy_range(0, m_count);
       m_count = 0;
@@ -175,18 +211,22 @@ namespace ROSE {
     // Element Access
     // -------------------------
 
+    /// @brief Returns a reference to the element at index (no bounds check).
     constexpr T &operator[](size_t index) noexcept {
       return data()[index];
     }
 
+    /// @brief Returns a const reference to the element at index (no bounds check).
     constexpr const T &operator[](size_t index) const noexcept {
       return data()[index];
     }
 
+    /// @brief Returns a reference to the last element. Undefined if empty.
     T &back() noexcept {
       return data()[m_count - 1];
     }
 
+    /// @brief Returns a const reference to the last element. Undefined if empty.
     const T &back() const noexcept {
       return data()[m_count - 1];
     }
@@ -201,18 +241,32 @@ namespace ROSE {
     // Modifiers
     // -------------------------
 
+    /**
+      @brief   Appends a copy of value to the end of the list.
+               Reallocates if capacity is exhausted.
+    **/
     void push_back(const T &value) {
       ensure_capacity_for_one();
       new (data() + m_count) T(value);
       ++m_count;
     }
 
+    /**
+      @brief   Moves value to the end of the list.
+               Reallocates if capacity is exhausted.
+    **/
     void push_back(T &&value) {
       ensure_capacity_for_one();
       new (data() + m_count) T(std::move(value));
       ++m_count;
     }
 
+    /**
+      @brief   Constructs a new element in-place at the end of the list.
+      @tparam  Args  Constructor argument types (deduced).
+      @param   args  Arguments forwarded to T's constructor.
+      @retval  Reference to the newly constructed element.
+    **/
     template<typename... Args>
     T &emplace_back(Args&&... args) {
       ensure_capacity_for_one();
@@ -220,6 +274,9 @@ namespace ROSE {
       return data()[m_count++];
     }
 
+    /**
+      @brief   Destroys the last element. No-op if the list is empty.
+    **/
     void pop_back() {
       if (m_count == 0)
         return;
@@ -228,11 +285,16 @@ namespace ROSE {
       data()[m_count].~T();
     }
 
-
+    /**
+      @brief   Returns a mutable pointer to the first element (or nullptr if empty).
+    **/
     T *data() noexcept {
       return reinterpret_cast<T *>(m_buffer.data());
     }
 
+    /**
+      @brief   Returns a read-only pointer to the first element (or nullptr if empty).
+    **/
     const T *data() const noexcept {
       return reinterpret_cast<const T *>(m_buffer.data());
     }
