@@ -54,7 +54,7 @@ namespace ROSE {
     desc.name = String("Scene");
 
     for (auto &pair : scene.m_objects) {
-      const Object &obj = *pair.second;
+      Object &obj = *pair.second;
 
       ObjectDesc odesc;
       odesc.name      = obj.m_name;
