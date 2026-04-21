@@ -1,7 +1,7 @@
-﻿/**
+/**
 
     @file      ROSE_memory.h
-    @brief     
+    @brief     Smart pointer primitives: UniquePtr, SharedPtr, WeakPtr.
     @details   ~
     @author    Viola Case
     @date      9.02.2026
@@ -10,209 +10,436 @@
 **/
 #pragma once
 
-#include <utility>
+#include <cstddef>
+#include <type_traits>
 #include <ROSE/Core/rtl/ROSE_utility.h>
 
 namespace ROSE {
 
+  /**
+
+      @class   UniquePtr
+      @brief   Owning smart pointer with exclusive ownership semantics.
+      @tparam  T - pointed-to type
+
+  **/
   template<typename T>
   class UniquePtr {
   public:
-    explicit UniquePtr(T *p_ = nullptr) : m_ptr(p_) {}
 
-    ~UniquePtr() { delete m_ptr; }
+    // -------------------------
+    // Constructors
+    // -------------------------
+
+    constexpr UniquePtr() noexcept = default;
+    constexpr UniquePtr(std::nullptr_t) noexcept {}
+
+    explicit UniquePtr(T *_p) noexcept : m_ptr(_p) {}
 
     UniquePtr(const UniquePtr &) = delete;
     UniquePtr &operator=(const UniquePtr &) = delete;
 
-    UniquePtr(UniquePtr &&other) noexcept : m_ptr(other.m_ptr) {
-      other.m_ptr = nullptr;
+    UniquePtr(UniquePtr &&_other) noexcept : m_ptr(_other.m_ptr) {
+      _other.m_ptr = nullptr;
     }
 
-    template<typename U, typename = std::enable_if_t<std::is_convertible<U *, T *>::value>>
-    UniquePtr(UniquePtr<U> &&other) noexcept : m_ptr(other.release()) {}
+    template<typename U, typename = std::enable_if_t<std::is_convertible_v<U *, T *>>>
+    UniquePtr(UniquePtr<U> &&_other) noexcept : m_ptr(_other.release()) {}
+
+    ~UniquePtr() { delete m_ptr; }
+
+    // -------------------------
+    // Assignment
+    // -------------------------
+
+    UniquePtr &operator=(UniquePtr &&_other) noexcept {
+      if (this != &_other) {
+        T *old = m_ptr;
+        m_ptr = _other.m_ptr;
+        _other.m_ptr = nullptr;
+        delete old;
+      }
+      return *this;
+    }
+
+    template<typename U, typename = std::enable_if_t<std::is_convertible_v<U *, T *>>>
+    UniquePtr &operator=(UniquePtr<U> &&_other) noexcept {
+      T *old = m_ptr;
+      m_ptr = _other.release();
+      delete old;
+      return *this;
+    }
+
+    UniquePtr &operator=(std::nullptr_t) noexcept {
+      reset();
+      return *this;
+    }
+
+    // -------------------------
+    // Access
+    // -------------------------
 
     /**
       @warning dont call `delete` on this
-      @retval
+      @retval  raw pointer to the managed object (may be nullptr)
     **/
-    T *get() noexcept { return m_ptr; }
+    [[nodiscard]] T *get() noexcept { return m_ptr; }
     /**
       @warning dont call `delete` on this
-      @retval
+      @retval  raw pointer to the managed object (may be nullptr)
     **/
-    const T *get() const noexcept { return m_ptr; }
+    [[nodiscard]] const T *get() const noexcept { return m_ptr; }
 
-    T &operator*() const { return *m_ptr; }
-    T *operator->() const { return m_ptr; }
+    T &operator*() const noexcept { return *m_ptr; }
+    T *operator->() const noexcept { return m_ptr; }
 
-    explicit operator bool() const { return m_ptr != nullptr; }
+    explicit operator bool() const noexcept { return m_ptr != nullptr; }
 
-    void reset(T *p = nullptr) {
-      delete m_ptr;
-      m_ptr = p;
+    // -------------------------
+    // Modifiers
+    // -------------------------
+
+    void reset(T *_p = nullptr) noexcept {
+      T *old = m_ptr;
+      m_ptr = _p;
+      delete old;
     }
 
-    T *release() {
+    [[nodiscard]] T *release() noexcept {
       T *tmp = m_ptr;
       m_ptr = nullptr;
       return tmp;
     }
 
+    void swap(UniquePtr &_other) noexcept {
+      T *tmp = m_ptr;
+      m_ptr = _other.m_ptr;
+      _other.m_ptr = tmp;
+    }
+
   private:
-    T *m_ptr;
+    T *m_ptr{ nullptr };
   };
 
+  // -------------------------
+  // UniquePtr free functions / comparisons
+  // -------------------------
+
+  template<typename T, typename U>
+  constexpr bool operator==(const UniquePtr<T> &_a, const UniquePtr<U> &_b) noexcept {
+    return _a.get() == _b.get();
+  }
+  template<typename T, typename U>
+  constexpr bool operator!=(const UniquePtr<T> &_a, const UniquePtr<U> &_b) noexcept {
+    return _a.get() != _b.get();
+  }
+  template<typename T>
+  constexpr bool operator==(const UniquePtr<T> &_a, std::nullptr_t) noexcept {
+    return _a.get() == nullptr;
+  }
+  template<typename T>
+  constexpr bool operator==(std::nullptr_t, const UniquePtr<T> &_a) noexcept {
+    return _a.get() == nullptr;
+  }
+  template<typename T>
+  constexpr bool operator!=(const UniquePtr<T> &_a, std::nullptr_t) noexcept {
+    return _a.get() != nullptr;
+  }
+  template<typename T>
+  constexpr bool operator!=(std::nullptr_t, const UniquePtr<T> &_a) noexcept {
+    return _a.get() != nullptr;
+  }
+
+  template<typename T>
+  void Swap(UniquePtr<T> &_a, UniquePtr<T> &_b) noexcept {
+    _a.swap(_b);
+  }
+
   template<typename T, typename ...Args>
-  UniquePtr<T> MakeUnique(Args&&... args) {
-    return UniquePtr<T>(new T(Forward<Args>(args)...));
+  [[nodiscard]] UniquePtr<T> MakeUnique(Args&&... _args) {
+    return UniquePtr<T>(new T(Forward<Args>(_args)...));
   }
 
   template<typename T>
   class WeakPtr;
 
+  /**
+
+      @class   SharedPtr
+      @brief   Reference-counted owning smart pointer.
+      @tparam  T - pointed-to type
+
+  **/
   template<typename T>
   class SharedPtr {
   private:
+    template<typename U> friend class WeakPtr;
+
     struct ControlBlock {
       size_t strong_count{ 1 };
       size_t weak_count{ 0 };
-
-      explicit ControlBlock(T *p) : m_ptr(p) {}
-
-      ~ControlBlock() { delete m_ptr; }
-
       T *m_ptr;
+
+      explicit ControlBlock(T *_p) noexcept : m_ptr(_p) {}
     };
 
-    ControlBlock *ctrl{ nullptr };
+    ControlBlock *m_ctrl{ nullptr };
 
-    void release() {
-      if (ctrl) {
-        if (--ctrl->strong_count == 0) {
-          delete ctrl->m_ptr;
-          ctrl->m_ptr = nullptr;
-          if (ctrl->weak_count == 0) {
-            delete ctrl;
-          }
+    void decrement() noexcept {
+      if (!m_ctrl) return;
+
+      if (--m_ctrl->strong_count == 0) {
+        delete m_ctrl->m_ptr;
+        m_ctrl->m_ptr = nullptr;
+        if (m_ctrl->weak_count == 0) {
+          delete m_ctrl;
         }
-        ctrl = nullptr;
       }
+      m_ctrl = nullptr;
     }
-
-    template<typename U> friend class WeakPtr;
 
   public:
 
-    SharedPtr() = default;
+    // -------------------------
+    // Constructors
+    // -------------------------
 
-    explicit SharedPtr(T *p_) {
-      if (p_) ctrl = new ControlBlock(p_);
+    constexpr SharedPtr() noexcept = default;
+    constexpr SharedPtr(std::nullptr_t) noexcept {}
+
+    explicit SharedPtr(T *_p) {
+      if (_p) m_ctrl = new ControlBlock(_p);
     }
 
-    SharedPtr(const SharedPtr &other) noexcept : ctrl(other.ctrl) {
-      if (ctrl) ++ctrl->strong_count;
+    SharedPtr(const SharedPtr &_other) noexcept : m_ctrl(_other.m_ctrl) {
+      if (m_ctrl) ++m_ctrl->strong_count;
     }
 
-    SharedPtr(SharedPtr &&other) noexcept : ctrl(other.ctrl) {
-      other.ctrl = nullptr;
+    SharedPtr(SharedPtr &&_other) noexcept : m_ctrl(_other.m_ctrl) {
+      _other.m_ctrl = nullptr;
     }
 
-    ~SharedPtr() { release(); }
+    ~SharedPtr() { decrement(); }
 
-    SharedPtr &operator=(const SharedPtr &other) noexcept {
-      if (this != &other) {
-        release();
-        ctrl = other.ctrl;
-        if (ctrl) ++ctrl->strong_count;
+    // -------------------------
+    // Assignment
+    // -------------------------
+
+    SharedPtr &operator=(const SharedPtr &_other) noexcept {
+      if (this != &_other) {
+        decrement();
+        m_ctrl = _other.m_ctrl;
+        if (m_ctrl) ++m_ctrl->strong_count;
       }
       return *this;
     }
 
-    SharedPtr &operator=(SharedPtr &&other) noexcept {
-      if (this != &other) {
-        release();
-        ctrl = other.ctrl;
-        other.ctrl = nullptr;
+    SharedPtr &operator=(SharedPtr &&_other) noexcept {
+      if (this != &_other) {
+        decrement();
+        m_ctrl = _other.m_ctrl;
+        _other.m_ctrl = nullptr;
       }
       return *this;
     }
+
+    SharedPtr &operator=(std::nullptr_t) noexcept {
+      decrement();
+      return *this;
+    }
+
+    // -------------------------
+    // Access
+    // -------------------------
+
     /**
         @warning dont call `delete` on this
-        @retval  pointer to managed object
+        @retval  pointer to managed object (may be nullptr)
     **/
-    T *get() const noexcept { return ctrl ? ctrl->m_ptr : nullptr; }
-    T &operator*() const noexcept { return *ctrl->m_ptr; }
-    T *operator->() const noexcept { return ctrl->m_ptr; }
+    [[nodiscard]] T *get() const noexcept { return m_ctrl ? m_ctrl->m_ptr : nullptr; }
+    T &operator*() const noexcept { return *m_ctrl->m_ptr; }
+    T *operator->() const noexcept { return m_ctrl->m_ptr; }
 
-    size_t use_count() const noexcept {
-      return ctrl ? ctrl->strong_count : 0;
+    [[nodiscard]] size_t use_count() const noexcept {
+      return m_ctrl ? m_ctrl->strong_count : 0;
     }
 
-    explicit operator bool() const noexcept { return ctrl && ctrl->m_ptr; }
+    [[nodiscard]] bool unique() const noexcept {
+      return use_count() == 1;
+    }
+
+    explicit operator bool() const noexcept { return m_ctrl && m_ctrl->m_ptr; }
+
+    // -------------------------
+    // Modifiers
+    // -------------------------
+
+    void reset() noexcept { decrement(); }
+
+    void reset(T *_p) {
+      decrement();
+      if (_p) m_ctrl = new ControlBlock(_p);
+    }
+
+    void swap(SharedPtr &_other) noexcept {
+      ControlBlock *tmp = m_ctrl;
+      m_ctrl = _other.m_ctrl;
+      _other.m_ctrl = tmp;
+    }
 
   };
 
-  template<typename T, typename... Args>
-  SharedPtr<T> make_shared(Args&&... args) {
-    T *obj = new T(std::forward<Args>(args)...);
-    return SharedPtr<T>(obj);
+  // -------------------------
+  // SharedPtr free functions / comparisons
+  // -------------------------
+
+  template<typename T, typename U>
+  constexpr bool operator==(const SharedPtr<T> &_a, const SharedPtr<U> &_b) noexcept {
+    return _a.get() == _b.get();
+  }
+  template<typename T, typename U>
+  constexpr bool operator!=(const SharedPtr<T> &_a, const SharedPtr<U> &_b) noexcept {
+    return _a.get() != _b.get();
+  }
+  template<typename T>
+  constexpr bool operator==(const SharedPtr<T> &_a, std::nullptr_t) noexcept {
+    return _a.get() == nullptr;
+  }
+  template<typename T>
+  constexpr bool operator==(std::nullptr_t, const SharedPtr<T> &_a) noexcept {
+    return _a.get() == nullptr;
+  }
+  template<typename T>
+  constexpr bool operator!=(const SharedPtr<T> &_a, std::nullptr_t) noexcept {
+    return _a.get() != nullptr;
+  }
+  template<typename T>
+  constexpr bool operator!=(std::nullptr_t, const SharedPtr<T> &_a) noexcept {
+    return _a.get() != nullptr;
   }
 
   template<typename T>
+  void Swap(SharedPtr<T> &_a, SharedPtr<T> &_b) noexcept {
+    _a.swap(_b);
+  }
+
+  template<typename T, typename... Args>
+  [[nodiscard]] SharedPtr<T> MakeShared(Args&&... _args) {
+    return SharedPtr<T>(new T(Forward<Args>(_args)...));
+  }
+
+  /**
+
+      @class   WeakPtr
+      @brief   Non-owning observer of a SharedPtr-managed object.
+      @tparam  T - pointed-to type
+
+  **/
+  template<typename T>
   class WeakPtr {
   private:
-    typename SharedPtr<T>::ControlBlock *ctrl{ nullptr };
+    using ControlBlock = typename SharedPtr<T>::ControlBlock;
 
-    void release() {
-      if (ctrl) {
-        if (--ctrl->weak_count == 0 && ctrl->strong_count == 0) {
-          delete ctrl;
-        }
-        ctrl = nullptr;
+    ControlBlock *m_ctrl{ nullptr };
+
+    void decrement() noexcept {
+      if (!m_ctrl) return;
+
+      --m_ctrl->weak_count;
+      if (m_ctrl->weak_count == 0 && m_ctrl->strong_count == 0) {
+        delete m_ctrl;
       }
+      m_ctrl = nullptr;
     }
 
   public:
-    WeakPtr() = default;
-    WeakPtr(const SharedPtr<T> &sp) noexcept : ctrl(sp.ctrl) {
-      if (ctrl) ++ctrl->weak_count;
-    }
-    WeakPtr(const WeakPtr &other) noexcept : ctrl(other.ctrl) {
-      if (ctrl) ++ctrl->weak_count;
-    }
-    WeakPtr(WeakPtr &&other) noexcept : ctrl(other.ctrl) {
-      other.ctrl = nullptr;
-    }
-    ~WeakPtr() { release(); }
 
-    WeakPtr &operator=(const WeakPtr &other) noexcept {
-      if (this != &other) {
-        release();
-        ctrl = other.ctrl;
-        if (ctrl) ++ctrl->weak_count;
+    // -------------------------
+    // Constructors
+    // -------------------------
+
+    constexpr WeakPtr() noexcept = default;
+
+    WeakPtr(const SharedPtr<T> &_sp) noexcept : m_ctrl(_sp.m_ctrl) {
+      if (m_ctrl) ++m_ctrl->weak_count;
+    }
+
+    WeakPtr(const WeakPtr &_other) noexcept : m_ctrl(_other.m_ctrl) {
+      if (m_ctrl) ++m_ctrl->weak_count;
+    }
+
+    WeakPtr(WeakPtr &&_other) noexcept : m_ctrl(_other.m_ctrl) {
+      _other.m_ctrl = nullptr;
+    }
+
+    ~WeakPtr() { decrement(); }
+
+    // -------------------------
+    // Assignment
+    // -------------------------
+
+    WeakPtr &operator=(const WeakPtr &_other) noexcept {
+      if (this != &_other) {
+        decrement();
+        m_ctrl = _other.m_ctrl;
+        if (m_ctrl) ++m_ctrl->weak_count;
       }
       return *this;
     }
 
-    WeakPtr &operator=(WeakPtr &&other) noexcept {
-      if (this != &other) {
-        release();
-        ctrl = other.ctrl;
-        other.ctrl = nullptr;
+    WeakPtr &operator=(WeakPtr &&_other) noexcept {
+      if (this != &_other) {
+        decrement();
+        m_ctrl = _other.m_ctrl;
+        _other.m_ctrl = nullptr;
       }
       return *this;
     }
 
-    bool expired() const noexcept { return !ctrl || ctrl->strong_count == 0; }
+    WeakPtr &operator=(const SharedPtr<T> &_sp) noexcept {
+      decrement();
+      m_ctrl = _sp.m_ctrl;
+      if (m_ctrl) ++m_ctrl->weak_count;
+      return *this;
+    }
 
-    SharedPtr<T> lock() const noexcept {
+    // -------------------------
+    // Observers
+    // -------------------------
+
+    [[nodiscard]] bool expired() const noexcept {
+      return !m_ctrl || m_ctrl->strong_count == 0;
+    }
+
+    [[nodiscard]] size_t use_count() const noexcept {
+      return m_ctrl ? m_ctrl->strong_count : 0;
+    }
+
+    [[nodiscard]] SharedPtr<T> lock() const noexcept {
       if (expired()) return SharedPtr<T>();
       SharedPtr<T> sp;
-      sp.ctrl = ctrl;
-      ++ctrl->strong_count;
+      sp.m_ctrl = m_ctrl;
+      ++m_ctrl->strong_count;
       return sp;
     }
 
+    // -------------------------
+    // Modifiers
+    // -------------------------
+
+    void reset() noexcept { decrement(); }
+
+    void swap(WeakPtr &_other) noexcept {
+      ControlBlock *tmp = m_ctrl;
+      m_ctrl = _other.m_ctrl;
+      _other.m_ctrl = tmp;
+    }
+
   };
+
+  template<typename T>
+  void Swap(WeakPtr<T> &_a, WeakPtr<T> &_b) noexcept {
+    _a.swap(_b);
+  }
+
 }
