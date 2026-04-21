@@ -43,7 +43,7 @@ namespace ROSE {
 
   class SceneIO {
   public:
-    [[nodiscard]] static SceneDesc Save(const Scene &scene);
+    [[nodiscard]] static SceneDesc Save(Scene &scene);
     static void                    Apply(Scene &scene, const SceneDesc &desc);
   };
 

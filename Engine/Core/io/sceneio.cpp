@@ -49,7 +49,7 @@ namespace ROSE {
   // SceneIO
   // =========================================================================
 
-  SceneDesc SceneIO::Save(const Scene &scene) {
+  SceneDesc SceneIO::Save(Scene &scene) {
     SceneDesc desc;
     desc.name = String("Scene");
 
