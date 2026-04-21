@@ -2,30 +2,32 @@
 
   @file      ROSE_assetmeta.h
   @brief     Asset metadata structure for tracking engine assets
-  @details   AssetMeta describes a single registered asset (texture, sound,
-             mesh, etc.) and can be serialized to / deserialized from JSON.
+  @details   AssetMeta describes one registered asset (texture, sound, mesh…)
+             and round-trips through JSON.  File paths are const char* so no
+             stdlib string type appears in the public API.
   @author    Viola Case
-  @date      19.04.2026
+  @date      21.04.2026
   @copyright © Viola Case, 2026. All right reserved.
 
 **/
 #pragma once
 
-#include <string>
 #include <ROSE/Core/io/ROSE_json.h>
 
 namespace ROSE {
+
   struct AssetMeta {
-    UUID        uuid{};
-    std::string name;
-    std::string type;        // "texture" | "sound" | "mesh" | ...
-    std::string path;        // file path relative to assets root
-    Json        properties{};  // arbitrary key/value metadata
+    UUID      uuid{};
+    String    name;
+    String    type;         // "texture" | "sound" | "mesh" | ...
+    String    path;         // path relative to assets root
+    JsonValue properties{}; // arbitrary key/value metadata
 
-    [[nodiscard]] Json             ToJson() const;
-    [[nodiscard]] static AssetMeta FromJson(const Json &j);
+    [[nodiscard]] JsonValue           ToJson() const;
+    [[nodiscard]] static AssetMeta    FromJson(const JsonValue &j);
 
-    [[nodiscard]] static AssetMeta LoadFromFile(const std::string &filePath);
-    void                           SaveToFile(const std::string &filePath) const;
+    [[nodiscard]] static AssetMeta    LoadFromFile(const char *filePath);
+    void                              SaveToFile(const char *filePath) const;
   };
-}
+
+} // namespace ROSE

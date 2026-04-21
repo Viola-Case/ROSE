@@ -4,48 +4,44 @@
   @brief     AssetMeta serialization implementation
   @details   ~
   @author    Viola Case
-  @date      19.04.2026
+  @date      21.04.2026
   @copyright © Viola Case, 2026. All right reserved.
 
 **/
 
 #include <ROSE/Core/io/ROSE_assetmeta.h>
-#include <fstream>
-#include <stdexcept>
 
 namespace ROSE {
-  Json AssetMeta::ToJson() const {
-    return {
-      {"rose_version", "0.1"},
-      {"uuid",         JsonFromUUID(uuid)},
-      {"name",         name},
-      {"type",         type},
-      {"path",         path},
-      {"properties",   properties}
-    };
+
+  JsonValue AssetMeta::ToJson() const {
+    JsonValue j = JsonValue::MakeObject();
+    j.Set("rose_version", JsonValue("0.1"));
+    j.Set("uuid",         JsonFromUUID(uuid));
+    j.Set("name",         JsonValue(name.c_str()));
+    j.Set("type",         JsonValue(type.c_str()));
+    j.Set("path",         JsonValue(path.c_str()));
+    if (!properties.IsNull())
+      j.Set("properties", properties);
+    return j;
   }
 
-  AssetMeta AssetMeta::FromJson(const Json &j) {
+  AssetMeta AssetMeta::FromJson(const JsonValue &j) {
     AssetMeta meta;
-    meta.uuid       = JsonToUUID(j.at("uuid"));
-    meta.name       = j.at("name").get<std::string>();
-    meta.type       = j.at("type").get<std::string>();
-    meta.path       = j.at("path").get<std::string>();
-    meta.properties = j.value("properties", Json{});
+    meta.uuid = JsonToUUID(j.At("uuid"));
+    meta.name = j.At("name").GetString();
+    meta.type = j.At("type").GetString();
+    meta.path = j.At("path").GetString();
+    if (j.Contains("properties"))
+      meta.properties = j.At("properties");
     return meta;
   }
 
-  AssetMeta AssetMeta::LoadFromFile(const std::string &filePath) {
-    std::ifstream file(filePath);
-    if (!file.is_open())
-      throw std::runtime_error("AssetMeta: cannot open '" + filePath + "'");
-    return FromJson(Json::parse(file));
+  AssetMeta AssetMeta::LoadFromFile(const char *filePath) {
+    return FromJson(JsonValue::ParseFile(filePath));
   }
 
-  void AssetMeta::SaveToFile(const std::string &filePath) const {
-    std::ofstream file(filePath);
-    if (!file.is_open())
-      throw std::runtime_error("AssetMeta: cannot write '" + filePath + "'");
-    file << ToJson().dump(2);
+  void AssetMeta::SaveToFile(const char *filePath) const {
+    ToJson().SaveFile(filePath);
   }
-}
+
+} // namespace ROSE
