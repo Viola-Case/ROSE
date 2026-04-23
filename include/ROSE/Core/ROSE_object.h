@@ -25,7 +25,6 @@ namespace ROSE {
   class Object final {
     friend class Behavior;
     friend class Scene;
-    friend class SceneIO;
 
   public:
     Object();
