@@ -17,7 +17,6 @@ namespace ROSE {
   class Scene final {
     friend class Application;
     friend class Object;
-    friend class SceneIO;
   public:
     Application &GetApplication() const noexcept;
   private:

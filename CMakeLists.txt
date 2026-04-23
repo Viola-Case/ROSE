@@ -73,12 +73,8 @@ target_link_libraries(ControllerTest PRIVATE
 
 add_executable(Game1 "examples/game1/main.cpp")
 set_property(TARGET Game1 PROPERTY FOLDER "Examples")
-target_link_libraries(Game1 PRIVATE ROSE_Core)
-add_custom_command(TARGET Game1 POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/examples/game1/game1.scene"
-        "$<TARGET_FILE_DIR:Game1>/game1.scene"
-    COMMENT "Copying game1.scene to output directory"
+target_link_libraries(Game1 PRIVATE
+        ROSE_Core
 )
 
 file(GLOB_RECURSE ROSE_EDITOR_SOURCES "Engine/Editor/*.cpp" "Engine/Editor/*.c" "Engine/Editor/*.h")
