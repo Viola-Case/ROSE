@@ -1,6 +1,17 @@
 cmake_minimum_required(VERSION 4.2)
 
-project(ROSE VERSION 0.1)
+option(ROSE_USE_VCPKG "Use vcpkg for dependency management" OFF)
+if(ROSE_USE_VCPKG AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    if(DEFINED ENV{VCPKG_ROOT})
+        set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            CACHE STRING "Vcpkg toolchain file")
+        set(VCPKG_MANIFEST_MODE ON)
+    else()
+        message(FATAL_ERROR "ROSE_USE_VCPKG=ON but VCPKG_ROOT environment variable is not set")
+    endif()
+endif()
+
+project(ROSE VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

@@ -1,7 +1,0 @@
-#!/bin/bash
-mkdir -p build && cd build || exit 1
-if [ ! -f "reconfigure" ]; then
-    printf "cd ..\n./configure\n" > reconfigure
-    chmod +x ./reconfigure
-fi
-cmake -G "Ninja" ..
