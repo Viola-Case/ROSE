@@ -107,6 +107,10 @@ namespace ROSE {
     return n + 1;
   }
 
+  constexpr int ToLower(const int c) {
+    return (c >= 'A' && c <= 'Z') ? c + ('a' - 'A') : c;
+  }
+
   uint64_t FNV1A64(const void *data, size_t len);
 
   uint64_t FNV1A64(const char *str);

@@ -18,3 +18,4 @@
 #include <ROSE/Core/rtl/ROSE_array.h>
 #include <ROSE/Core/rtl/ROSE_pair.h>
 #include <ROSE/Core/rtl/ROSE_hashmap.h>
+#include <ROSE/Core/rtl/ROSE_bigint.h>

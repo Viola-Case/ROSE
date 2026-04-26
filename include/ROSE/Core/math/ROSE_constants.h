@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <ROSE/Core/math/ROSE_complex.h>
+#include <ROSE/Core/rtl/ROSE_bigint.h>
 
 namespace ROSE::math {
   constexpr float PI =  3.141592653589793f;             //!< π
@@ -24,7 +25,7 @@ namespace ROSE::math {
   constexpr uint64_t FNVPRIME64 = 0x00000100000001b3;   //!< 64-bit FNV prime
   constexpr uint32_t FNVOFFSET32 = 0x811c9dc5;          //!< 32-bit FNV offset basis
   constexpr uint64_t FNVOFFSET64 = 0xcbf29ce484222325;  //!< 64-bit FNV offset basis
-  constexpr __uint128_t FNVPRIME128  = ((__uint128_t)0x0000000001000000ULL << 64) | 0x000000000000013BULL;  //!< 128-bit FNV prime
-  constexpr __uint128_t FNVOFFSET128 = ((__uint128_t)0x6C62272E07BB0142ULL << 64) | 0x62B821756295C58DULL; //!< 128-bit FNV offset basis
+  constexpr uint128_t FNVPRIME128  = ((__uint128_t)0x0000000001000000ULL << 64) | 0x000000000000013BULL;  //!< 128-bit FNV prime
+  constexpr uint128_t FNVOFFSET128 = ((__uint128_t)0x6C62272E07BB0142ULL << 64) | 0x62B821756295C58DULL; //!< 128-bit FNV offset basis
 
 }
