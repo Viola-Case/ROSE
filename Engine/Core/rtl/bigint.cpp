@@ -18,7 +18,6 @@ namespace ROSE {
   uint128_t::uint128_t(const uint128_t &) noexcept = default;
   uint128_t::uint128_t(uint64_t i) noexcept : high(0), low(i) {}
 
-
 #pragma endregion
 
 }

@@ -154,7 +154,7 @@ namespace ROSE {
                   "keys. Provide a specialization of ROSE::Hasher<K> for "
                   "types with indirection (strings, containers, etc.).");
     uint64_t operator()(const K &_key) const noexcept {
-      return FNV1A(&_key, sizeof(K));
+      return FNV1A64(&_key, sizeof(K));
     }
   };
 
@@ -168,7 +168,7 @@ namespace ROSE {
   template<Character CharT>
   struct Hasher<BasicString<CharT>> {
     uint64_t operator()(const BasicString<CharT> &_key) const noexcept {
-      return FNV1A(_key.data(), _key.size() * sizeof(CharT));
+      return FNV1A64(_key.data(), _key.size() * sizeof(CharT));
     }
   };
 

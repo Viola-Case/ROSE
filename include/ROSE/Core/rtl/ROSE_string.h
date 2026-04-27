@@ -11,25 +11,10 @@
 #pragma once
 
 #include <ROSE/Core/ROSE_typetraits.h>
+#include <ROSE/Core/rtl/ROSE_utility.h>
 #include <ROSE/Core/rtl/ROSE_list.h>
 
 namespace ROSE {
-
-  /**
-      @brief  General StrLen template for any Character type
-      @tparam CharT - character type
-      @param  str   - input string
-      @retval       - length of string
-  **/
-  template<Character CharT>
-  constexpr size_t StrLen(const CharT *str) noexcept {
-    if (!str) return 0;
-    size_t len = 0;
-    while (str[len] != CharT(0))
-      ++len;
-    return len;
-  }
-
 
   template <Character CharT>
   class BasicString {

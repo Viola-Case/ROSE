@@ -1,5 +1,7 @@
 ﻿#include <ROSE/ROSE.h>
 
+#include <chrono>
+
 namespace ROSE {
   void MemCpy(void *_Dst, const void *_Src, size_t size) {
     auto *p = reinterpret_cast<unsigned char *>(_Dst);
@@ -31,8 +33,8 @@ namespace ROSE {
 
   uint64_t FNV1A64(const StringView &str) { return FNV1A64(str.c_str()); }
 
-  __uint128_t FNV1A128(const void *data, size_t len) {
-    __uint128_t hash = math::FNVOFFSET128;
+  uint128_t FNV1A128(const void *data, size_t len) {
+    uint128_t hash = math::FNVOFFSET128;
     for (size_t i = 0; i < len; ++i) {
       hash ^= static_cast<const uint8_t *>(data)[i];
       hash *= math::FNVPRIME128;
@@ -41,9 +43,16 @@ namespace ROSE {
   }
 
   UUID UUID::Generate() noexcept {
+
     static uint64_t s_counter{0};
     ++s_counter;
-    __uint128_t h = FNV1A128(&s_counter, sizeof(s_counter));
+    auto now = std::chrono::steady_clock::now();
+    auto duration = now.time_since_epoch();
+    // Returns the number of ticks (unit depends on the clock's period)
+    long long ticks = duration.count();
+
+    auto tempcounter = s_counter + ticks;
+    uint128_t h = FNV1A128(&tempcounter, sizeof(tempcounter));
     return UUID{static_cast<uint64_t>(h >> 64), static_cast<uint64_t>(h)};
   }
 }
