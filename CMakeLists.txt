@@ -88,10 +88,14 @@ target_link_libraries(Game1 PRIVATE
         ROSE_Core
 )
 
-file(GLOB_RECURSE ROSE_EDITOR_SOURCES "Engine/Editor/*.cpp" "Engine/Editor/*.c" "Engine/Editor/*.h")
+file(GLOB_RECURSE ROSE_EDITOR_SOURCES
+        "Engine/Tools/Editor/*.cpp"
+        "Engine/Tools/Editor/*.c"
+        #"Engine/Tools/Editor/*.h"
+)
 add_executable(ROSE_Editor ${ROSE_EDITOR_SOURCES})
 target_include_directories(ROSE_Editor PUBLIC include/)
-set_property(TARGET ROSE_Editor PROPERTY FOLDER "Engine")
+set_property(TARGET ROSE_Editor PROPERTY FOLDER "Tools")
 
 add_custom_target(ENGINE_BUILD)
 add_dependencies(ENGINE_BUILD ROSE_Core ROSE_Editor)
