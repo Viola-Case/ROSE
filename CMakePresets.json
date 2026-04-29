@@ -1,3 +1,35 @@
-﻿{
-  "version": 6
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ROSE_USE_VCPKG": "ON"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ROSE_USE_VCPKG": "ON"
+      }
+    },
+    {
+      "name": "editor",
+      "displayName": "Editor",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/editor",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Editor",
+        "ROSE_USE_VCPKG": "ON"
+      }
+    }
+  ]
 }

@@ -6,6 +6,17 @@ if(ROSE_USE_VCPKG AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
         set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
             CACHE STRING "Vcpkg toolchain file")
         set(VCPKG_MANIFEST_MODE ON)
+        file(READ "${CMAKE_SOURCE_DIR}/vcpkg.json" _vcpkg_json)
+        string(JSON _vcpkg_baseline GET "${_vcpkg_json}" "builtin-baseline")
+        execute_process(
+            COMMAND git -C "$ENV{VCPKG_ROOT}" merge-base --is-ancestor "${_vcpkg_baseline}" HEAD
+            RESULT_VARIABLE _vcpkg_baseline_missing
+        )
+        if(_vcpkg_baseline_missing)
+            message(FATAL_ERROR
+                "vcpkg HEAD is behind the required builtin-baseline '${_vcpkg_baseline}'.\n"
+                "Run: git -C \"$ENV{VCPKG_ROOT}\" pull")
+        endif()
     else()
         message(FATAL_ERROR "ROSE_USE_VCPKG=ON but VCPKG_ROOT environment variable is not set")
     endif()
