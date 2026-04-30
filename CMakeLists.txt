@@ -6,6 +6,17 @@ if(ROSE_USE_VCPKG AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
         set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
             CACHE STRING "Vcpkg toolchain file")
         set(VCPKG_MANIFEST_MODE ON)
+        file(READ "${CMAKE_SOURCE_DIR}/vcpkg.json" _vcpkg_json)
+        string(JSON _vcpkg_baseline GET "${_vcpkg_json}" "builtin-baseline")
+        execute_process(
+            COMMAND git -C "$ENV{VCPKG_ROOT}" merge-base --is-ancestor "${_vcpkg_baseline}" HEAD
+            RESULT_VARIABLE _vcpkg_baseline_missing
+        )
+        if(_vcpkg_baseline_missing)
+            message(FATAL_ERROR
+                "vcpkg HEAD is behind the required builtin-baseline '${_vcpkg_baseline}'.\n"
+                "Run: git -C \"$ENV{VCPKG_ROOT}\" pull")
+        endif()
     else()
         message(FATAL_ERROR "ROSE_USE_VCPKG=ON but VCPKG_ROOT environment variable is not set")
     endif()
@@ -88,10 +99,14 @@ target_link_libraries(Game1 PRIVATE
         ROSE_Core
 )
 
-file(GLOB_RECURSE ROSE_EDITOR_SOURCES "Engine/Editor/*.cpp" "Engine/Editor/*.c" "Engine/Editor/*.h")
+file(GLOB_RECURSE ROSE_EDITOR_SOURCES
+        "Engine/Tools/Editor/*.cpp"
+        "Engine/Tools/Editor/*.c"
+        #"Engine/Tools/Editor/*.h"
+)
 add_executable(ROSE_Editor ${ROSE_EDITOR_SOURCES})
 target_include_directories(ROSE_Editor PUBLIC include/)
-set_property(TARGET ROSE_Editor PROPERTY FOLDER "Engine")
+set_property(TARGET ROSE_Editor PROPERTY FOLDER "Tools")
 
 add_custom_target(ENGINE_BUILD)
 add_dependencies(ENGINE_BUILD ROSE_Core ROSE_Editor)

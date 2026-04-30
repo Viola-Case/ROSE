@@ -4,7 +4,7 @@
   "homepage": "https://github.com/Viola-Case/ROSE",
   "license": null,
   "description": "Radical Open Software Engine",
-  "builtin-baseline": "b5d1a94fb7f88fd835e360fd23a45a09ceedbf48",
+  "builtin-baseline": "4fc6cb0e9ed24f6abfac825f37aa9c74049f566e",
   "dependencies": [
     {
       "name": "sdl3",
