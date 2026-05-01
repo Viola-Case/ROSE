@@ -1,15 +1,18 @@
 {
   "version": 6,
+  "cmakeMinimumRequired":{
+    "major": 4,
+    "minor": 2,
+    "patch": 0
+  },
   "configurePresets": [
     {
       "name": "base",
       "hidden": true,
       "generator": "Ninja",
-      "toolchainFile": "${sourceDir}/cmake/toolchains/clang-cl.cmake",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
-        "ROSE_USE_VCPKG": "ON",
-        "VCPKG_TARGET_TRIPLET": "x64-windows-clang",
-        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets"
+        "ROSE_USE_VCPKG": "ON"
       }
     },
     {
@@ -39,5 +42,10 @@
         "CMAKE_BUILD_TYPE": "Editor"
       }
     }
+  ],
+  "buildPresets": [
+    { "name": "debug",   "configurePreset": "debug"   },
+    { "name": "release", "configurePreset": "release" },
+    { "name": "editor",  "configurePreset": "editor"  }
   ]
 }
