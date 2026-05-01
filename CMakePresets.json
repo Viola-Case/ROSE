@@ -2,33 +2,41 @@
   "version": 6,
   "configurePresets": [
     {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "toolchainFile": "${sourceDir}/cmake/toolchains/clang-cl.cmake",
+      "cacheVariables": {
+        "ROSE_USE_VCPKG": "ON",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-clang",
+        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets"
+      }
+    },
+    {
       "name": "debug",
       "displayName": "Debug",
-      "generator": "Ninja",
+      "inherits": "base",
       "binaryDir": "${sourceDir}/build/debug",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "ROSE_USE_VCPKG": "ON"
+        "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
       "name": "release",
       "displayName": "Release",
-      "generator": "Ninja",
+      "inherits": "base",
       "binaryDir": "${sourceDir}/build/release",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "ROSE_USE_VCPKG": "ON"
+        "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
       "name": "editor",
       "displayName": "Editor",
-      "generator": "Ninja",
+      "inherits": "base",
       "binaryDir": "${sourceDir}/build/editor",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Editor",
-        "ROSE_USE_VCPKG": "ON"
+        "CMAKE_BUILD_TYPE": "Editor"
       }
     }
   ]

@@ -22,20 +22,20 @@ Also I thought it would be really cool.
 ## Code Style
 
 ### Naming
-| Thing                                     | Convention         | Example(s)                              |
-|-------------------------------------------|--------------------|-----------------------------------------|
-| Classes, structs, type aliases            | `PascalCase`       | `Application`, `AppID`                  |
-| Methods and free functions                | `PascalCase`       | `GetInstance()`, `FrameUpdate()`        |
-| RTL methods                               | `snake_case`       | `List::push_back()`                     |
-| RTL functions                             | `PascalCase`       | `MakeUnique<T>()`                       |
-| Private member variables                  | `m_camelCase`      | `m_title`, `m_shouldClose`              |
-| Public member variables                   | `PascalCase`       | `` ``                                   |
-| RTL public member variables               | `_PascalCase`      | `FixedArray::_Data`                     |
-| Local variables                           | `camelCase`        | `curScene`, `inputSystem`               |
-| Constructor / function parameters         | `_camelCase`       | `_title`, `_flags`                      |
-| Constants and flag values                 | `UPPER_SNAKE_CASE` | `APPLICATION_HEADLESS`, `KEYSTATE_SIZE` |
-| Regular enum values                       | `PascalCase`       | `GamepadStick::Left`                    |
-| Opaque-handle enum values (KeyCode, etc.) | `UPPER_SNAKE_CASE` | `KeyCode::LEFT_SHIFT`                   |
+| Thing                                     | Convention               | Example(s)                              |
+|-------------------------------------------|--------------------------|-----------------------------------------|
+| Classes, structs, type aliases            | `PascalCase`             | `Application`, `AppID`                  |
+| Methods and free functions                | `PascalCase`             | `GetInstance()`, `FrameUpdate()`        |
+| RTL methods                               | `snake_case` (match STL) | `List::push_back()`                     |
+| RTL functions                             | `PascalCase`             | `MakeUnique<T>()`                       |
+| Private class member variables            | `m_camelCase`            | `m_title`, `m_shouldClose`              |
+| Public member variables                   | Case-specific            | `Pair::first` `FixedArray::_data`       |
+| RTL public member variables               | Case-specific            |                                         |
+| Local variables                           | `camelCase`              | `curScene`, `inputSystem`               |
+| Constructor / function parameters         | `_camelCase`             | `_title`, `_flags`                      |
+| Constants and flag values                 | `UPPER_SNAKE_CASE`       | `APPLICATION_HEADLESS`, `KEYSTATE_SIZE` |
+| Regular enum values                       | `PascalCase`             | `GamepadStick::Left`                    |
+| Opaque-handle enum values (KeyCode, etc.) | `UPPER_SNAKE_CASE`       | `KeyCode::LEFT_SHIFT`                   |
 
 ### Namespaces
 All engine code lives inside `namespace ROSE { }`. No `using namespace` in headers.
@@ -47,7 +47,7 @@ Every file gets a Doxygen block:
 ```cpp
 /**
 
-  @file      MyFile.h
+  @file      [file name]
   @brief     One-line summary
   @details   ~
   @author    Viola Case

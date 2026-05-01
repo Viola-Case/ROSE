@@ -1,0 +1,3 @@
+set(CMAKE_C_COMPILER   clang-cl CACHE STRING "")
+set(CMAKE_CXX_COMPILER clang-cl CACHE STRING "")
+set(CMAKE_LINKER       lld-link CACHE STRING "")

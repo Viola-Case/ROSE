@@ -57,6 +57,13 @@
         "opt",
         "tools"
       ]
+    },
+    {
+      "name": "nlohmann-json",
+      "features": []
+    },
+    {
+      "name": "cli11"
     }
 
   ]
