@@ -21,5 +21,7 @@ namespace ROSE {
 #pragma endregion
 
 }
+#else
+#pragma message("__int128_t and __uint128_t are defined, we can ignore this file.")
 
 #endif
