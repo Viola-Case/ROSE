@@ -12,7 +12,9 @@
 #pragma once
 #include "ROSE/ROSE.h"
 
-class AppCloser : public ROSE::Behavior {
+using namespace ROSE;
+
+class AppCloser : public Behavior {
 protected:
   void FrameUpdate() override;
 };

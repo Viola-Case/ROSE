@@ -1,35 +1,51 @@
 {
   "version": 6,
+  "cmakeMinimumRequired":{
+    "major": 4,
+    "minor": 2,
+    "patch": 0
+  },
   "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "ROSE_USE_VCPKG": "ON"
+      }
+    },
     {
       "name": "debug",
       "displayName": "Debug",
-      "generator": "Ninja",
+      "inherits": "base",
       "binaryDir": "${sourceDir}/build/debug",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "ROSE_USE_VCPKG": "ON"
+        "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
       "name": "release",
       "displayName": "Release",
-      "generator": "Ninja",
+      "inherits": "base",
       "binaryDir": "${sourceDir}/build/release",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "ROSE_USE_VCPKG": "ON"
+        "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
       "name": "editor",
       "displayName": "Editor",
-      "generator": "Ninja",
+      "inherits": "base",
       "binaryDir": "${sourceDir}/build/editor",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Editor",
-        "ROSE_USE_VCPKG": "ON"
+        "CMAKE_BUILD_TYPE": "Editor"
       }
     }
+  ],
+  "buildPresets": [
+    { "name": "debug",   "configurePreset": "debug"   },
+    { "name": "release", "configurePreset": "release" },
+    { "name": "editor",  "configurePreset": "editor"  }
   ]
 }

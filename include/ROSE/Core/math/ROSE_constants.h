@@ -17,7 +17,7 @@
 namespace ROSE::math {
   constexpr float PI =  3.141592653589793f;             //!< π
   constexpr float E =   2.718281828459045f;             //!< e
-  constexpr float PHI = 1.618033988749895f;             //!< φτ
+  constexpr float PHI = 1.618033988749895f;             //!< φ
   constexpr float TAU = 2.f * PI;                       //!< τ
   constexpr float SQRT2 = 1.41421356237309504;          //!< sqrt 2)
   constexpr Compd I{ 0,1 };                       //!< i (sqrt -1)

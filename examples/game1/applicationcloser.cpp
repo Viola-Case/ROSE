@@ -11,7 +11,9 @@
 
 #include "applicationcloser.h"
 
+using namespace ROSE;
+
 void AppCloser::FrameUpdate() {
-  if (ROSE::InputSystem::GetKey(ROSE::KeyCode::ESCAPE))
+  if (InputSystem::GetKey(KeyCode::ESCAPE))
     GetObject().GetScene().GetApplication().Quit();
 }
