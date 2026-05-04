@@ -316,6 +316,7 @@ namespace ROSE {
     return result;
   }
 
+  // "cannot convert unsigned long long to const char*" errors on these literals are a known Clang false positive — ignore them.
   constexpr int128_t operator""_lll(const char *str) {
     if (str[0] == '-')
       return -parse128(str, 1);
@@ -323,14 +324,15 @@ namespace ROSE {
       return parse128(str, 0);
   }
 
+  // "cannot convert unsigned long long to const char*" errors on these literals are a known Clang false positive — ignore them.
   constexpr uint128_t operator""_ulll(const char *str) {
     return static_cast<uint128_t>(parse128(str, 0));
   }
-
+// "cannot convert unsigned long long to const char*" errors on these literals are a known Clang false positive — ignore them.
   constexpr int128_t operator""_128(const char *str) {
     return operator""_lll(str);
   }
-
+// "cannot convert unsigned long long to const char*" errors on these literals are a known Clang false positive — ignore them.
   constexpr uint128_t operator""_u128(const char *str) {
     return operator""_ulll(str);
   }
