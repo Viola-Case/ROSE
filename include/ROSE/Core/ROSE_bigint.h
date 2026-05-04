@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include <ROSE/Core/rtl/ROSE_utility.h>
+#include <ROSE/Core/ROSE_utility.h>
 
 #if (defined (__clang__) || defined (__GNUC__))
 #define INT_128_EXISTS

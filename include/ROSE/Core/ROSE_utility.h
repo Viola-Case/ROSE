@@ -12,10 +12,8 @@
 
 #include <utility>
 #include <ROSE/Core/ROSE_typetraits.h>
-#include <ROSE/Core/ROSE_macros.h>
 
 namespace ROSE {
-
   template<typename T>
   constexpr std::remove_reference_t<T> &&Move(T &t) noexcept { return static_cast<std::remove_reference_t<T> &&>(t); }
 
@@ -25,13 +23,13 @@ namespace ROSE {
   template<typename T>
   constexpr T &&Forward(std::remove_reference_t<T> &&t) noexcept {
     static_assert(!std::is_lvalue_reference_v<T>,
-      "bad forward: cannot forward rvalue as lvalue");
+                  "bad forward: cannot forward rvalue as lvalue");
     return static_cast<T &&>(t);
   }
 
   template<typename T>
   constexpr void Swap(T &A, T &B) {
-    T temp{ Move(A)};
+    T temp{Move(A)};
     A = Move(B);
     B = Move(temp);
   }
@@ -64,29 +62,29 @@ namespace ROSE {
 
   constexpr uint32_t ByteSwap(uint32_t v) noexcept {
     return
-      (v >> 24) |
-      ((v >> 8) & 0x0000ff00u) |
-      ((v << 8) & 0x00ff0000u) |
-      (v << 24);
+        (v >> 24) |
+        ((v >> 8) & 0x0000ff00u) |
+        ((v << 8) & 0x00ff0000u) |
+        (v << 24);
   }
 
   constexpr uint64_t ByteSwap(uint64_t v) noexcept {
     return
-      (v >> 56) |
-      ((v >> 40) & 0x000000000000ff00u) |
-      ((v >> 24) & 0x0000000000ff0000u) |
-      ((v >> 8) & 0x00000000ff000000u) |
-      ((v << 8) & 0x000000ff00000000u) |
-      ((v << 24) & 0x0000ff0000000000u) |
-      ((v << 40) & 0x00ff000000000000u) |
-      (v << 56);
+        (v >> 56) |
+        ((v >> 40) & 0x000000000000ff00u) |
+        ((v >> 24) & 0x0000000000ff0000u) |
+        ((v >> 8) & 0x00000000ff000000u) |
+        ((v << 8) & 0x000000ff00000000u) |
+        ((v << 24) & 0x0000ff0000000000u) |
+        ((v << 40) & 0x00ff000000000000u) |
+        (v << 56);
   }
 
   template<typename T>
   concept ByteSwapResult =
-    std::is_same_v<T, uint16_t> ||
-    std::is_same_v<T, uint32_t> ||
-    std::is_same_v<T, uint64_t>;
+      std::is_same_v<T, uint16_t> ||
+      std::is_same_v<T, uint32_t> ||
+      std::is_same_v<T, uint64_t>;
 
   template<ByteSwapResult T, typename U>
     requires std::is_fundamental_v<U>
@@ -126,12 +124,6 @@ namespace ROSE {
   constexpr int ToLower(const int c) {
     return (c >= 'A' && c <= 'Z') ? c + ('a' - 'A') : c;
   }
-
-  uint64_t FNV1A64(const void *data, size_t len);
-
-  uint64_t FNV1A64(const char *str);
-  //uint64_t FNV1A64(const char16_t *str);
-
 
 
 }

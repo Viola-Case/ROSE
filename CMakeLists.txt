@@ -132,18 +132,17 @@ target_link_libraries(ROSE_Editor
         PRIVATE SDL3::SDL3
 )
 
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Editor")
-    file(GLOB_RECURSE ROSE_ASSET_MAKER_SOURCES
-            "Engine/Tools/AssetMaker/*.cpp"
-            "Engine/Tools/AssetMaker/*.c"
-    )
-    add_executable(ROSE_AssetMaker ${ROSE_ASSET_MAKER_SOURCES})
-    target_include_directories(ROSE_AssetMaker PUBLIC include/)
-    set_property(TARGET ROSE_AssetMaker PROPERTY FOLDER "Tools")
+file(GLOB_RECURSE ROSE_ASSET_MAKER_SOURCES
+        "Engine/Tools/AssetMaker/*.cpp"
+        "Engine/Tools/AssetMaker/*.c"
+)
+add_executable(ROSE_AssetMaker ${ROSE_ASSET_MAKER_SOURCES})
+target_include_directories(ROSE_AssetMaker PUBLIC include/)
+set_property(TARGET ROSE_AssetMaker PROPERTY FOLDER "Tools")
 
-    target_link_libraries(ROSE_AssetMaker PRIVATE
-            SDL3::SDL3
-            SDL3_image::SDL3_image
-            SDL3_ttf::SDL3_ttf
-    )
-endif()
+target_link_libraries(ROSE_AssetMaker PRIVATE
+        SDL3::SDL3
+        SDL3_image::SDL3_image
+        SDL3_ttf::SDL3_ttf
+        ROSE_Core
+)

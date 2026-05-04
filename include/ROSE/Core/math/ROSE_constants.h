@@ -12,7 +12,7 @@
 
 #include <cstdint>
 #include <ROSE/Core/math/ROSE_complex.h>
-#include <ROSE/Core/rtl/ROSE_bigint.h>
+#include <ROSE/Core/ROSE_bigint.h>
 
 namespace ROSE::math {
   constexpr float PI =  3.141592653589793f;             //!< π

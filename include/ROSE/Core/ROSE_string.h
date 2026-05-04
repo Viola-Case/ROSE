@@ -11,8 +11,8 @@
 #pragma once
 
 #include <ROSE/Core/ROSE_typetraits.h>
-#include <ROSE/Core/rtl/ROSE_utility.h>
-#include <ROSE/Core/rtl/ROSE_list.h>
+#include <ROSE/Core/ROSE_utility.h>
+#include <ROSE/Core/ROSE_list.h>
 
 namespace ROSE {
 

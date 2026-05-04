@@ -12,7 +12,7 @@
 
 #include <cstddef>
 #include <type_traits>
-#include <ROSE/Core/rtl/ROSE_utility.h>
+#include <ROSE/Core/ROSE_utility.h>
 
 namespace ROSE {
 

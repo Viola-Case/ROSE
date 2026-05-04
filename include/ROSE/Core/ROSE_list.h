@@ -11,9 +11,9 @@
 #pragma once
 
 #include <ROSE/Core/ROSE_stdlib.h>
-#include <ROSE/Core/rtl/ROSE_array.h>
-#include <ROSE/Core/rtl/ROSE_utility.h>
-#include <ROSE/Core/rtl/ROSE_buffer.h>
+#include <ROSE/Core/ROSE_array.h>
+#include <ROSE/Core/ROSE_utility.h>
+#include <ROSE/Core/ROSE_buffer.h>
 
 namespace ROSE {
 

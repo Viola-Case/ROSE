@@ -14,12 +14,43 @@
 #include <type_traits>
 
 #include <ROSE/Core/ROSE_stdlib.h>
-#include <ROSE/Core/rtl/ROSE_buffer.h>
-#include <ROSE/Core/rtl/ROSE_pair.h>
-#include <ROSE/Core/rtl/ROSE_string.h>
-#include <ROSE/Core/rtl/ROSE_utility.h>
+#include <ROSE/Core/ROSE_buffer.h>
+#include <ROSE/Core/ROSE_pair.h>
+#include <ROSE/Core/ROSE_string.h>
+#include <ROSE/Core/ROSE_utility.h>
+#include <ROSE/Core/ROSE_bigint.h>
 
 namespace ROSE {
+
+  /*!
+   *
+   * @param data pointer to object
+   * @param len size of object
+   * @return FNV1a hash of object
+   */
+  uint64_t FNV1A64(const void *data, size_t len);
+
+  /**
+   *
+   * @param str null-terminated C-string to be hashed
+   * @return FNV1a hash of string
+   */
+  uint64_t FNV1A64(const char *str);
+
+  /**
+   *
+   * @param data pointer to hashed data
+   * @param len length of data to hash (in bytes)
+   * @return
+   */
+  uint128_t FNV1A128(const void *data, size_t len);
+
+  /**
+   *
+   * @param str null-terminated C-string
+   * @return FNV1a hash of string
+   */
+  uint128_t FNV1A128(const char *str);
 
   /**
 

@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include <ROSE/Core/rtl/ROSE_utility.h>
+#include <ROSE/Core/ROSE_utility.h>
 
 namespace ROSE {
   template<class T1, class T2>
