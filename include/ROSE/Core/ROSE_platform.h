@@ -125,3 +125,18 @@
 #define ROSE_KERNEL_POSIX 0
 #endif
 
+#if ROSE_PLATFORM_WINDOWS || ROSE_PLATFORM_MACOS || ROSE_PLATFORM_LINUX || ROSE_PLATFORM_BSD
+#define ROSE_PLATFORM_DESKTOP 1
+#else
+#define ROSE_PLATFORM_DESKTOP 0
+#endif
+
+#if !defined(__x86_64__) && !defined(_M_X64)
+#error "ROSE requires AMD64/x86-64"
+#endif
+
+#if !(__cplusplus >= 202002L || _MSVC_LANG >= 202002L)
+#error "ROSE is designed for C++20 or newer!"
+#endif
+
+

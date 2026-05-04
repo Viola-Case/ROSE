@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <utility>
+#include <ROSE/Core/ROSE_platform.h>
 #include <ROSE/Core/ROSE_stdlib.h>
 #include <ROSE/Core/ROSE_macros.h>
 #include <ROSE/Core/ROSE_rtl.h>

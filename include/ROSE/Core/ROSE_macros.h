@@ -73,22 +73,6 @@
 
 #pragma endregion
 
-#pragma region important stuff
-#if !(__cplusplus >= 202002L || _MSVC_LANG >= 202002L)
-#error ROSE is designed for C++20 or newer!
-#endif
-
-#if !defined(_M_AMD64) && !defined(__x86_64)
-#error ROSE is designed for x86-64 CPU architecture! For AMD64 please launch the ROSE runtime through Proton/FEX.
-#endif
-
-#if defined(__i386)
-
-#endif 
-
-
-#pragma endregion
-
 #pragma region logic
 
 namespace ROSE {
