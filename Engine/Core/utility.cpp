@@ -3,7 +3,6 @@
 #include <chrono>
 #include <intrin.h>
 
-//#pragma intrinsic(__rdtsc)
 
 namespace ROSE {
   void MemCpy(void *_Dst, const void *_Src, size_t size) {
@@ -67,38 +66,51 @@ namespace ROSE {
   extern "C" uint64_t __rdtsc();
 #endif
 
+  struct FNV1A128State {
+    uint128_t hash;
+  };
+
+  inline FNV1A128State FNV1A128Begin() noexcept {
+    return {math::FNVOFFSET128};
+  }
+
+  inline void FNV1A128Update(FNV1A128State &s, const void *data, size_t len) noexcept {
+    const auto *bytes = static_cast<const uint8_t *>(data);
+    for (size_t i = 0; i < len; ++i) {
+      s.hash ^= bytes[i];
+      s.hash *= math::FNVPRIME128;
+    }
+  }
+
+  inline uint128_t FNV1A128Finalize(const FNV1A128State &s) noexcept {
+    return s.hash;
+  }
+
+
   UUID UUID::Generate() noexcept {
-    static uint64_t s_counter{0};
 
     ++s_counter;
     // Returns the number of ticks (unit depends on the clock's period)
-    uint64_t ticks = __rdtsc(); // NOLINT
+    uint64_t ticks = __rdtsc();
 
     auto tempcounter = s_counter + ticks;
     return UUID{FNV1A128(&tempcounter, sizeof(tempcounter))};
   }
 
-  UUID UUID::Generate(char *str) noexcept {
-    static uint64_t s_counter{0};
 
-    ++s_counter;
-    // Returns the number of ticks (unit depends on the clock's period)
-    long long ticks = __rdtsc(); // NOLINT
 
-    auto tempcounter = s_counter + ticks;
-    auto len = StrLen(str);
-    char *ptr;
-    char *ptrOther;
-    if (len >= sizeof(tempcounter)) {
-      ptr = str;
-      ptrOther = reinterpret_cast<char*>(&tempcounter);
-    } else {
-      ptr = reinterpret_cast<char *>(&tempcounter);
-      ptrOther = str;
+  UUID UUID::Generate(const char *str) noexcept {
+
+    const uint64_t counter = s_counter.fetch_add(1, std::memory_order_relaxed);
+    const uint64_t ticks = __rdtsc();
+    const size_t len = str ? StrLen(str) : 0;
+
+    FNV1A128State state = FNV1A128Begin();
+    FNV1A128Update(state, &counter, sizeof(counter));
+    FNV1A128Update(state, &ticks, sizeof(ticks));
+    if (len > 0) {
+      FNV1A128Update(state, str, len);
     }
-    for (size_t i = 0; i < len; ++i) {
-
-    }
-    return UUID{FNV1A128(ptr, Max(len,sizeof(tempcounter)))};
+    return UUID{FNV1A128Finalize(state)};
   }
 }

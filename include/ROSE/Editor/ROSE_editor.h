@@ -5,4 +5,4 @@
 
 #include <ROSE/Editor/ROSE_metadata.h>
 #include <ROSE/Editor/ROSE_editorapplication.h>
-
+#include <ROSE/Editor/ROSE_asset.h>

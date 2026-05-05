@@ -14,6 +14,11 @@
 #include <ROSE/Core/ROSE_typetraits.h>
 
 namespace ROSE {
+  /// might implement thread safety a different way later but for now im gonna keep everything nice and easy and
+  /// comfortable and not awful by just using `std::atomic` instead of custom multithreading terribleness
+  template<typename T>
+  using Atomic = std::atomic<T>;
+
   template<typename T>
   constexpr std::remove_reference_t<T> &&Move(T &t) noexcept { return static_cast<std::remove_reference_t<T> &&>(t); }
 

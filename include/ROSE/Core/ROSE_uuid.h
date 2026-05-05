@@ -14,6 +14,8 @@
 
 namespace ROSE {
   union UUID {
+    static inline Atomic<uint64_t> s_counter{0};
+
     uint128_t value;
 
     [[nodiscard]] constexpr bool operator==(const UUID &_other) const noexcept {
@@ -22,7 +24,7 @@ namespace ROSE {
 
     [[nodiscard]] static UUID Generate() noexcept;
 
-    [[nodiscard]] static UUID Generate(char *str) noexcept;
+    [[nodiscard]] static UUID Generate(const char *str) noexcept;
   };
 }
 

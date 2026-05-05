@@ -15,7 +15,7 @@
 
 #define ROSE_VERSION_MAJOR 0
 #define ROSE_VERSION_MINOR 0
-#define ROSE_VERSION_PATCH 2
+#define ROSE_VERSION_PATCH 3
 
 constexpr unsigned int   ROSE_VERSIONNUM(char major, char minor, short patch) { return (1000000 * major + 10000 * minor + patch); }
 

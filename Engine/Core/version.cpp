@@ -1,13 +1,16 @@
-﻿#include <ROSE/ROSE.h>
+﻿/**
+ *
+ *//
 
-
-/**
-    @todo need to make this work outside the stack
-**/
-//const char *Rose_Versionnum_Str(unsigned int version) {
-//
-//}
+#include <ROSE/ROSE.h>
 
 namespace ROSE {
   unsigned int GetVersion() { return ROSE_VERSION; }
+  String VersionStr(unsigned int v) {
+    return Format("{}.{}.{}",
+      ROSE_VERSIONNUM_MAJOR(v),
+      ROSE_VERSIONNUM_MINOR(v),
+      ROSE_VERSIONNUM_PATCH(v)
+    );
+  }
 }
