@@ -1,0 +1,89 @@
+---
+# Only lint project headers, not vendored/system headers
+HeaderFilterRegex: "include/ROSE/.*"
+
+Checks: >-
+  -*,
+
+  # Catches real bugs — UB, bad patterns, misuse
+  bugprone-assert-side-effect,
+  bugprone-copy-constructor-init,
+  bugprone-implicit-widening-of-multiplication-result,
+  bugprone-misplaced-widening-cast,
+  bugprone-move-forwarding-reference,
+  bugprone-sizeof-expression,
+  bugprone-suspicious-enum-usage,
+  bugprone-swapped-arguments,
+  bugprone-undefined-memory-manipulation,
+  bugprone-unhandled-self-assignment,
+  bugprone-unused-raii,
+  bugprone-use-after-move,
+
+  # Static analysis: null dereferences, use-after-free, leak paths, etc.
+  clang-analyzer-core.*,
+  clang-analyzer-cplusplus.*,
+
+  # Core Guidelines (only the ones that apply — owning-memory and
+  # pro-bounds are disabled because ROSE has its own smart ptrs and asserts)
+  cppcoreguidelines-init-variables,
+  cppcoreguidelines-prefer-member-initializer,
+  cppcoreguidelines-slicing,
+
+  # Modernize — enforce idioms the codebase already uses
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-use-using,
+
+  # Performance
+  performance-for-range-copy,
+  performance-no-automatic-move,
+  performance-unnecessary-copy-initialization,
+  performance-unnecessary-value-param,
+
+  # Readability
+  readability-const-return-type,
+  readability-container-size-empty,
+  readability-delete-null-pointer,
+  readability-redundant-control-flow,
+  readability-simplify-boolean-expr,
+  readability-identifier-naming,
+
+CheckOptions:
+  # Classes and structs: PascalCase
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+
+  # Concepts: PascalCase
+  - key: readability-identifier-naming.ConceptCase
+    value: CamelCase
+
+  # Enums and enum values: PascalCase
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumConstantCase
+    value: CamelCase
+
+  # Template type parameters: PascalCase
+  - key: readability-identifier-naming.TemplateParameterCase
+    value: CamelCase
+
+  # Macros: SCREAMING_SNAKE
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE
+
+  # Non-static private members: m_ prefix + camelBack
+  # This is the closest clang-tidy gets to "class members only" — it's access-based
+  # rather than class-vs-struct keyword based, but since class data is private and
+  # struct data is public here that maps correctly. Static members are unaffected.
+  - key: readability-identifier-naming.PrivateMemberPrefix
+    value: m_
+  - key: readability-identifier-naming.PrivateMemberCase
+    value: camelBack
+
+  # Namespaces: lower_case (ROSE is all-caps but that still satisfies UPPER_CASE;
+  # math is lower — use AnyCase to avoid fighting this)
+  - key: readability-identifier-naming.NamespaceCase
+    value: aNy_CasE
+...
