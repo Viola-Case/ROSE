@@ -1,7 +1,7 @@
 ﻿/**
 
     @file      ROSE_stdlib.h
-    @brief     
+    @brief
     @details   ~
     @author    Viola Case
     @date      16.02.2026
@@ -11,7 +11,7 @@
 #pragma once
 
 #include <cstring>
-//#include <cstdio>
+// #include <cstdio>
 #include <cstdlib>
 #include <cstddef>
 #include <cstdint>

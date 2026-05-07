@@ -10,6 +10,5 @@ namespace ROSE::Editor {
     void CleanUp();
 
     void GetWindow();
-
   };
-}
+} // namespace ROSE::Editor

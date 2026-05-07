@@ -1,7 +1,7 @@
 ﻿/**
 
     @file      ROSE_behavior.h
-    @brief     
+    @brief
     @details   ~
     @author    Viola Case
     @date      18.02.2026
@@ -14,6 +14,7 @@ namespace ROSE {
   class Behavior {
     friend class Object;
     friend class Scene;
+
   protected:
     virtual void OnStart() = 0;
     virtual void FrameUpdate() = 0;
@@ -29,10 +30,7 @@ namespace ROSE {
   protected:
     UUID m_uuid;
     Object *m_object;
-
-
-
   };
 
   using Behaviour = Behavior;
-}
+} // namespace ROSE

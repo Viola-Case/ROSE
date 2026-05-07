@@ -1,7 +1,7 @@
 ﻿/**
 
     @file      ROSE_uuid.h
-    @brief     
+    @brief
     @details   ~
     @author    Viola Case
     @date      18.02.2026
@@ -14,7 +14,7 @@
 
 namespace ROSE {
   union UUID {
-    static inline Atomic<uint64_t> s_counter{0};
+    static inline Atomic<uint64_t> s_counter { 0 };
 
     uint128_t value;
 
@@ -26,9 +26,9 @@ namespace ROSE {
 
     [[nodiscard]] static UUID Generate(const char *str) noexcept;
   };
-}
+} // namespace ROSE
 
-template<>
+template <>
 struct std::hash<ROSE::UUID> {
   size_t operator()(const ROSE::UUID &uuid) const noexcept {
     return ROSE::FNV1A64(&uuid, sizeof(ROSE::UUID));

@@ -1,7 +1,7 @@
 ﻿/**
 
   @file      ROSE_tensor.h
-  @brief     
+  @brief
   @details   ~
   @author    Viola Case
   @date      23.02.2026
@@ -17,14 +17,14 @@ namespace ROSE::math {
 
   //! @todo probably get rid of this
 
-  template<typename Derived, Scalar T, size_t ...Dims>
+  template <typename Derived, Scalar T, size_t... Dims>
   struct TensorBase {
     constexpr T &operator[](size_t i) {
       return static_cast<Derived *>(this)->data[i];
     }
   };
 
-  template <Scalar T, size_t ...Dims>
+  template <Scalar T, size_t... Dims>
   struct Tensor {
   protected:
     static constexpr size_t rank = sizeof...(Dims);
@@ -32,7 +32,7 @@ namespace ROSE::math {
     static constexpr size_t size = (Dims * ...);
     T data[size];
 
-    template<size_t... Indices>
+    template <size_t... Indices>
     static consteval size_t offset_ct() {
       static_assert(sizeof...(Indices) == rank);
 
@@ -46,22 +46,19 @@ namespace ROSE::math {
     }
 
   public:
-    template<typename... Indices>
-      requires (sizeof...(Indices) == sizeof...(Dims))
+    template <typename... Indices>
+      requires(sizeof...(Indices) == sizeof...(Dims))
     constexpr T &operator()(Indices... idx) {
-      
     }
-    template<size_t ...idx>
+    template <size_t... idx>
       requires(sizeof...(idx) == sizeof...(Dims))
     constexpr T &at() {
-
-      
     }
 
-    template<size_t... Indices>
+    template <size_t... Indices>
     constexpr T &get() noexcept {
       return data[offset_ct<Indices...>()];
     }
   };
 
-}
+} // namespace ROSE::math

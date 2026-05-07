@@ -90,10 +90,12 @@ namespace ROSE {
   UUID UUID::Generate() noexcept {
 
     ++s_counter;
+
+    const uint64_t counter = s_counter.fetch_add(1, std::memory_order_relaxed);
     // Returns the number of ticks (unit depends on the clock's period)
     uint64_t ticks = __rdtsc();
 
-    auto tempcounter = s_counter + ticks;
+    const auto tempcounter = counter + ticks;
     return UUID{FNV1A128(&tempcounter, sizeof(tempcounter))};
   }
 

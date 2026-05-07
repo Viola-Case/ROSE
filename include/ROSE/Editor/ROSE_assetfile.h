@@ -1,12 +1,12 @@
 /**
 
   @file       ROSE_asset.h
-  @brief      
+  @brief
   @details    ~
   @author     Viola Case
   @date       05.05.2026
   @copyright  © Viola Case, 2026. All rights reserved.
-  
+
 **/
 #pragma once
 
@@ -31,14 +31,13 @@ namespace ROSE {
     [M]  data   \n
    */
   struct AssetFileHeader {
-    FileHeader header{FileType::Asset};
+    FileHeader header { FileType::Asset };
 
-    uint16_t versionMajor{ROSE_VERSION_MAJOR};
-    uint16_t versionMinor{ROSE_VERSION_MINOR};
+    uint16_t versionMajor { ROSE_VERSION_MAJOR };
+    uint16_t versionMinor { ROSE_VERSION_MINOR };
     // no patch version because it's probably not going to change asset handling (and if a patch does, it'll change
     // the minor version number or I quit software development)
 
     AssetType type;
-
   };
-}
+} // namespace ROSE

@@ -4,11 +4,11 @@
 
 #include <ROSE/Core/ROSE_utility.h>
 
-#if (defined (__clang__) || defined (__GNUC__))
+#if (defined(__clang__) || defined(__GNUC__))
 #define INT_128_EXISTS
 #endif
 
-#if (defined (INT_128_EXISTS))
+#if (defined(INT_128_EXISTS))
 using int128_t = __int128_t;
 using uint128_t = __uint128_t;
 #else
@@ -111,8 +111,7 @@ namespace ROSE {
       const uint64_t ll = a_lo * b_lo, lh = a_lo * b_hi;
       const uint64_t hl = a_hi * b_lo, hh = a_hi * b_hi;
       const uint64_t mid = (ll >> 32) + (lh & 0xFFFFFFFFull) + (hl & 0xFFFFFFFFull);
-      const uint64_t new_high = hh + (lh >> 32) + (hl >> 32) + (mid >> 32)
-                                + low * rhs.high + high * rhs.low;
+      const uint64_t new_high = hh + (lh >> 32) + (hl >> 32) + (mid >> 32) + low * rhs.high + high * rhs.low;
       low = (mid << 32) | (ll & 0xFFFFFFFFull);
       high = new_high;
       return *this;
@@ -128,8 +127,10 @@ namespace ROSE {
         r.low |= (i >= 64 ? (n.high >> (i - 64)) : (n.low >> i)) & 1ull;
         if (r.high > d.high || (r.high == d.high && r.low >= d.low)) {
           r -= d;
-          if (i >= 64) q.high |= 1ull << (i - 64);
-          else q.low |= 1ull << i;
+          if (i >= 64)
+            q.high |= 1ull << (i - 64);
+          else
+            q.low |= 1ull << i;
         }
       }
     }
@@ -162,7 +163,9 @@ namespace ROSE {
     }
 
     constexpr uint128_t &operator<<=(const uint128_t &rhs) noexcept {
-      if (rhs.high || rhs.low >= 128) { high = low = 0; } else {
+      if (rhs.high || rhs.low >= 128) {
+        high = low = 0;
+      } else {
         const uint64_t n = rhs.low;
         if (n == 0) {
         } else if (n >= 64) {
@@ -177,7 +180,9 @@ namespace ROSE {
     }
 
     constexpr uint128_t &operator>>=(const uint128_t &rhs) noexcept {
-      if (rhs.high || rhs.low >= 128) { high = low = 0; } else {
+      if (rhs.high || rhs.low >= 128) {
+        high = low = 0;
+      } else {
         const uint64_t n = rhs.low;
         if (n == 0) {
         } else if (n >= 64) {
@@ -192,52 +197,52 @@ namespace ROSE {
     }
 
     constexpr uint128_t operator+(const uint128_t &rhs) const noexcept {
-      auto result{*this};
+      auto result { *this };
       return (result += rhs);
     }
 
     constexpr uint128_t operator-(const uint128_t &rhs) const noexcept {
-      auto result{*this};
+      auto result { *this };
       return (result -= rhs);
     }
 
     constexpr uint128_t operator*(const uint128_t &rhs) const noexcept {
-      auto result{*this};
+      auto result { *this };
       return (result *= rhs);
     }
 
     constexpr uint128_t operator/(const uint128_t &rhs) const noexcept {
-      auto result{*this};
+      auto result { *this };
       return (result /= rhs);
     }
 
     constexpr uint128_t operator%(const uint128_t &rhs) const noexcept {
-      auto result{*this};
+      auto result { *this };
       return (result %= rhs);
     }
 
     constexpr uint128_t operator&(const uint128_t &rhs) const noexcept {
-      auto result{*this};
+      auto result { *this };
       return (result &= rhs);
     }
 
     constexpr uint128_t operator|(const uint128_t &rhs) const noexcept {
-      auto result{*this};
+      auto result { *this };
       return (result |= rhs);
     }
 
     constexpr uint128_t operator^(const uint128_t &rhs) const noexcept {
-      auto result{*this};
+      auto result { *this };
       return (result ^= rhs);
     }
 
     constexpr uint128_t operator<<(const uint128_t &rhs) const noexcept {
-      auto result{*this};
+      auto result { *this };
       return (result <<= rhs);
     }
 
     constexpr uint128_t operator>>(const uint128_t &rhs) const noexcept {
-      auto result{*this};
+      auto result { *this };
       return (result >>= rhs);
     }
 
@@ -253,7 +258,7 @@ namespace ROSE {
       return *this;
     }
   };
-}
+} // namespace ROSE
 
 using ROSE::int128_t;
 using ROSE::uint128_t;
@@ -261,8 +266,13 @@ using ROSE::uint128_t;
 #endif
 
 namespace ROSE {
+
+  /**
+   * @note DO NOT CALL THIS AT RUNTIME. We try not to throw any sort of `std::exception` in the engine logic so this
+   * should only ever be statically evaluated.
+   */
   constexpr uint128_t parse128(const char *str, size_t idx) {
-    uint128_t result{};
+    uint128_t result {};
     if (StrLen(str) > 2 + idx && str[idx] == '0') {
       if (ToLower(str[1 + idx]) == 'x') {
         // parse hex
@@ -276,7 +286,8 @@ namespace ROSE {
             result += (c - 'a' + 10);
           } else if (c == '\'') {
             continue;
-          } else throw std::invalid_argument("invalid digit");
+          } else
+            throw std::invalid_argument("invalid digit");
         }
       } else if (ToLower(str[1 + idx]) == 'b') {
         // parse binary
@@ -287,7 +298,8 @@ namespace ROSE {
             result += (c - '0');
           } else if (c == '\'') {
             continue;
-          } else throw std::invalid_argument("invalid digit");
+          } else
+            throw std::invalid_argument("invalid digit");
         }
       } else {
         // parse octal
@@ -298,7 +310,8 @@ namespace ROSE {
             result += c - '0';
           } else if (c == '\'') {
             continue;
-          } else throw std::invalid_argument("invalid digit");
+          } else
+            throw std::invalid_argument("invalid digit");
         }
       }
     } else {
@@ -310,7 +323,8 @@ namespace ROSE {
           result += c - '0';
         else if (c == '\'') {
           continue;
-        } else throw std::invalid_argument("invalid digit");
+        } else
+          throw std::invalid_argument("invalid digit");
       }
     }
     return result;
@@ -334,4 +348,4 @@ namespace ROSE {
   constexpr uint128_t operator""_u128(const char *str) {
     return operator""_ulll(str);
   }
-}
+} // namespace ROSE

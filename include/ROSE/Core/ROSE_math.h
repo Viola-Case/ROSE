@@ -1,7 +1,7 @@
 ﻿/**
 
   @file      ROSE_math.h
-  @brief     
+  @brief
   @details   ~
   @author    Viola Case
   @date      23.02.2026
@@ -19,16 +19,16 @@
 #include <ROSE/Core/math/ROSE_constants.h>
 
 namespace ROSE {
-  using math::Compf;
   using math::Compd;
-  using math::Quatf;
+  using math::Compf;
   using math::Quatd;
-  using math::Vec2f;
+  using math::Quatf;
   using math::Vec2d;
-  using math::Vec3f;
+  using math::Vec2f;
   using math::Vec3d;
-  using math::Vec4f;
+  using math::Vec3f;
   using math::Vec4d;
-  //using math::Mat;
-  
-}
+  using math::Vec4f;
+  // using math::Mat;
+
+} // namespace ROSE

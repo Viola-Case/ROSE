@@ -1,7 +1,7 @@
 ﻿/**
 
   @file      ROSE_string.h
-  @brief     
+  @brief
   @details   ~
   @author    Viola Case
   @date      6.02.2026
@@ -50,10 +50,10 @@ namespace ROSE {
       if (str) copy(m_data, str, m_size);
       m_data[m_size] = CharT(0);
     }
-    BasicString(const BasicString &other) : m_size(other.m_size), m_capacity(other.m_size+1) {
+    BasicString(const BasicString &other) : m_size(other.m_size), m_capacity(other.m_size + 1) {
       m_data = allocate(m_capacity);
       copy(m_data, other.m_data, m_size);
-      m_data[m_size] = CharT{ 0 };
+      m_data[m_size] = CharT { 0 };
     }
     BasicString(BasicString &&other) noexcept : m_data(other.m_data), m_size(other.m_size), m_capacity(other.m_capacity) {
       other.m_data = nullptr;
@@ -63,7 +63,7 @@ namespace ROSE {
     ~BasicString() {
       deallocate(m_data);
     }
-    
+
     BasicString &operator=(const BasicString &lvalue) {
       if (this != &lvalue) {
         BasicString tmp(lvalue);
@@ -90,7 +90,7 @@ namespace ROSE {
       CharT *d = m_data;
       m_data = other.m_data;
       other.m_data = d;
-      size_t  s = m_size;
+      size_t s = m_size;
       m_size = other.m_size;
       other.m_size = s;
       size_t c = m_capacity;
@@ -102,7 +102,7 @@ namespace ROSE {
     CharT *data() noexcept { return m_data; }
 
     const CharT *c_str() const noexcept {
-      static constexpr CharT null = CharT{ 0 };
+      static constexpr CharT null = CharT { 0 };
       return m_data ? m_data : &null;
     }
 
@@ -140,10 +140,10 @@ namespace ROSE {
 
       size_t addLen = StrLen(str);
       size_t newSize = m_size + addLen;
-      
+
       if (newSize + 1 > m_capacity) {
         size_t newCap = m_capacity == 0 ? newSize + 1
-          : m_capacity;
+                                        : m_capacity;
         while (newCap < newSize + 1)
           newCap *= 2;
         reserve(newCap);
@@ -162,13 +162,13 @@ namespace ROSE {
     }
 
     constexpr const CharT *begin() const noexcept { return data(); }
-    constexpr const CharT *end()   const noexcept { return data() + m_size; }
+    constexpr const CharT *end() const noexcept { return data() + m_size; }
 
-    CharT &operator[](size_t i)       noexcept { return m_data[i]; }
-    CharT  operator[](size_t i) const noexcept { return m_data[i]; }
+    CharT &operator[](size_t i) noexcept { return m_data[i]; }
+    CharT operator[](size_t i) const noexcept { return m_data[i]; }
 
     CharT &at(size_t i) {
-      //if (i >= m_size) throw std::out_of_range("BasicString::at");
+      // if (i >= m_size) throw std::out_of_range("BasicString::at");
       return m_data[i];
     }
 
@@ -188,7 +188,6 @@ namespace ROSE {
     }
 
     bool operator!=(const BasicString &rhs) const noexcept { return !(*this == rhs); }
-
   };
 
   template <Character CharT>
@@ -197,7 +196,7 @@ namespace ROSE {
     constexpr BasicStringView(const BasicString<CharT> &string) : m_data(string.m_data), m_size(string.m_size) {}
 
     constexpr const CharT *begin() const noexcept { return m_data; }
-    constexpr const CharT *end()   const noexcept { return m_data + m_size; }
+    constexpr const CharT *end() const noexcept { return m_data + m_size; }
 
     constexpr size_t size() { return m_size; }
     constexpr CharT *data() { return m_data; }
@@ -209,19 +208,19 @@ namespace ROSE {
     size_t m_size;
   };
 
-  template<Character CharT>
+  template <Character CharT>
   bool operator==(BasicStringView<CharT> a, BasicStringView<CharT> b) {
     return a.size() == b.size() && memcmp(a.data(), b.data(), a.size()) == 0;
   }
 
   using String = BasicString<char>;
-  //using WString = BasicString<char16_t>;
-  //using UString = BasicString<char32_t>;
+  // using WString = BasicString<char16_t>;
+  // using UString = BasicString<char32_t>;
 
   using StringView = BasicStringView<char>;
-  //using WStringView = BasicStringView<char16_t>;
-  //using UStringView = BasicStringView<char32_t>;
+  // using WStringView = BasicStringView<char16_t>;
+  // using UStringView = BasicStringView<char32_t>;
 
 
   uint64_t FNV1A64(const StringView &str);
-}
+} // namespace ROSE

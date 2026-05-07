@@ -1,7 +1,7 @@
 ﻿/**
 
     @file      ROSE_transform.h
-    @brief     
+    @brief
     @details   ~
     @author    Viola Case
     @date      24.02.2026
@@ -22,4 +22,4 @@ namespace ROSE {
     Quatd rotation;
     Vec3d scale;
   };
-}
+} // namespace ROSE

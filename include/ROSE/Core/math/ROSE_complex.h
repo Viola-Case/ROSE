@@ -1,7 +1,7 @@
 ﻿/**
 
   @file      ROSE_complex.h
-  @brief     
+  @brief
   @details   ~
   @author    Viola Case
   @date      23.02.2026
@@ -37,7 +37,7 @@ namespace ROSE::math {
      * @brief Real value in the complex basis
      * @param re_ Real number
      */
-    constexpr Comp(T re_) : Re(re_), Im(T{}) {}
+    constexpr Comp(T re_) : Re(re_), Im(T {}) {}
     /*!
      * @brief Complex number construction
      * @param _re Real component
@@ -50,7 +50,7 @@ namespace ROSE::math {
      */
     constexpr explicit Comp(Vec2<T> vec) : Re(vec.x), Im(vec.y) {}
 
-    //static inline const Comp I{ 0, -1 };
+    // static inline const Comp I{ 0, -1 };
 
 
 
@@ -100,42 +100,70 @@ namespace ROSE::math {
       return *this;
     }
 
-    constexpr const Comp operator+(const Comp &rhs) {
+    constexpr const Comp operator+(const Comp &rhs) const noexcept {
       Comp result(*this);
       return (result += rhs);
     }
-    constexpr const Comp operator+(const T &rhs) {
+    constexpr const Comp operator+(const T &rhs) const noexcept {
       Comp result(*this);
       return (result += rhs);
     }
-    constexpr const Comp operator-(const Comp &rhs) {
+    constexpr const Comp operator-(const Comp &rhs) const noexcept {
       Comp result(*this);
       return (result -= rhs);
     }
-    constexpr const Comp operator-(const T &rhs) {
+    constexpr const Comp operator-(const T &rhs) const noexcept {
       Comp result(*this);
       return (result -= rhs);
     }
-    constexpr const Comp operator*(const Comp &rhs) {
+    constexpr const Comp operator*(const Comp &rhs) const noexcept {
       Comp result(*this);
       return (result *= rhs);
     }
-    constexpr const Comp operator*(const T &rhs) {
+    constexpr const Comp operator*(const T &rhs) const noexcept {
       Comp result(*this);
       return (result *= rhs);
     }
-    constexpr const Comp operator/(const Comp &rhs) {
+    constexpr const Comp operator/(const Comp &rhs) const noexcept {
       Comp result(*this);
       return (result /= rhs);
     }
-    constexpr const Comp operator/(const T &rhs) {
+    constexpr const Comp operator/(const T &rhs) const noexcept {
       Comp result(*this);
       return (result /= rhs);
     }
 
+    template <StdScalar U>
+      requires(!std::is_same_v<T, U>)
+    constexpr operator Comp<U>() const noexcept {
+      return Comp<U> {
+        static_cast<U>(Re),
+        static_cast<U>(Im)
+      };
+    }
 
+    explicit operator T() const {
+    }
   };
+
+  template <StdScalar T, StdScalar U>
+  constexpr Comp<T> operator+(const T &lhs, const Comp<U> &rhs) noexcept {
+    return Comp<T> { lhs, T {} } + static_cast<Comp<T>>(rhs);
+  }
+
+  template <StdScalar T>
+  constexpr Comp<T> operator-(const T &lhs, const Comp<T> &rhs) noexcept {
+    return Comp<T> { lhs, T {} } - rhs;
+  }
 
   using Compf = Comp<float>;
   using Compd = Comp<double>;
-}
+
+  constexpr Comp<long double> operator""_i(long double im) {
+    return { 0.0L, im };
+  }
+  constexpr Comp<unsigned long long> operator""_i(unsigned long long im) {
+    return { 0ULL, im };
+  }
+
+} // namespace ROSE::math

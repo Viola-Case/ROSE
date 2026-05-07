@@ -1,7 +1,7 @@
 ﻿/**
 
   @file      ROSE.h
-  @brief     
+  @brief
   @details   ~
   @author    Viola Case
   @date      3.02.2026
@@ -33,4 +33,3 @@
 #include <ROSE/Core/ROSE_scene.h>
 #include <ROSE/Core/ROSE_camera.h>
 #include <ROSE/Core/ROSE_asset.h>
-

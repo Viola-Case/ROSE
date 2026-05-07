@@ -1,12 +1,12 @@
 /**
 
   @file       ROSE_fileformat.h
-  @brief      
+  @brief
   @details    ~
   @author     Viola Case
   @date       05.05.2026
   @copyright  © Viola Case, 2026. All rights reserved.
-  
+
 **/
 #pragma once
 
@@ -26,8 +26,8 @@ namespace ROSE {
   };
 
   struct FileHeader {
-    uint8_t magic[4]{'R','O','S','E'};
+    uint8_t magic[4] { 'R', 'O', 'S', 'E' };
     FileType type;
     constexpr FileHeader(FileType _type) noexcept : type(_type) {}
   };
-}
+} // namespace ROSE

@@ -1,7 +1,7 @@
 ﻿/**
 
   @file      ROSE_quaternion.h
-  @brief     
+  @brief
   @details   ~
   @author    Viola Case
   @date      23.02.2026
@@ -29,7 +29,7 @@ namespace ROSE::math {
    * @brief Quaternion
    * @tparam T - Underlying arithmetic type
    */
-  template<StdScalar T>
+  template <StdScalar T>
   struct Quat {
     union {
       struct {
@@ -38,8 +38,8 @@ namespace ROSE::math {
       T data[4];
     };
     constexpr Quat() noexcept : w(1), x(0), y(0), z(0) {}
-    constexpr Quat(T _w, T _x = T{}, T _y = T{}, T _z = T{}) noexcept : w(_w), x(_x), y(_y), z(_z) {}
-    constexpr Quat(Comp<T> _c, T _y = T{}, T _z = T{}) noexcept : w(_c.Re), x(_c.Im), y(_y), z(_z) {}
+    constexpr Quat(T _w, T _x = T {}, T _y = T {}, T _z = T {}) noexcept : w(_w), x(_x), y(_y), z(_z) {}
+    constexpr Quat(Comp<T> _c, T _y = T {}, T _z = T {}) noexcept : w(_c.Re), x(_c.Im), y(_y), z(_z) {}
     constexpr Quat(const Quat &rhs) noexcept = default;
     constexpr explicit Quat(Vec4<T> vec) : w(vec.w), x(vec.x), y(vec.y), z(vec.z) {}
 
@@ -47,10 +47,10 @@ namespace ROSE::math {
       T half = angle * T(0.5);
       T s = std::sin(half);
       return {
-          std::cos(half),
-          ax * s,
-          ay * s,
-          az * s
+        std::cos(half),
+        ax * s,
+        ay * s,
+        az * s
       };
     }
 
@@ -60,21 +60,27 @@ namespace ROSE::math {
       Quat<T> qz = AxisAngle(v.z, T(0), T(0), T(1));
 
       switch (order) {
-      case EulerOrder::XYZ: return qx * qy * qz;
-      case EulerOrder::XZY: return qx * qz * qy;
+      case EulerOrder::XYZ:
+        return qx * qy * qz;
+      case EulerOrder::XZY:
+        return qx * qz * qy;
 
-      case EulerOrder::YXZ: return qy * qx * qz;
-      case EulerOrder::YZX: return qy * qz * qx;
+      case EulerOrder::YXZ:
+        return qy * qx * qz;
+      case EulerOrder::YZX:
+        return qy * qz * qx;
 
-      case EulerOrder::ZXY: return qz * qx * qy;
-      case EulerOrder::ZYX: return qz * qy * qx;
+      case EulerOrder::ZXY:
+        return qz * qx * qy;
+      case EulerOrder::ZYX:
+        return qz * qy * qx;
       }
 
-      return Quat<T>{1, 0, 0, 0}; // fallback identity
+      return Quat<T> { 1, 0, 0, 0 }; // fallback identity
     }
 
     static constexpr Quat<T> Identity() {
-      return Quat<T>{1, 0, 0, 0};
+      return Quat<T> { 1, 0, 0, 0 };
     }
 
     constexpr Quat &operator*=(const Quat &rhs) noexcept {
@@ -87,7 +93,7 @@ namespace ROSE::math {
       x = nx;
       y = ny;
       z = nz;
-      
+
       return *this;
     }
 
@@ -99,10 +105,9 @@ namespace ROSE::math {
       Quat result(*this);
       return (result *= rhs);
     }*/
-
   };
 
   using Quatf = Quat<float>;
   using Quatd = Quat<double>;
-  
-}
+
+} // namespace ROSE::math

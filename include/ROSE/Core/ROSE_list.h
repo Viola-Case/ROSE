@@ -1,7 +1,7 @@
 ﻿/**
 
   @file      ROSE_list.h
-  @brief     
+  @brief
   @details   ~
   @author    Viola Case
   @date      4.02.2026
@@ -20,15 +20,14 @@ namespace ROSE {
   /**
 
       @class   List
-      @brief   
+      @brief
       @details ~
-      @tparam  T - 
+      @tparam  T -
 
   **/
-  template<typename T>
+  template <typename T>
   class List {
   public:
-
     using value_type = T;
     using size_type = size_t;
 
@@ -78,13 +77,13 @@ namespace ROSE {
 
 
     List(List &&other) noexcept
-      : m_buffer(Move(other.m_buffer)),
-      m_count(other.m_count) {
+        : m_buffer(Move(other.m_buffer)),
+          m_count(other.m_count) {
       other.m_count = 0;
     }
 
 
-    template<size_t N>
+    template <size_t N>
     List(const FixedArray<T, N> &arr) {
       reserve(N);
 
@@ -192,10 +191,10 @@ namespace ROSE {
     }
 
     constexpr T *begin() noexcept { return data(); }
-    constexpr T *end()   noexcept { return data() + m_count; }
+    constexpr T *end() noexcept { return data() + m_count; }
 
     constexpr const T *begin() const noexcept { return data(); }
-    constexpr const T *end()   const noexcept { return data() + m_count; }
+    constexpr const T *end() const noexcept { return data() + m_count; }
 
     // -------------------------
     // Modifiers
@@ -213,8 +212,8 @@ namespace ROSE {
       ++m_count;
     }
 
-    template<typename... Args>
-    T &emplace_back(Args&&... args) {
+    template <typename... Args>
+    T &emplace_back(Args &&...args) {
       ensure_capacity_for_one();
       new (data() + m_count) T(std::forward<Args>(args)...);
       return data()[m_count++];
@@ -237,12 +236,11 @@ namespace ROSE {
       return reinterpret_cast<const T *>(m_buffer.data());
     }
 
-    const bool operator ==(const List &rhs) {
+    const bool operator==(const List &rhs) {
       return m_count == rhs.m_count && memcmp(m_buffer.data(), rhs.m_buffer.data(), m_count) == 0;
     }
 
   private:
-
     RawBuffer m_buffer;
     size_t m_count = 0;
 
@@ -279,4 +277,4 @@ namespace ROSE {
       }
     }
   };
-}
+} // namespace ROSE

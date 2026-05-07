@@ -1,7 +1,7 @@
 ﻿/**
 
     @file      ROSE_utility.h
-    @brief     
+    @brief
     @details   ~
     @author    Viola Case
     @date      17.02.2026
@@ -16,37 +16,37 @@
 namespace ROSE {
   /// might implement thread safety a different way later but for now im gonna keep everything nice and easy and
   /// comfortable and not awful by just using `std::atomic` instead of custom multithreading terribleness
-  template<typename T>
+  template <typename T>
   using Atomic = std::atomic<T>;
 
 
-  template<typename T>
+  template <typename T>
   constexpr std::remove_reference_t<T> &&Move(T &t) noexcept { return static_cast<std::remove_reference_t<T> &&>(t); }
 
-  template<typename T>
+  template <typename T>
   constexpr T &&Forward(std::remove_reference_t<T> &t) noexcept { return static_cast<T &&>(t); }
 
-  template<typename T>
+  template <typename T>
   constexpr T &&Forward(std::remove_reference_t<T> &&t) noexcept {
     static_assert(!std::is_lvalue_reference_v<T>,
                   "bad forward: cannot forward rvalue as lvalue");
     return static_cast<T &&>(t);
   }
 
-  template<typename T>
+  template <typename T>
   constexpr void Swap(T &A, T &B) {
-    T temp{Move(A)};
+    T temp { Move(A) };
     A = Move(B);
     B = Move(temp);
   }
 
-  template<typename T>
+  template <typename T>
   constexpr T Min(T a, T b) { return a < b ? a : b; }
 
-  template<typename T>
+  template <typename T>
   constexpr T Max(T a, T b) { return a > b ? a : b; }
 
-  template<typename T, typename U = T>
+  template <typename T, typename U = T>
   constexpr T Exchange(T &obj, U &&newval) {
     T old = Move(obj);
     obj = Forward<U>(newval);
@@ -55,7 +55,7 @@ namespace ROSE {
 
   void MemCpy(void *_Dst, const void *_Src, size_t size);
 
-  template<typename T, typename U>
+  template <typename T, typename U>
   constexpr void SmartMemCpy(T *_Dst, U *_Src, size_t count = 1) {
     MemCpy(_Dst, _Src, Min(sizeof(T), sizeof(U)));
   }
@@ -67,32 +67,30 @@ namespace ROSE {
   }
 
   constexpr uint32_t ByteSwap(uint32_t v) noexcept {
-    return
-        (v >> 24) |
-        ((v >> 8) & 0x0000ff00u) |
-        ((v << 8) & 0x00ff0000u) |
-        (v << 24);
+    return (v >> 24) |
+           ((v >> 8) & 0x0000ff00u) |
+           ((v << 8) & 0x00ff0000u) |
+           (v << 24);
   }
 
   constexpr uint64_t ByteSwap(uint64_t v) noexcept {
-    return
-        (v >> 56) |
-        ((v >> 40) & 0x000000000000ff00u) |
-        ((v >> 24) & 0x0000000000ff0000u) |
-        ((v >> 8) & 0x00000000ff000000u) |
-        ((v << 8) & 0x000000ff00000000u) |
-        ((v << 24) & 0x0000ff0000000000u) |
-        ((v << 40) & 0x00ff000000000000u) |
-        (v << 56);
+    return (v >> 56) |
+           ((v >> 40) & 0x000000000000ff00u) |
+           ((v >> 24) & 0x0000000000ff0000u) |
+           ((v >> 8) & 0x00000000ff000000u) |
+           ((v << 8) & 0x000000ff00000000u) |
+           ((v << 24) & 0x0000ff0000000000u) |
+           ((v << 40) & 0x00ff000000000000u) |
+           (v << 56);
   }
 
-  template<typename T>
+  template <typename T>
   concept ByteSwapResult =
       std::is_same_v<T, uint16_t> ||
       std::is_same_v<T, uint32_t> ||
       std::is_same_v<T, uint64_t>;
 
-  template<ByteSwapResult T, typename U>
+  template <ByteSwapResult T, typename U>
     requires std::is_fundamental_v<U>
   constexpr T ByteSwap(U v) noexcept {
     return ByteSwap(static_cast<T>(v));
@@ -117,7 +115,7 @@ namespace ROSE {
       @param  str   - input string
       @retval       - length of string
   **/
-  template<Character CharT>
+  template <Character CharT>
   constexpr size_t StrLen(const CharT *str) noexcept {
     if (!str) return 0;
     size_t len = 0;
@@ -128,10 +126,7 @@ namespace ROSE {
 
   constexpr uint32_t Tag(const char (&s)[5]) noexcept {
     if (StrLen(s) < 4) return 0;
-    return (uint32_t(s[0]) << 24)
-           | (uint32_t(s[1]) << 16)
-           | (uint32_t(s[2]) << 8)
-           | (uint32_t(s[3]));
+    return (uint32_t(s[0]) << 24) | (uint32_t(s[1]) << 16) | (uint32_t(s[2]) << 8) | (uint32_t(s[3]));
   }
 
   constexpr int ToLower(const int c) {
@@ -139,4 +134,4 @@ namespace ROSE {
   }
 
 
-}
+} // namespace ROSE

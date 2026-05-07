@@ -1,7 +1,7 @@
 ﻿/**
 
     @file      ROSE_meta.h
-    @brief     
+    @brief
     @details   ~
     @author    Viola Case
     @date      18.02.2026
@@ -16,6 +16,5 @@ namespace ROSE {
   struct MetaInfo {
     char FileName[256];
     char RelativePath[256];
-
   };
-}
+} // namespace ROSE

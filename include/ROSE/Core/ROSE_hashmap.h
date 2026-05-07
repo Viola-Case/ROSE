@@ -69,17 +69,16 @@ namespace ROSE {
     friend class Iterator;
 
   public:
-
     struct TypeOps {
       size_t entrySize;
       size_t entryAlign;
       size_t keyOffset;
       size_t valueOffset;
       size_t keySize;
-      uint64_t(*hash)(const void *_key);
-      bool(*equal)(const void *_a, const void *_b);
-      void(*moveConstructEntry)(void *_dst, void *_src);
-      void(*destroyEntry)(void *_entry);
+      uint64_t (*hash)(const void *_key);
+      bool (*equal)(const void *_a, const void *_b);
+      void (*moveConstructEntry)(void *_dst, void *_src);
+      void (*destroyEntry)(void *_entry);
     };
 
     struct BucketState {
@@ -95,17 +94,19 @@ namespace ROSE {
 
     class Iterator {
       friend class HashMap;
+
     public:
       [[nodiscard]] void *get() const noexcept;
       Iterator &operator++() noexcept;
       [[nodiscard]] bool operator==(const Iterator &_other) const noexcept;
       [[nodiscard]] bool operator!=(const Iterator &_other) const noexcept;
+
     private:
       Iterator(HashMap *_owner, size_t _index) noexcept : m_owner(_owner), m_index(_index) {}
       void skipToOccupied() noexcept;
 
-      HashMap *m_owner{nullptr};
-      size_t m_index{0};
+      HashMap *m_owner { nullptr };
+      size_t m_index { 0 };
     };
 
     explicit HashMap(const TypeOps *_ops) noexcept;
@@ -140,7 +141,6 @@ namespace ROSE {
     [[nodiscard]] size_t capacity() const noexcept { return m_capacity; }
 
   private:
-
     static constexpr size_t NPOS = static_cast<size_t>(-1);
     static constexpr size_t INITIAL_CAPACITY = 8;
 
@@ -158,11 +158,11 @@ namespace ROSE {
     void destroyAllEntries() noexcept;
     void reset() noexcept;
 
-    const TypeOps *m_ops{nullptr};
-    RawBuffer m_stateBuffer{};
-    RawBuffer m_entryBuffer{};
-    size_t m_capacity{0};
-    size_t m_size{0};
+    const TypeOps *m_ops { nullptr };
+    RawBuffer m_stateBuffer {};
+    RawBuffer m_entryBuffer {};
+    size_t m_capacity { 0 };
+    size_t m_size { 0 };
   };
 
   /**
@@ -178,7 +178,7 @@ namespace ROSE {
                hash to different buckets.
 
   **/
-  template<typename K>
+  template <typename K>
   struct Hasher {
     static_assert(std::is_trivially_copyable_v<K>,
                   "Default ROSE::Hasher<K> only supports trivially-copyable "
@@ -196,7 +196,7 @@ namespace ROSE {
                allocations differ. Required for TypedHashMap<String, V> to
                behave correctly across the insert/find boundary.
   **/
-  template<Character CharT>
+  template <Character CharT>
   struct Hasher<BasicString<CharT>> {
     uint64_t operator()(const BasicString<CharT> &_key) const noexcept {
       return FNV1A64(_key.data(), _key.size() * sizeof(CharT));
@@ -213,14 +213,14 @@ namespace ROSE {
       @tparam  Hash - hash functor; defaults to Hasher<K>
 
   **/
-  template<typename K, typename V, typename Hash = Hasher<K>>
+  template <typename K, typename V, typename Hash = Hasher<K>>
   class TypedHashMap {
   public:
-
     using Entry = Pair<K, V>;
 
     class Iterator {
       friend class TypedHashMap;
+
     public:
       [[nodiscard]] Entry &operator*() const noexcept {
         return *static_cast<Entry *>(m_it.get());
@@ -238,6 +238,7 @@ namespace ROSE {
       [[nodiscard]] bool operator!=(const Iterator &_other) const noexcept {
         return m_it != _other.m_it;
       }
+
     private:
       explicit Iterator(HashMap::Iterator _it) noexcept : m_it(_it) {}
       HashMap::Iterator m_it;
@@ -260,16 +261,16 @@ namespace ROSE {
     **/
     TypedHashMap(std::initializer_list<Pair<K, V>> _init) : m_map(&ops()) {
       for (const Pair<K, V> &entry : _init) {
-        Entry tmp{entry.first, entry.second};
+        Entry tmp { entry.first, entry.second };
         m_map.insert(&tmp);
       }
     }
 
-    [[nodiscard]] Iterator begin() noexcept { return Iterator{m_map.begin()}; }
-    [[nodiscard]] Iterator end() noexcept { return Iterator{m_map.end()}; }
+    [[nodiscard]] Iterator begin() noexcept { return Iterator { m_map.begin() }; }
+    [[nodiscard]] Iterator end() noexcept { return Iterator { m_map.end() }; }
 
     [[nodiscard]] Iterator find(const K &_key) noexcept {
-      return Iterator{m_map.find(&_key)};
+      return Iterator { m_map.find(&_key) };
     }
 
     [[nodiscard]] bool contains(const K &_key) const noexcept {
@@ -277,22 +278,22 @@ namespace ROSE {
     }
 
     Iterator insert(const K &_key, V &&_value) {
-      Entry tmp{_key, Move(_value)};
+      Entry tmp { _key, Move(_value) };
       m_map.insert(&tmp);
-      return Iterator{m_map.find(&_key)};
+      return Iterator { m_map.find(&_key) };
     }
 
     Iterator insert(const K &_key, const V &_value) {
-      Entry tmp{_key, _value};
+      Entry tmp { _key, _value };
       m_map.insert(&tmp);
-      return Iterator{m_map.find(&_key)};
+      return Iterator { m_map.find(&_key) };
     }
 
-    template<class... Args>
+    template <class... Args>
     Iterator emplace(const K &_key, Args &&..._args) {
-      Entry tmp{_key, V(Forward<Args>(_args)...)};
+      Entry tmp { _key, V(Forward<Args>(_args)...) };
       m_map.insert(&tmp);
-      return Iterator{m_map.find(&_key)};
+      return Iterator { m_map.find(&_key) };
     }
 
     bool erase(const K &_key) noexcept { return m_map.erase(&_key); }
@@ -302,16 +303,15 @@ namespace ROSE {
     [[nodiscard]] bool empty() const noexcept { return m_map.empty(); }
 
   private:
-
     static const HashMap::TypeOps &ops() noexcept {
-      static const HashMap::TypeOps value{
+      static const HashMap::TypeOps value {
         sizeof(Entry),
         alignof(Entry),
         offsetof(Entry, first),
         offsetof(Entry, second),
         sizeof(K),
         +[](const void *_k) -> uint64_t {
-          return Hash{}(*static_cast<const K *>(_k));
+          return Hash {}(*static_cast<const K *>(_k));
         },
         +[](const void *_a, const void *_b) -> bool {
           return *static_cast<const K *>(_a) == *static_cast<const K *>(_b);
@@ -328,4 +328,4 @@ namespace ROSE {
 
     HashMap m_map;
   };
-}
+} // namespace ROSE

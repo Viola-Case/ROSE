@@ -1,7 +1,7 @@
 ﻿/**
 
     @file      ROSE_buffer.h
-    @brief     
+    @brief
     @details   ~
     @author    Viola Case
     @date      9.02.2026
@@ -33,9 +33,10 @@ namespace ROSE {
     const void *data() const noexcept;
 
     size_t size_bytes() const noexcept;
+
   private:
     void *m_data;
     size_t m_size;
   };
 
-}
+} // namespace ROSE

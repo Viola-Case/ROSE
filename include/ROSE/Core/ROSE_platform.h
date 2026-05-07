@@ -12,84 +12,84 @@
 
 
 
-#if defined (_WIN32)
+#if defined(_WIN32)
 #define ROSE_PLATFORM_WINDOWS 1
-#define ROSE_PLATFORM "Windows"
+#define ROSE_PLATFORM         "Windows"
 #else
 #define ROSE_PLATFORM_WINDOWS 0
 #endif
 
-#if defined (__APPLE__) && defined(__MACH__)
+#if defined(__APPLE__) && defined(__MACH__)
 #define ROSE_PLATFORM_MACOS 1
-#define ROSE_PLATFORM "MacOS"
+#define ROSE_PLATFORM       "MacOS"
 #else
 #define ROSE_PLATFORM_MACOS 0
 #endif
 
-#if defined (__linux__)
+#if defined(__linux__)
 #define ROSE_PLATFORM_LINUX 1
-#define ROSE_PLATFORM "Linux"
+#define ROSE_PLATFORM       "Linux"
 #else
 #define ROSE_PLATFORM_LINUX 0
 #endif
 
-#if defined (__FreeBSD__) || defined (__NetBSD__) || defined (__OpenBSD__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #define ROSE_PLATFORM_BSD 1
-#define ROSE_PLATFORM "BSD"
+#define ROSE_PLATFORM     "BSD"
 #else
 #define ROSE_PLATFORM_BSD 0
 #endif
 
 #if defined(_XBOX_ONE)
 #define ROSE_PLATFORM_XBOX_ONE 1
-#define ROSE_PLATFORM "XBox One"
+#define ROSE_PLATFORM          "XBox One"
 #else
 #define ROSE_PLATFORM_XBOX_ONE 0
 #endif
 
-#if defined (_GAMING_XBOX_SCARLETT)
+#if defined(_GAMING_XBOX_SCARLETT)
 #define ROSE_PLATFORM_XBOX_SERIES_XS 1
-#define ROSE_PLATFORM "Xbox Series X/S"
+#define ROSE_PLATFORM                "Xbox Series X/S"
 #else
 #define ROSE_PLATFORM_XBOX_SERIES_XS 0
 #endif
 
-#if defined (__ORBIS__)
+#if defined(__ORBIS__)
 #define ROSE_PLATFORM_PS4 1
-#define ROSE_PLATFORM "PlayStation 4"
+#define ROSE_PLATFORM     "PlayStation 4"
 #else
 #define ROSE_PLATFORM_PS4 0
 #endif
 
-#if defined (__PROSPERO__)
+#if defined(__PROSPERO__)
 #define ROSE_PLATFORM_PS5 1
-#define ROSE_PLATFORM "PlayStation 5"
+#define ROSE_PLATFORM     "PlayStation 5"
 #else
 #define ROSE_PLATFORM_PS5 0
 #endif
 
-#if defined (__NX__)
+#if defined(__NX__)
 #define ROSE_PLATFORM_SWITCH 1
-#define ROSE_PLATFORM "Nintendo Switch"
+#define ROSE_PLATFORM        "Nintendo Switch"
 #else
 #define ROSE_PLATFORM_SWITCH 0
 #endif
 
 #if defined(__clang__)
 #define ROSE_COMPILER_CLANG 1
-#define ROSE_COMPILER_GCC 0
-#define ROSE_COMPILER_MSVC 0
-#define ROSE_COMPILER "Clang"
+#define ROSE_COMPILER_GCC   0
+#define ROSE_COMPILER_MSVC  0
+#define ROSE_COMPILER       "Clang"
 #elif defined(__GNUC__)
 #define ROSE_COMPILER_CLANG 0
-#define ROSE_COMPILER_GCC 1
-#define ROSE_COMPILER_MSVC 0
-#define ROSE_COMPILER "GCC"
+#define ROSE_COMPILER_GCC   1
+#define ROSE_COMPILER_MSVC  0
+#define ROSE_COMPILER       "GCC"
 #elif defined(_MSC_VER)
 #define ROSE_COMPILER_CLANG 0
-#define ROSE_COMPILER_GCC 0
-#define ROSE_COMPILER_MSVC 1
-#define ROSE_COMPILER "MSVC"
+#define ROSE_COMPILER_GCC   0
+#define ROSE_COMPILER_MSVC  1
+#define ROSE_COMPILER       "MSVC"
 #else
 #error "Unknown or unsupported compiler"
 #endif
@@ -138,5 +138,3 @@
 #if !(__cplusplus >= 202002L || _MSVC_LANG >= 202002L)
 #error "ROSE is designed for C++20 or newer!"
 #endif
-
-
