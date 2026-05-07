@@ -39,5 +39,19 @@ namespace ROSE {
     // the minor version number or I quit software development)
 
     AssetType type;
+
+    AssetFlags flags;
+
+    uint32_t metaDataSize; //!< Bytes
+    uint32_t dataSize; //!< Bytes
+
   };
+
+  struct AssetFile {
+    AssetFileHeader header;
+    char *metaData;
+    char *data;
+  };
+
+
 } // namespace ROSE

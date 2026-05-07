@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 namespace ROSE {
 
   enum class AssetType : uint32_t {
@@ -25,6 +27,12 @@ namespace ROSE {
     Script = Tag("SRPT"),
 
 
+
+
   };
+
+  using AssetFlags = uint32_t;
+  constexpr AssetFlags AssetFlags_None = 0;
+  constexpr AssetFlags AssetFlags_Compressed = 1 << 6;
 
 }

@@ -33,3 +33,4 @@
 #include <ROSE/Core/ROSE_scene.h>
 #include <ROSE/Core/ROSE_camera.h>
 #include <ROSE/Core/ROSE_asset.h>
+#include <ROSE/Core/ROSE_surface.h>
