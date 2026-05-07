@@ -19,6 +19,7 @@ namespace ROSE {
   template<typename T>
   using Atomic = std::atomic<T>;
 
+
   template<typename T>
   constexpr std::remove_reference_t<T> &&Move(T &t) noexcept { return static_cast<std::remove_reference_t<T> &&>(t); }
 
@@ -125,6 +126,13 @@ namespace ROSE {
     return len;
   }
 
+  constexpr uint32_t Tag(const char (&s)[5]) noexcept {
+    if (StrLen(s) < 4) return 0;
+    return (uint32_t(s[0]) << 24)
+           | (uint32_t(s[1]) << 16)
+           | (uint32_t(s[2]) << 8)
+           | (uint32_t(s[3]));
+  }
 
   constexpr int ToLower(const int c) {
     return (c >= 'A' && c <= 'Z') ? c + ('a' - 'A') : c;

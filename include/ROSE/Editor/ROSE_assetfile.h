@@ -12,14 +12,11 @@
 
 #include <ROSE/Core/ROSE_fileformat.h>
 #include <ROSE/Core/ROSE_version.h>
-
+#include <ROSE/Core/ROSE_asset.h>
 
 
 
 namespace ROSE {
-
-
-
 
   /**
     [4]  magic       "ROSE"   \n
@@ -33,7 +30,7 @@ namespace ROSE {
     [N]  metadata   \n
     [M]  data   \n
    */
-  struct AssetFileHeader{
+  struct AssetFileHeader {
     FileHeader header{FileType::Asset};
 
     uint16_t versionMajor{ROSE_VERSION_MAJOR};

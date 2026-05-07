@@ -10,7 +10,9 @@
 **/
 
 #pragma once
+
 namespace ROSE {
+
   enum class AssetType : uint32_t {
     Texture         = Tag("TXTR"),
     Audio           = Tag("AUDO"),
@@ -24,4 +26,5 @@ namespace ROSE {
 
 
   };
+
 }
