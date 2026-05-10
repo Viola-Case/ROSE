@@ -33,11 +33,16 @@ namespace ROSE {
     }
   }
 
-  enum class SurfaceSourceType {
-    SDLImage,
-    PackagedAsset,
-    Procedural,
-    Buffer
+  struct SurfaceSourceType {
+    enum Value : uint8_t {
+      SDLImage,
+      PackagedAsset,
+      Procedural,
+      Buffer
+    } value;
+    constexpr SurfaceSourceType(Value v) : value(v) {}
+    constexpr SurfaceSourceType(uint8_t v) noexcept : value(static_cast<Value>(v)) {}
+    constexpr operator uint8_t() const noexcept { return static_cast<uint8_t>(value); }
   };
 
   struct SurfaceContainer {
