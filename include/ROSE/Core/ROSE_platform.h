@@ -134,7 +134,10 @@
 #if !defined(__x86_64__) && !defined(_M_X64)
 #error "ROSE requires AMD64/x86-64"
 #endif
+// TODO i mean... does it really though
 
 #if !(__cplusplus >= 202002L || _MSVC_LANG >= 202002L)
 #error "ROSE is designed for C++20 or newer!"
 #endif
+// TODO make a fallback in case someone at like CERN or somewhere has some super legacy bullshit
+

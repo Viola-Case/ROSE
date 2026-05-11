@@ -28,30 +28,47 @@
   #define ROSE_FORCEINLINE     __forceinline
   #define ROSE_DEPRECATED(msg) __declspec(deprecated(msg))
   #define ROSE_NOINLINE        __declspec(noinline)
+  #define ROSE_ALIGN(x)        __declspec(align(x))
+  #define ROSE_NOVTABLE        __declspec(novtable)
 
 #else
 
   #define ROSE_FORCEINLINE     __attribute__((always_inline)) inline
   #define ROSE_DEPRECATED(msg) __attribute__((deprecated(msg)))
+  #define ROSE_ALIGN(x)        __attribute__((aligned(x)))
+  #define ROSE_NOVTABLE
 
 #endif
 
 #if ROSE_COMPILER_CLANG || ROSE_COMPILER_GCC
   #define ROSE_LIKELY(x)   __builtin_expect(!!(x), 1)
   #define ROSE_UNLIKELY(x) __builtin_expect(!!(x), 0)
+  #define ROSE_PURE        __attribute__((pure))
+  #define ROSE_CONST       __attribute__((const))
 #else
   #define ROSE_LIKELY(x)   (x)
   #define ROSE_UNLIKELY(x) (x)
+  #define ROSE_PURE
+  #define ROSE_CONST
 #endif
+
+#if ROSE_COMPILER_MSVC || ROSE_COMPILER_CLANG
+  #define ROSE_CDECL __cdecl
+#else
+  #define ROSE_CDECL __attribute__((cdecl))
+#endif
+
 
 #pragma region API bullshit
 
 #if ROSE_PLATFORM_WINDOWS
   #define ROSE_API_EXPORT __declspec(dllexport)
   #define ROSE_API_IMPORT __declspec(dllimport)
+  #define ROSE_STDCALL    __stdcall
 #else
   #define ROSE_API_EXPORT __attribute__((visibility("default")))
   #define ROSE_API_IMPORT
+  #define ROSE_STDCALL
 #endif
 
 #define ROSE_API(MODULE) CASE_XCAT(ROSE_, CASE_XCAT(MODULE, _API))
