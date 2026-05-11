@@ -9,7 +9,7 @@ IndentCaseLabels: false
 AccessModifierOffset: -2
 IndentRequiresClause: true
 RequiresClausePosition: OwnLine
-ColumnLimit: 0
+ColumnLimit: 120
 BreakBeforeBraces: Attach
 PointerAlignment: Right
 ReferenceAlignment: Right

@@ -25,7 +25,7 @@ namespace ROSE {
     Animation = Tag("ANIM"),
     Font = Tag("FONT"),
     Script = Tag("SRPT"),
-
+    Raw = Tag("RAWF"),
 
 
 
