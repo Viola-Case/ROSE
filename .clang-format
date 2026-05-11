@@ -30,6 +30,7 @@ AlignConsecutiveMacros:
 MaxEmptyLinesToKeep: 10
 EmptyLineBeforeAccessModifier: LogicalBlock
 EmptyLineAfterAccessModifier: Never
+IndentPPDirectives: BeforeHash
 SortIncludes: Never
 IncludeBlocks: Preserve
 SpaceBeforeParens: ControlStatements

@@ -140,9 +140,13 @@ add_executable(ROSE_AssetMaker ${ROSE_ASSET_MAKER_SOURCES})
 target_include_directories(ROSE_AssetMaker PUBLIC include/)
 set_property(TARGET ROSE_AssetMaker PROPERTY FOLDER "Tools")
 
+find_package(CLI11 REQUIRED)
+
 target_link_libraries(ROSE_AssetMaker PRIVATE
         SDL3::SDL3
         SDL3_image::SDL3_image
         SDL3_ttf::SDL3_ttf
         ROSE_Core
+        CLI11::CLI11
 )
+set_property(TARGET ROSE_AssetMaker PROPERTY OUTPUT_NAME ROSE-masset)

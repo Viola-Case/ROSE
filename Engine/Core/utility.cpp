@@ -9,9 +9,20 @@ namespace ROSE {
     auto *p = reinterpret_cast<unsigned char *>(_Dst);
     auto *q = reinterpret_cast<const unsigned char *>(_Src);
 
-    while (size--) {
+    while (size-- && reinterpret_cast<uintptr_t>(p) & 0x7) {
       *p++ = *q++;
     }
+
+    constexpr size_t s = sizeof(uint64_t);
+
+    while (size >= s) {
+      size -= s;
+      *reinterpret_cast<uint64_t *>(p) = *reinterpret_cast<const uint64_t *>(q);
+      p+=s;
+      q+=s;
+    }
+    while (size--)
+      *p++ = *q++;
   }
 
 
@@ -71,7 +82,7 @@ namespace ROSE {
   };
 
   inline FNV1A128State FNV1A128Begin() noexcept {
-    return {math::FNVOFFSET128};
+    return { math::FNVOFFSET128 };
   }
 
   inline void FNV1A128Update(FNV1A128State &s, const void *data, size_t len) noexcept {
@@ -96,7 +107,7 @@ namespace ROSE {
     uint64_t ticks = __rdtsc();
 
     const auto tempcounter = counter + ticks;
-    return UUID{FNV1A128(&tempcounter, sizeof(tempcounter))};
+    return UUID { FNV1A128(&tempcounter, sizeof(tempcounter)) };
   }
 
 
@@ -113,6 +124,6 @@ namespace ROSE {
     if (len > 0) {
       FNV1A128Update(state, str, len);
     }
-    return UUID{FNV1A128Finalize(state)};
+    return UUID { FNV1A128Finalize(state) };
   }
-}
+} // namespace ROSE

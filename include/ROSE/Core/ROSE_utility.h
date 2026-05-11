@@ -58,7 +58,7 @@ namespace ROSE {
   template <typename T, typename U>
   constexpr void SmartMemCpy(T *_Dst, U *_Src, size_t count = 1) {
     MemCpy(_Dst, _Src, Min(sizeof(T), sizeof(U)));
-  }
+  } // TODO either remove the constexpr or inline `MemCpy`
 
 #pragma region Byte swapping
 
