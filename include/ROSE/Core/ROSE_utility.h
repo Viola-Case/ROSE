@@ -126,7 +126,7 @@ namespace ROSE {
 
   constexpr uint32_t Tag(const char (&s)[5]) noexcept {
     if (StrLen(s) < 4) return 0;
-    return (uint32_t(s[0]) << 24) | (uint32_t(s[1]) << 16) | (uint32_t(s[2]) << 8) | (uint32_t(s[3]));
+    return (uint32_t(s[3]) << 24) | (uint32_t(s[2]) << 16) | (uint32_t(s[1]) << 8) | (uint32_t(s[0]));
   }
 
   constexpr int ToLower(const int c) {

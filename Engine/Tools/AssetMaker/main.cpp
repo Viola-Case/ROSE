@@ -28,10 +28,14 @@ using std::string;
   PrintF("{}\n", app.help());                                                                                          \
   return returnval
 
+// TODO rewrite this as a library
+
+
 int main(int argc, char **argv) {
 
+  // TODO figure out what's wrong with the copyright sign
   std::string version = std::format("ROSE Asset Maker Version {}.{}\n\t"
-                                    "\xC2\xA9 Viola Case, 2026. All right reserved.\n\n\t"
+                                    "© Viola Case, 2026. All right reserved.\n\n\t"
                                     "Designed for use with ROSE.",
                                     ASSET_MAKER_VERSION_MAJOR, ASSET_MAKER_VERSION_MINOR);
   CLI::App app {};
@@ -41,15 +45,13 @@ int main(int argc, char **argv) {
   string typeStr {};
   string outputFile {};
 
-  bool i;
-
-  bool z;
+  // bool z;
 
   app.add_option("-f,--file", inputFile, "Specify the path of the file to pack");
   app.add_option("filename", inputFile);
   app.add_option("-t,--type", typeStr, "Specify the type");
   app.add_option("-o,--output", outputFile, "Specify the output file");
-  app.add_flag("-z,--archive", z);
+  // app.add_flag("-z,--archive", z);
 
 
   app.name("ROSE-masset");
@@ -66,49 +68,71 @@ int main(int argc, char **argv) {
 
   std::ifstream ifs(inputFile.c_str(), std::ios::binary);
   if (!ifs.is_open()) {
-    PrintF("Failed to open {}", inputFile);
+    std::cerr << Format("Failed to open {}", inputFile).c_str();
+    ABORT_SHOW_HELP(1);
   }
 
   size_t size = std::filesystem::file_size(inputFile);
 
-  auto *buf = new char[size] {};
+  std::vector<char> buf(size);
 
-  // copy file contents to buffer
+  ifs.read(buf.data(), size);
 
   ifs.close();
 
   if (outputFile.empty()) {
     outputFile = inputFile;
+    outputFile = outputFile.substr(0, outputFile.find_last_of('.'));
+    outputFile += ".roseasset";
+    PrintF("No output file specified, setting output file to {}\n", outputFile);
+
+  } else {
+    outputFile = outputFile.substr(0, outputFile.find_last_of('.'));
+    outputFile += ".roseasset";
   }
-
-  outputFile = outputFile.substr(0, outputFile.find_last_of('.'));
-  outputFile += ".roseasset";
-
-  PrintF("Output file name: {}\n", outputFile);
-
-  std::ofstream ofs(outputFile.c_str(), std::ios::binary);
 
   AssetFileHeader header;
   AssetType aType;
   if (typeStr.empty()) {
-    string extension = inputFile.substr(inputFile.find_last_of('.') + 1);
-    PrintF("Extension: {}\n", extension);
 
+    PrintF("No asset type specified, parsing file extension for implicit type...\n");
+    string extension = inputFile.substr(inputFile.find_last_of('.') + 1);
     aType = ParseAssetExtensionType(extension.c_str());
+    auto typeTag = uint32_t(aType);
+    PrintF("Type inferred: {}{:c}{:c}{:c}{:c}{}\n", "\033[36m", (typeTag >> 0) & 0xff, (typeTag >> 8) & 0xff,
+           (typeTag >> 16) & 0xff, (typeTag >> 24) & 0xff, "\033[0m");
+
   } else if (typeStr.size() != 4) {
-    PrintF("Extension must be 4 characters long!\n");
-    delete[] buf;
+
+    PrintF("{}Extension must be 4 characters long!{}\n", "\033[33m", "\033[0m");
     ABORT_SHOW_HELP(1);
+
   } else {
-    char t[5]{};
+
+    char t[5] {};
     MemCpy(t, typeStr.c_str(), 4);
     aType = static_cast<AssetType>(Tag(t));
+
   }
+  
   header.type = aType;
+  header.metaDataSize = 0;
+  header.dataSize = size;
+
+  std::ofstream ofs(outputFile.c_str(), std::ios::binary);
+  if (!ofs.is_open()) {
+    PrintF("{}ERROR: {} Failed to open file for writing!", "\033[31m", "\033[0m");
+  }
+
+  ofs.write(reinterpret_cast<char *>(&header), sizeof(header));
+
+  // TODO write data properly as SDL surface instead of copying file contents
+
+  ofs.write(buf.data(), buf.size());
 
   ofs.close();
 
-  delete[] buf;
+  PrintF("Wrote to {}\n", outputFile);
 
   return 0;
 }

@@ -26,7 +26,7 @@ namespace ROSE {
     [4]  asset_type   \n
     [4]  flags    \n
     [4]  metadata_size    \n
-    [4]  data_size    \n
+    [8]  data_size    \n
     [N]  metadata   \n
     [M]  data   \n
    */
@@ -40,10 +40,10 @@ namespace ROSE {
 
     AssetType type;
 
-    AssetFlags flags;
+    AssetFlags flags{};
 
     uint32_t metaDataSize; //!< Bytes
-    uint32_t dataSize; //!< Bytes
+    uint64_t dataSize; //!< Bytes
 
   };
 
