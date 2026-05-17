@@ -16,7 +16,7 @@
 
 namespace ROSE {
 
-  PixelFormat FormatFromSDLPixelFormat(const SDL_PixelFormat format) noexcept {
+  inline PixelFormat PixelFormatFromSDLPixelFormat(const SDL_PixelFormat format) noexcept {
     switch (format) {
     case SDL_PIXELFORMAT_RGBA32:
       return PixelFormat::RGBA32;

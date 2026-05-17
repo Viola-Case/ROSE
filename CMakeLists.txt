@@ -37,9 +37,9 @@ if(MSVC)
     add_compile_options(/utf-8)
 endif()
 
-file(GLOB_RECURSE ROSE_CORE_SOURCES "Engine/Core/*.cpp" "Core/*.c" "Core/*.h")
+file(GLOB_RECURSE ROSE_CORE_SOURCES "src/Core/*.cpp" "Core/*.c" "Core/*.h")
 add_library(ROSE_Core STATIC ${ROSE_CORE_SOURCES}
-        Engine/Core/behavior.cpp)
+        src/Core/behavior.cpp)
 
 set_target_properties(ROSE_Core PROPERTIES
     DEBUG_POSTFIX "d"
@@ -59,7 +59,7 @@ find_package(SDL3_image REQUIRED)
 
 target_include_directories(ROSE_Core PUBLIC include/)
 
-set_property(TARGET ROSE_Core PROPERTY FOLDER "Engine")
+set_property(TARGET ROSE_Core PROPERTY FOLDER "src")
 
 target_link_libraries(ROSE_Core
     PRIVATE SDL3::SDL3
@@ -100,8 +100,8 @@ target_link_libraries(Game1 PRIVATE
 )
 
 file(GLOB_RECURSE ROSE_EDITOR_SOURCES
-        "Engine/Tools/Editor/*.cpp"
-        "Engine/Tools/Editor/*.c"
+        "src/Tools/Editor/*.cpp"
+        "src/Tools/Editor/*.c"
         #"Engine/Tools/Editor/*.h"
 )
 add_executable(ROSE_Editor ${ROSE_EDITOR_SOURCES})
@@ -133,8 +133,8 @@ target_link_libraries(ROSE_Editor
 )
 
 file(GLOB_RECURSE ROSE_ASSET_MAKER_SOURCES
-        "Engine/Tools/AssetMaker/*.cpp"
-        "Engine/Tools/AssetMaker/*.c"
+        "src/Tools/AssetMaker/*.cpp"
+        "src/Tools/AssetMaker/*.c"
 )
 add_executable(ROSE_AssetMaker ${ROSE_ASSET_MAKER_SOURCES})
 target_include_directories(ROSE_AssetMaker PUBLIC include/)
