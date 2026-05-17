@@ -53,5 +53,9 @@ namespace ROSE {
     char *data;
   };
 
+  struct TextureMetaData {
+
+  };
+
 
 } // namespace ROSE

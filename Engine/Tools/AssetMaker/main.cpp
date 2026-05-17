@@ -18,6 +18,8 @@
 #include <cli/CLI.hpp>
 
 #include <string>
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 
 using namespace ROSE;
 
@@ -74,11 +76,11 @@ int main(int argc, char **argv) {
 
   size_t size = std::filesystem::file_size(inputFile);
 
-  std::vector<char> buf(size);
+  RawBuffer buf;
 
-  ifs.read(buf.data(), size);
+  //ifs.read(buf.data(), size);
 
-  ifs.close();
+  //ifs.close();
 
   if (outputFile.empty()) {
     outputFile = inputFile;
@@ -112,11 +114,9 @@ int main(int argc, char **argv) {
     char t[5] {};
     MemCpy(t, typeStr.c_str(), 4);
     aType = static_cast<AssetType>(Tag(t));
-
   }
-  
+
   header.type = aType;
-  header.metaDataSize = 0;
   header.dataSize = size;
 
   std::ofstream ofs(outputFile.c_str(), std::ios::binary);
@@ -126,9 +126,18 @@ int main(int argc, char **argv) {
 
   ofs.write(reinterpret_cast<char *>(&header), sizeof(header));
 
-  // TODO write data properly as SDL surface instead of copying file contents
+  // TODO write texture data properly as SDL surface instead of copying file contents
 
-  ofs.write(buf.data(), buf.size());
+  if (aType == AssetType::Texture) {
+    header.metaDataSize = 0;
+    SDL_Surface *surf = IMG_Load(inputFile.c_str());
+    void *pix = surf->pixels;
+    const size_t pixelBytes = SDL_GetPixelFormatDetails(surf->format)->bytes_per_pixel * surf->pitch * surf->h;
+    buf.allocate(pixelBytes);
+    MemCpy(buf.data(), pix, pixelBytes);
+  }
+
+  //ofs.write(buf.data(), buf.size());
 
   ofs.close();
 

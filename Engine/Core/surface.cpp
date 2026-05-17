@@ -100,7 +100,8 @@ namespace ROSE {
   }
 
   Surface::~Surface() noexcept {
-    delete static_cast<SurfaceContainer *>(m_ptr);
+    //delete static_cast<SurfaceContainer *>(m_ptr);
+    SDL_DestroySurface(static_cast<SDL_Surface *>(m_ptr));
     m_ptr = nullptr;
   }
 
@@ -132,7 +133,7 @@ namespace ROSE {
       return surface;
     }
 
-    surface.m_ptr = new SurfaceContainer(surf, SurfaceSourceType::SDLImage);
+    surface.m_ptr = surf;
     surface.m_pitch = surf->pitch;
     surface.m_width = surf->w;
     surface.m_height = surf->h;
