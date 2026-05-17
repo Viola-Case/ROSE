@@ -1,12 +1,12 @@
 /**
 
   @file       ROSE_surface.h
-  @brief      
+  @brief
   @details    ~
   @author     Viola Case
   @date       07.05.2026
   @copyright  © Viola Case, 2026. All rights reserved.
-  
+
 **/
 
 #pragma once
@@ -15,19 +15,24 @@
 
 namespace ROSE {
 
-  enum class PixelFormat : uint16_t {
-    Unknown = 0,
-    Unsupported,
-    RGBA32,
-    RGB24,
-    BGRA32,
-    ARGB32,
-    RGBA64,
-
+  struct PixelFormat {
+    enum Value : uint16_t {
+      Unknown = 0,
+      Unsupported,
+      RGBA32,
+      RGB24,
+      BGRA32,
+      ARGB32,
+      RGBA64,
+    } value;
+    constexpr PixelFormat(Value v) noexcept : value(v) {}
+    constexpr PixelFormat(uint16_t v) noexcept : value(static_cast<Value>(v)) {}
+    constexpr operator uint16_t() const noexcept { return value; }
   };
 
   class Surface {
     Surface() noexcept = default;
+
   public:
     Surface(const Surface &) = delete;
     Surface &operator=(const Surface &) = delete;
@@ -51,4 +56,4 @@ namespace ROSE {
     uint16_t m_width, m_height, m_pitch;
     PixelFormat m_format;
   };
-}
+} // namespace ROSE
