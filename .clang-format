@@ -10,11 +10,14 @@ AccessModifierOffset: -2
 IndentRequiresClause: true
 RequiresClausePosition: OwnLine
 ColumnLimit: 120
+ContinuationIndentWidth: 2
+BreakBeforeTernaryOperators: false
 BreakBeforeBraces: Attach
+AlwaysBreakTemplateDeclarations: Yes
 PointerAlignment: Right
 ReferenceAlignment: Right
 AllowShortFunctionsOnASingleLine: All
-AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 AllowShortLoopsOnASingleLine: false
 AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: false
