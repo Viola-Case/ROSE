@@ -18,12 +18,12 @@ namespace ROSE {
   struct PixelFormat {
     enum Value : uint16_t {
       Unknown = 0,
-      Unsupported,
       RGBA32,
       RGB24,
       BGRA32,
       ARGB32,
       RGBA64,
+      Unsupported,
     } value;
     constexpr PixelFormat(Value v) noexcept : value(v) {}
     constexpr PixelFormat(uint16_t v) noexcept : value(static_cast<Value>(v)) {}
@@ -31,8 +31,6 @@ namespace ROSE {
   };
 
   class Surface {
-    Surface() noexcept = default;
-
   public:
     Surface(const Surface &) = delete;
     Surface &operator=(const Surface &) = delete;
