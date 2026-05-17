@@ -10,9 +10,10 @@
 **/
 
 #include <ROSE/Core/ROSE_buffer.h>
-
 #include <ROSE/Core/ROSE_surface.h>
+#include <ROSE/Core/ROSE_utility.h>
 #include <SDL3_image/SDL_image.h>
+
 
 namespace ROSE {
 
@@ -87,9 +88,7 @@ namespace ROSE {
       return *this;
     }
 
-    this->~Surface();
-
-    m_ptr = rval.m_ptr;
+    Swap(m_ptr, rval.m_ptr);
     m_width = rval.m_width;
     m_height = rval.m_height;
     m_pitch = rval.m_pitch;
@@ -130,7 +129,7 @@ namespace ROSE {
       surface.m_ptr = nullptr;
       surface.m_pitch = surface.m_height = surface.m_width = 0;
       surface.m_format = PixelFormat::Unknown;
-      return surface;
+      return Move(surface);
     }
 
     surface.m_ptr = surf;
@@ -138,15 +137,15 @@ namespace ROSE {
     surface.m_width = surf->w;
     surface.m_height = surf->h;
 
-    surface.m_format = FormatFromSDLPixelFormat(surf->format);
+    surface.m_format = PixelFormatFromSDLPixelFormat(surf->format);
     if (surface.m_format == PixelFormat::Unsupported) {
       /// TODO log error ("Unsupported pixel format: {}", SDL_GetPixelFormatName(surf->format));
     }
-    return surface;
+    return Move(surface);
   }
 
   Surface Surface::LoadAsset(const char *assetId) noexcept {
-    Surface surface{};
+    Surface surface;
     // Asset asset(assetId);
     // if (!asset.data) {
     //   /// TODO log error ("Asset failed to load: {}", assetId);
@@ -156,7 +155,7 @@ namespace ROSE {
     //   return surface;
     //
     // }
-    return surface;
+    return Move(surface);
   }
 
 

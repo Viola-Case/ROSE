@@ -25,12 +25,15 @@ namespace ROSE {
       RGBA64,
       Unsupported,
     } value;
+    constexpr PixelFormat() = default;
     constexpr PixelFormat(Value v) noexcept : value(v) {}
     constexpr PixelFormat(uint16_t v) noexcept : value(static_cast<Value>(v)) {}
     constexpr operator uint16_t() const noexcept { return value; }
   };
 
   class Surface {
+  private:
+    Surface() noexcept = default;
   public:
     Surface(const Surface &) = delete;
     Surface &operator=(const Surface &) = delete;
