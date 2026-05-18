@@ -64,6 +64,10 @@
     },
     {
       "name": "cli11"
+    },
+    {
+      "name": "mimalloc",
+      "features": ["override"]
     }
 
   ]

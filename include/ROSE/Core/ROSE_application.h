@@ -45,6 +45,9 @@ namespace ROSE {
   class SceneManager;
 
   class Application {
+    /**
+     * @todo probably just ditch this one
+     */
     friend class ApplicationManager;
   public:
     Application();

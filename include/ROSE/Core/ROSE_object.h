@@ -46,7 +46,10 @@ namespace ROSE {
     void OnStart() noexcept;
     void FrameUpdate() noexcept;
 
-    void AddBehavior(UniquePtr<Behavior>&& behavior) noexcept;
+    void AddBehavior(UniquePtr<Behavior> &&behavior) noexcept;
+    template <class T>
+      requires std::is_base_of_v<Behavior, T>
+    void CreateBehavior() noexcept;
     void DestroyBehavior(const UUID &) noexcept;
 
     Scene& GetScene() const noexcept;

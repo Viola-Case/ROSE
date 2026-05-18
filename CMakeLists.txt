@@ -56,6 +56,7 @@ find_package(glad REQUIRED)
 find_package(SDL3_mixer REQUIRED)
 find_package(SDL3_ttf REQUIRED)
 find_package(SDL3_image REQUIRED)
+find_package(mimalloc REQUIRED)
 
 target_include_directories(ROSE_Core PUBLIC include/)
 
@@ -68,6 +69,7 @@ target_link_libraries(ROSE_Core
     PRIVATE SDL3_ttf::SDL3_ttf
     PRIVATE imgui::imgui
     PRIVATE glad::glad
+    PUBLIC  $<IF:$<TARGET_EXISTS:mimalloc-static>,mimalloc-static,mimalloc>
     #PUBLIC  fmt::fmt
 )
 

@@ -15,10 +15,10 @@ namespace ROSE {
     friend class Object;
     friend class Scene;
   protected:
-    virtual void OnStart() = 0;
-    virtual void FrameUpdate() = 0;
-    virtual void FixedUpdate() = 0;
-    void SetObject() const noexcept;
+    virtual void OnStart();
+    virtual void FrameUpdate();
+    virtual void FixedUpdate();
+    //void SetObject() const noexcept;
 
   public:
     virtual ~Behavior() = default;

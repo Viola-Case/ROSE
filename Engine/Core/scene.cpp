@@ -33,6 +33,7 @@ namespace ROSE {
 
     for (auto &o : m_objects) {
       for (UniquePtr<Behavior> &b : o.second->m_pendingAdd) {
+        b->m_object = o.second.get();
         o.second->m_behaviors.insert(UUID::Generate(), Move(b));
       }
       o.second->m_pendingAdd.clear();
