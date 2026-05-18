@@ -54,7 +54,7 @@ namespace ROSE {
 
   private:
     void *m_ptr;
-    uint16_t m_width, m_height, m_pitch;
+    // uint16_t m_width, m_height, m_pitch;
     PixelFormat m_format;
   };
 } // namespace ROSE

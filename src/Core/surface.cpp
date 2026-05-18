@@ -34,18 +34,20 @@ namespace ROSE {
     }
   }
 
+  /**
+   * @todo ditch this
+   */
   struct SurfaceSourceType {
-    enum Value : uint8_t {
-      SDLImage,
-      PackagedAsset,
-      Procedural,
-      Buffer
-    } value;
+    enum Value : uint8_t { SDLImage, PackagedAsset, Procedural, Buffer } value;
     constexpr SurfaceSourceType(Value v) : value(v) {}
     constexpr SurfaceSourceType(uint8_t v) noexcept : value(static_cast<Value>(v)) {}
     constexpr operator uint8_t() const noexcept { return static_cast<uint8_t>(value); }
   };
 
+
+  /**
+   * @todo ditch this
+   */
   struct SurfaceContainer {
     void *data;
     SurfaceSourceType sourceType;
@@ -77,10 +79,7 @@ namespace ROSE {
 
 
   Surface::Surface(Surface &&rval) noexcept : m_ptr(rval.m_ptr),
-                                              m_width(rval.m_width),
-                                              m_height(rval.m_height),
-                                              m_format(rval.m_format),
-                                              m_pitch(rval.m_pitch) {
+                                              m_format(rval.m_format){
     rval.m_ptr = nullptr;
   }
   Surface &Surface::operator=(Surface &&rval) noexcept {
@@ -89,9 +88,6 @@ namespace ROSE {
     }
 
     Swap(m_ptr, rval.m_ptr);
-    m_width = rval.m_width;
-    m_height = rval.m_height;
-    m_pitch = rval.m_pitch;
     m_format = rval.m_format;
     rval.m_ptr = nullptr;
 
@@ -105,13 +101,13 @@ namespace ROSE {
   }
 
   uint16_t Surface::GetWidth() const noexcept {
-    return m_width;
+    return static_cast<SDL_Surface *>(m_ptr)->w;
   }
   uint16_t Surface::GetHeight() const noexcept {
-    return m_height;
+    return static_cast<SDL_Surface *>(m_ptr)->h;
   }
   uint16_t Surface::GetPitch() const noexcept {
-    return m_pitch;
+    return static_cast<SDL_Surface *>(m_ptr)->pitch;
   }
   PixelFormat Surface::GetFormat() const noexcept {
     return m_format;
@@ -127,15 +123,11 @@ namespace ROSE {
     if (surf == nullptr) {
       /// TODO log error
       surface.m_ptr = nullptr;
-      surface.m_pitch = surface.m_height = surface.m_width = 0;
       surface.m_format = PixelFormat::Unknown;
       return Move(surface);
     }
 
     surface.m_ptr = surf;
-    surface.m_pitch = surf->pitch;
-    surface.m_width = surf->w;
-    surface.m_height = surf->h;
 
     surface.m_format = PixelFormatFromSDLPixelFormat(surf->format);
     if (surface.m_format == PixelFormat::Unsupported) {
