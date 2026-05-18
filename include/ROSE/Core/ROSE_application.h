@@ -1,7 +1,7 @@
 ﻿/**
 
   @file      ROSE_application.h
-  @brief     
+  @brief
   @details   ~
   @author    Viola Case
   @date      9.03.2026
@@ -19,28 +19,28 @@ namespace ROSE {
   using AppID = size_t;
 
   using ApplicationFlags = uint64_t;
-  constexpr ApplicationFlags APPLICATION_HEADLESS     = 1 << 0;
-  constexpr ApplicationFlags APPLICATION_NO_RENDERER  = 1 << 1;
-  constexpr ApplicationFlags APPLICATION_SERVER       = 1 << 2;
-  constexpr ApplicationFlags APPLICATION_LIGHTWEIGHT  = 1 << 4;
+  constexpr ApplicationFlags APPLICATION_HEADLESS = 1 << 0;
+  constexpr ApplicationFlags APPLICATION_NO_RENDERER = 1 << 1;
+  constexpr ApplicationFlags APPLICATION_SERVER = 1 << 2;
+  constexpr ApplicationFlags APPLICATION_LIGHTWEIGHT = 1 << 4;
   constexpr ApplicationFlags APPLICATION_SOFTWARE_RENDERER = 1 << 5;
 
-  //constexpr ApplicationFlags AAA_GAME = APPLICATION_DIRECTX
+  // constexpr ApplicationFlags AAA_GAME = APPLICATION_DIRECTX
   //
   //
   //
   //
-  // class Application;
+  //  class Application;
   //
-  // class ApplicationManager {
-  // public:
-  //   static void Close(AppID);
-  //   static void CloseAll();
-  //   static Application &GetApplication(AppID idx = 0);
-  //   static void LinkApplication(Application &app);
-  // private:
-  //   static TypedHashMap<AppID, Application *> m_applications;
-  // };
+  //  class ApplicationManager {
+  //  public:
+  //    static void Close(AppID);
+  //    static void CloseAll();
+  //    static Application &GetApplication(AppID idx = 0);
+  //    static void LinkApplication(Application &app);
+  //  private:
+  //    static TypedHashMap<AppID, Application *> m_applications;
+  //  };
 
   class SceneManager;
 
@@ -49,6 +49,7 @@ namespace ROSE {
      * @todo probably just ditch this one
      */
     friend class ApplicationManager;
+
   public:
     Application();
     Application(const char *_title);
@@ -68,25 +69,22 @@ namespace ROSE {
     List<Scene> &GetScenes() noexcept;
 
   private:
-    String m_title{"game"};
-    ApplicationManager *m_parent{nullptr};
+    String m_title { "game" };
+    ApplicationManager *m_parent { nullptr };
 
-    List<Scene> m_scenes{};
-    Scene *m_currentScene{nullptr};
+    List<Scene> m_scenes {};
+    Scene *m_currentScene { nullptr };
 
-    AppID m_id{0};
+    AppID m_id { 0 };
 
-    void *m_window{nullptr};
+    void *m_window { nullptr };
 
-    ApplicationFlags m_flags{0};
+    ApplicationFlags m_flags { 0 };
 
-    void *m_renderer{nullptr};
+    void *m_renderer { nullptr };
 
     UniquePtr<SceneManager> m_manager {};
 
-    bool m_shouldClose{false};
-
-
-
+    bool m_shouldClose { false };
   };
-}
+} // namespace ROSE

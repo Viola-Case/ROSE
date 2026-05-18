@@ -1,7 +1,7 @@
 ﻿/**
 
     @file      ROSE_fixedarray.h
-    @brief     
+    @brief
     @details   ~
     @author    Viola Case
     @date      16.02.2026
@@ -11,16 +11,16 @@
 #pragma once
 
 #include <ROSE/Core/ROSE_stdlib.h>
-#include <ROSE/Core/rtl/ROSE_list.h>
+#include <ROSE/Core/ROSE_list.h>
 
 namespace ROSE {
   template <typename T, size_t N>
   struct FixedArray {
     T _data[N];
-  public:
 
-    template<size_t M>
-    constexpr FixedArray(const T(&arr)[M]) {
+  public:
+    template <size_t M>
+    constexpr FixedArray(const T (&arr)[M]) {
       static_assert(M == N, "Size mismatch");
       for (size_t i = 0; i < N; ++i)
         _data[i] = arr[i];
@@ -34,15 +34,15 @@ namespace ROSE {
     }
 
     constexpr T *data() noexcept { return _data; }
-    //constexpr const T *data() noexcept { return _data; }
+    // constexpr const T *data() noexcept { return _data; }
     constexpr size_t size() noexcept { return N; }
 
     constexpr T &operator[](size_t i) noexcept { return _data[i]; }
     constexpr const T &operator[](size_t i) const noexcept { return _data[i]; }
 
     constexpr const T *begin() const noexcept { return data(); }
-    constexpr const T *end()   const noexcept { return data() + N; }
+    constexpr const T *end() const noexcept { return data() + N; }
   };
 
 
-}
+} // namespace ROSE

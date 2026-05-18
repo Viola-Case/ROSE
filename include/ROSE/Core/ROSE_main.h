@@ -1,7 +1,7 @@
 ﻿/**
 
     @file      ROSE_main.h
-    @brief     
+    @brief
     @details   ~
     @author    Viola Case
     @date      10.02.2026
@@ -11,9 +11,9 @@
 #pragma once
 
 
-//extern int ROSE_main(int argc, char **argv);
+// extern int ROSE_main(int argc, char **argv);
 //
-//#if !defined(ROSE_MAIN_HANDLED)
+// #if !defined(ROSE_MAIN_HANDLED)
 //// Declare our entry point that the user must define
-//#define main ROSE_main
-//#endif
+// #define main ROSE_main
+// #endif

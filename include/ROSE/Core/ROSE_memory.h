@@ -12,7 +12,7 @@
 
 #include <cstddef>
 #include <type_traits>
-#include <ROSE/Core/rtl/ROSE_utility.h>
+#include <ROSE/Core/ROSE_utility.h>
 
 namespace ROSE {
 
@@ -23,10 +23,9 @@ namespace ROSE {
       @tparam  T - pointed-to type
 
   **/
-  template<typename T>
+  template <typename T>
   class UniquePtr {
   public:
-
     // -------------------------
     // Constructors
     // -------------------------
@@ -43,7 +42,7 @@ namespace ROSE {
       _other.m_ptr = nullptr;
     }
 
-    template<typename U, typename = std::enable_if_t<std::is_convertible_v<U *, T *>>>
+    template <typename U, typename = std::enable_if_t<std::is_convertible_v<U *, T *>>>
     UniquePtr(UniquePtr<U> &&_other) noexcept : m_ptr(_other.release()) {}
 
     ~UniquePtr() { delete m_ptr; }
@@ -62,7 +61,7 @@ namespace ROSE {
       return *this;
     }
 
-    template<typename U, typename = std::enable_if_t<std::is_convertible_v<U *, T *>>>
+    template <typename U, typename = std::enable_if_t<std::is_convertible_v<U *, T *>>>
     UniquePtr &operator=(UniquePtr<U> &&_other) noexcept {
       T *old = m_ptr;
       m_ptr = _other.release();
@@ -118,49 +117,49 @@ namespace ROSE {
     }
 
   private:
-    T *m_ptr{ nullptr };
+    T *m_ptr { nullptr };
   };
 
   // -------------------------
   // UniquePtr free functions / comparisons
   // -------------------------
 
-  template<typename T, typename U>
+  template <typename T, typename U>
   constexpr bool operator==(const UniquePtr<T> &_a, const UniquePtr<U> &_b) noexcept {
     return _a.get() == _b.get();
   }
-  template<typename T, typename U>
+  template <typename T, typename U>
   constexpr bool operator!=(const UniquePtr<T> &_a, const UniquePtr<U> &_b) noexcept {
     return _a.get() != _b.get();
   }
-  template<typename T>
+  template <typename T>
   constexpr bool operator==(const UniquePtr<T> &_a, std::nullptr_t) noexcept {
     return _a.get() == nullptr;
   }
-  template<typename T>
+  template <typename T>
   constexpr bool operator==(std::nullptr_t, const UniquePtr<T> &_a) noexcept {
     return _a.get() == nullptr;
   }
-  template<typename T>
+  template <typename T>
   constexpr bool operator!=(const UniquePtr<T> &_a, std::nullptr_t) noexcept {
     return _a.get() != nullptr;
   }
-  template<typename T>
+  template <typename T>
   constexpr bool operator!=(std::nullptr_t, const UniquePtr<T> &_a) noexcept {
     return _a.get() != nullptr;
   }
 
-  template<typename T>
+  template <typename T>
   void Swap(UniquePtr<T> &_a, UniquePtr<T> &_b) noexcept {
     _a.swap(_b);
   }
 
-  template<typename T, typename ...Args>
-  [[nodiscard]] UniquePtr<T> MakeUnique(Args&&... _args) {
+  template <typename T, typename... Args>
+  [[nodiscard]] UniquePtr<T> MakeUnique(Args &&..._args) {
     return UniquePtr<T>(new T(Forward<Args>(_args)...));
   }
 
-  template<typename T>
+  template <typename T>
   class WeakPtr;
 
   /**
@@ -170,20 +169,21 @@ namespace ROSE {
       @tparam  T - pointed-to type
 
   **/
-  template<typename T>
+  template <typename T>
   class SharedPtr {
   private:
-    template<typename U> friend class WeakPtr;
+    template <typename U>
+    friend class WeakPtr;
 
     struct ControlBlock {
-      size_t strong_count{ 1 };
-      size_t weak_count{ 0 };
+      size_t strong_count { 1 };
+      size_t weak_count { 0 };
       T *m_ptr;
 
       explicit ControlBlock(T *_p) noexcept : m_ptr(_p) {}
     };
 
-    ControlBlock *m_ctrl{ nullptr };
+    ControlBlock *m_ctrl { nullptr };
 
     void decrement() noexcept {
       if (!m_ctrl) return;
@@ -199,7 +199,6 @@ namespace ROSE {
     }
 
   public:
-
     // -------------------------
     // Constructors
     // -------------------------
@@ -286,45 +285,44 @@ namespace ROSE {
       m_ctrl = _other.m_ctrl;
       _other.m_ctrl = tmp;
     }
-
   };
 
   // -------------------------
   // SharedPtr free functions / comparisons
   // -------------------------
 
-  template<typename T, typename U>
+  template <typename T, typename U>
   constexpr bool operator==(const SharedPtr<T> &_a, const SharedPtr<U> &_b) noexcept {
     return _a.get() == _b.get();
   }
-  template<typename T, typename U>
+  template <typename T, typename U>
   constexpr bool operator!=(const SharedPtr<T> &_a, const SharedPtr<U> &_b) noexcept {
     return _a.get() != _b.get();
   }
-  template<typename T>
+  template <typename T>
   constexpr bool operator==(const SharedPtr<T> &_a, std::nullptr_t) noexcept {
     return _a.get() == nullptr;
   }
-  template<typename T>
+  template <typename T>
   constexpr bool operator==(std::nullptr_t, const SharedPtr<T> &_a) noexcept {
     return _a.get() == nullptr;
   }
-  template<typename T>
+  template <typename T>
   constexpr bool operator!=(const SharedPtr<T> &_a, std::nullptr_t) noexcept {
     return _a.get() != nullptr;
   }
-  template<typename T>
+  template <typename T>
   constexpr bool operator!=(std::nullptr_t, const SharedPtr<T> &_a) noexcept {
     return _a.get() != nullptr;
   }
 
-  template<typename T>
+  template <typename T>
   void Swap(SharedPtr<T> &_a, SharedPtr<T> &_b) noexcept {
     _a.swap(_b);
   }
 
-  template<typename T, typename... Args>
-  [[nodiscard]] SharedPtr<T> MakeShared(Args&&... _args) {
+  template <typename T, typename... Args>
+  [[nodiscard]] SharedPtr<T> MakeShared(Args &&..._args) {
     return SharedPtr<T>(new T(Forward<Args>(_args)...));
   }
 
@@ -335,12 +333,12 @@ namespace ROSE {
       @tparam  T - pointed-to type
 
   **/
-  template<typename T>
+  template <typename T>
   class WeakPtr {
   private:
     using ControlBlock = typename SharedPtr<T>::ControlBlock;
 
-    ControlBlock *m_ctrl{ nullptr };
+    ControlBlock *m_ctrl { nullptr };
 
     void decrement() noexcept {
       if (!m_ctrl) return;
@@ -353,7 +351,6 @@ namespace ROSE {
     }
 
   public:
-
     // -------------------------
     // Constructors
     // -------------------------
@@ -434,12 +431,11 @@ namespace ROSE {
       m_ctrl = _other.m_ctrl;
       _other.m_ctrl = tmp;
     }
-
   };
 
-  template<typename T>
+  template <typename T>
   void Swap(WeakPtr<T> &_a, WeakPtr<T> &_b) noexcept {
     _a.swap(_b);
   }
 
-}
+} // namespace ROSE

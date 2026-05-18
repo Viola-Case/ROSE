@@ -21,4 +21,4 @@ namespace ROSE::Editor {
     const char *linker;
     const uint64_t linker_version;
   };
-}
+} // namespace ROSE::Editor

@@ -1,7 +1,7 @@
 ﻿/**
 
     @file      ROSE_object.h
-    @brief     
+    @brief
     @details   ~
     @author    Viola Case
     @date      18.02.2026
@@ -28,19 +28,19 @@ namespace ROSE {
 
   public:
     Object();
-    explicit Object(const char*);
-    Object(const char*, const Transform &);
-    Object(const char*, const Transform &, List<UniquePtr<Behavior>> &&);
+    explicit Object(const char *);
+    Object(const char *, const Transform &);
+    Object(const char *, const Transform &, List<UniquePtr<Behavior>> &&);
 
 
 
-    //template<BehaviorType T>
-    //T *GetBehaviorOfType() {
-    //  auto it = m_behaviors.find(TypeIdOf<T>());
-    //  if (it != m_behaviors.end())
-    //    return static_cast<T *>(it->second.get());
-    //  return nullptr;
-    //}
+    // template<BehaviorType T>
+    // T *GetBehaviorOfType() {
+    //   auto it = m_behaviors.find(TypeIdOf<T>());
+    //   if (it != m_behaviors.end())
+    //     return static_cast<T *>(it->second.get());
+    //   return nullptr;
+    // }
 
   private:
     void OnStart() noexcept;
@@ -52,23 +52,22 @@ namespace ROSE {
     void CreateBehavior() noexcept;
     void DestroyBehavior(const UUID &) noexcept;
 
-    Scene& GetScene() const noexcept;
-    Object& GetParent() const noexcept;
+    Scene &GetScene() const noexcept;
+    Object &GetParent() const noexcept;
 
     Behavior *GetBehavior(const UUID &) noexcept;
 
 
 
   private:
+    String m_name { "Object" };
+    TypedHashMap<UUID, UniquePtr<Behavior>> m_behaviors {};
+    List<UniquePtr<Behavior>> m_pendingAdd {};
+    List<UUID> m_pendingDestroy {};
 
-    String m_name{ "Object" };
-    TypedHashMap<UUID, UniquePtr<Behavior>> m_behaviors{};
-    List<UniquePtr<Behavior>> m_pendingAdd{};
-    List<UUID> m_pendingDestroy{};
-
-    UUID m_uuid{};
-    Scene* const m_scene{ nullptr };
-    Object* m_parent{ nullptr };
-    Transform m_transform{ 0, 1 };
+    UUID m_uuid {};
+    Scene *const m_scene { nullptr };
+    Object *m_parent { nullptr };
+    Transform m_transform { 0, 1 };
   };
-}
+} // namespace ROSE

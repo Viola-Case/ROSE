@@ -1,7 +1,7 @@
 ﻿/**
 
   @file      ROSE.h
-  @brief     
+  @brief
   @details   ~
   @author    Viola Case
   @date      3.02.2026
@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <utility>
+#include <ROSE/Core/ROSE_platform.h>
 #include <ROSE/Core/ROSE_stdlib.h>
 #include <ROSE/Core/ROSE_macros.h>
 #include <ROSE/Core/ROSE_rtl.h>
@@ -31,4 +32,5 @@
 #include <ROSE/Core/ROSE_format.h>
 #include <ROSE/Core/ROSE_scene.h>
 #include <ROSE/Core/ROSE_camera.h>
-
+#include <ROSE/Core/ROSE_asset.h>
+#include <ROSE/Core/ROSE_surface.h>

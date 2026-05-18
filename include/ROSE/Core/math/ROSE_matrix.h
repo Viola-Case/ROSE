@@ -3,14 +3,14 @@
 #include <ROSE/Core/math/ROSE_vector.h>
 
 namespace ROSE::math {
-  template<Scalar T, size_t Rows, size_t Cols>
+  template <Scalar T, size_t Rows, size_t Cols>
   struct Mat {
     static constexpr size_t size = Rows * Cols;
-    FixedArray<T,size> data;
+    FixedArray<T, size> data;
     constexpr Mat() noexcept = default;
     constexpr Mat(const Mat &) noexcept = default;
 
-    constexpr Vec<T,Rows> col(size_t idx) const noexcept {
+    constexpr Vec<T, Rows> col(size_t idx) const noexcept {
       // runtime assert idx is within needed bounds
       Vec<T, Rows> result;
       for (size_t r = 0; r < Rows; ++r)
@@ -18,7 +18,7 @@ namespace ROSE::math {
       return result;
     }
 
-    constexpr Vec<T,Cols> row(size_t idx) const noexcept {
+    constexpr Vec<T, Cols> row(size_t idx) const noexcept {
       // runtime assert idx is within needed bounds
       Vec<T, Cols> result;
       for (size_t r = 0; r < Cols; ++r)
@@ -31,14 +31,14 @@ namespace ROSE::math {
     }
 
     constexpr Mat &operator+=(const Mat &rhs) noexcept {
-      for (int i{0}; i < size; ++i) {
+      for (int i { 0 }; i < size; ++i) {
         data[i] += rhs.data[i];
       }
       return *this;
     }
 
     constexpr Mat &operator-=(const Mat &rhs) noexcept {
-      for (int i{0}; i < size; ++i) {
+      for (int i { 0 }; i < size; ++i) {
         data[i] -= rhs.data[i];
       }
       return *this;
@@ -46,13 +46,11 @@ namespace ROSE::math {
 
     constexpr Mat operator*(const Mat &rhs) const noexcept {
       Mat result;
-      for (size_t row{0}; row < Rows; ++row) {
-        for (size_t col{0}; col < Cols; ++col) {
-
+      for (size_t row { 0 }; row < Rows; ++row) {
+        for (size_t col { 0 }; col < Cols; ++col) {
         }
       }
     }
-
   };
 
   /*!
@@ -61,15 +59,15 @@ namespace ROSE::math {
    * @tparam Rows
    */
   template <Scalar T, size_t Dimension>
-  struct Mat<T,Dimension,Dimension> {
+  struct Mat<T, Dimension, Dimension> {
     static constexpr auto Cols = Dimension;
     static constexpr auto Rows = Dimension;
-    static constexpr size_t size = Dimension*Dimension;
-    FixedArray<T,size> data;
+    static constexpr size_t size = Dimension * Dimension;
+    FixedArray<T, size> data;
     constexpr Mat() noexcept = default;
     constexpr Mat(const Mat &) noexcept = default;
 
-    constexpr Vec<T,Rows> col(size_t idx) const noexcept {
+    constexpr Vec<T, Rows> col(size_t idx) const noexcept {
       // runtime assert idx is within needed bounds
       Vec<T, Rows> result;
       for (size_t r = 0; r < Rows; ++r)
@@ -77,7 +75,7 @@ namespace ROSE::math {
       return result;
     }
 
-    constexpr Vec<T,Cols> row(size_t idx) const noexcept {
+    constexpr Vec<T, Cols> row(size_t idx) const noexcept {
       // runtime assert idx is within needed bounds
       Vec<T, Cols> result;
       for (size_t r = 0; r < Cols; ++r)
@@ -90,14 +88,14 @@ namespace ROSE::math {
     }
 
     constexpr Mat &operator+=(const Mat &rhs) noexcept {
-      for (int i{0}; i < size; ++i) {
+      for (int i { 0 }; i < size; ++i) {
         data[i] += rhs.data[i];
       }
       return *this;
     }
 
     constexpr Mat &operator-=(const Mat &rhs) noexcept {
-      for (int i{0}; i < size; ++i) {
+      for (int i { 0 }; i < size; ++i) {
         data[i] -= rhs.data[i];
       }
       return *this;
@@ -105,11 +103,10 @@ namespace ROSE::math {
 
     constexpr Mat operator*(const Mat &rhs) const noexcept {
       Mat result;
-      for (size_t row{0}; row < Rows; ++row) {
-        for (size_t col{0}; col < Cols; ++col) {
-
+      for (size_t row { 0 }; row < Rows; ++row) {
+        for (size_t col { 0 }; col < Cols; ++col) {
         }
       }
     }
   };
-}
+} // namespace ROSE::math

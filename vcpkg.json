@@ -2,15 +2,19 @@
   "name": "rose",
   "version": "0.0.1",
   "homepage": "https://github.com/Viola-Case/ROSE",
-  "license": null,
+  "license": "BSD-3-Clause",
   "description": "Radical Open Software Engine",
-  "builtin-baseline": "4fc6cb0e9ed24f6abfac825f37aa9c74049f566e",
+  "builtin-baseline": "bc71aa640f89933294f16e004b212c7fd3183eed",
   "dependencies": [
     {
       "name": "sdl3",
-      "features": [
-        "vulkan"
-      ]
+      "features": ["vulkan"],
+      "platform": "windows"
+    },
+    {
+      "name": "sdl3",
+      "features": [ "vulkan", "x11", "wayland"],
+      "platform": "linux"
     },
     {
       "name": "sdl3-mixer",
@@ -24,16 +28,15 @@
     },
     {
       "name": "sdl3-ttf",
-      "features": [
-        "svg"
-      ]
+      "features": ["svg"]
     },
     {
       "name": "sdl3-image",
       "features": [
         "jpeg",
         "png",
-        "tiff"
+        "tiff",
+        "webp"
       ]
     },
     {
@@ -44,9 +47,7 @@
     },
     {
       "name": "glad",
-      "features": [
-        "gl-api-45"
-      ]
+      "features": ["gl-api-45"]
     },
     {
       "name": "spirv-cross"

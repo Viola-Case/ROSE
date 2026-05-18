@@ -1,7 +1,7 @@
 ﻿/**
 
   @file      ROSE_vector.h
-  @brief     
+  @brief
   @details   ~
   @author    Viola Case
   @date      23.02.2026
@@ -17,33 +17,34 @@
 
 namespace ROSE::math {
 
-  
 
-  template<Scalar T, size_t N>
-    requires (N > 1)
+
+  template <Scalar T, size_t N>
+    requires(N > 1)
   struct Vec {
-    FixedArray<T,N> data;
+    FixedArray<T, N> data;
     Vec() = default;
     constexpr T dot(const Vec &rhs) const noexcept {
-      T sum{ 0 };
-      for (int i = 0; i < N; ++i) sum += data[i] * rhs.data[i];
+      T sum { 0 };
+      for (int i = 0; i < N; ++i)
+        sum += data[i] * rhs.data[i];
       return sum;
     }
 
     constexpr Vec &operator+=(const Vec &rhs) noexcept {
-      for (int i{ 0 }; i < N; ++i) {
+      for (int i { 0 }; i < N; ++i) {
         data[i] += rhs.data[i];
       }
       return *this;
     }
     constexpr Vec &operator-=(const Vec &rhs) noexcept {
-      for (int i{ 0 }; i < N; ++i) {
+      for (int i { 0 }; i < N; ++i) {
         data[i] -= rhs.data[i];
       }
       return *this;
     }
     constexpr Vec &operator*=(const T rhs) noexcept {
-      for (int i{ 0 }; i < N; ++i) {
+      for (int i { 0 }; i < N; ++i) {
         data[i] *= rhs;
       }
       return *this;
@@ -71,13 +72,13 @@ namespace ROSE::math {
       ROSE_ASSERT_MSG(data != nullptr, "Vector storage must not be null");
       return data[idx];
     }
-    template<size_t I>
-      requires (I < N)
+    template <size_t I>
+      requires(I < N)
     constexpr T &at() noexcept {
       return data[I];
     }
 
-    template<Scalar U>
+    template <Scalar U>
     constexpr operator Vec<U, N>() {
       Vec<U, N> v;
       for (size_t i = 0; i < N; ++i) {
@@ -85,10 +86,9 @@ namespace ROSE::math {
       }
       return v;
     }
-
   };
 
-  template<Scalar T>
+  template <Scalar T>
   struct Vec<T, 2> {
     static constexpr size_t N = 2;
     union {
@@ -98,30 +98,31 @@ namespace ROSE::math {
       };
     };
 
-    //constexpr Vec() = default;
+    // constexpr Vec() = default;
 
-    constexpr Vec(T _x = T{}, T _y = T{}) : x(_x), y(_y) {}
+    constexpr Vec(T _x = T {}, T _y = T {}) : x(_x), y(_y) {}
 
     constexpr T dot(const Vec &rhs) const noexcept {
-      T sum{ 0 };
-      for (int i = 0; i < N; ++i) sum += data[i] * rhs.data[i];
+      T sum { 0 };
+      for (int i = 0; i < N; ++i)
+        sum += data[i] * rhs.data[i];
       return sum;
     }
 
     constexpr Vec &operator+=(const Vec &rhs) noexcept {
-      for (int i{ 0 }; i < N; ++i) {
+      for (int i { 0 }; i < N; ++i) {
         data[i] += rhs.data[i];
       }
       return *this;
     }
     constexpr Vec &operator-=(const Vec &rhs) noexcept {
-      for (int i{ 0 }; i < N; ++i) {
+      for (int i { 0 }; i < N; ++i) {
         data[i] -= rhs.data[i];
       }
       return *this;
     }
     constexpr Vec &operator*=(const T rhs) noexcept {
-      for (int i{ 0 }; i < N; ++i) {
+      for (int i { 0 }; i < N; ++i) {
         data[i] *= rhs;
       }
       return *this;
@@ -149,13 +150,13 @@ namespace ROSE::math {
       ROSE_ASSERT_MSG(data != nullptr, "Vector storage must not be null");
       return data[idx];
     }
-    template<size_t I>
-      requires (I < N)
+    template <size_t I>
+      requires(I < N)
     constexpr T &at() noexcept {
       return data[I];
     }
 
-    template<Scalar U>
+    template <Scalar U>
     constexpr operator Vec<U, N>() {
       Vec<U, N> v;
       for (size_t i = 0; i < N; ++i) {
@@ -165,38 +166,39 @@ namespace ROSE::math {
     }
   };
 
-  template<Scalar T>
+  template <Scalar T>
   struct Vec<T, 3> {
     static constexpr size_t N = 3;
     union {
-      FixedArray<T,N> data;
+      FixedArray<T, N> data;
       struct {
         T x, y, z;
       };
     };
 
-    constexpr Vec(T _x = T{0}, T _y = T{0}, T _z = T{0}) : x(_x), y(_y), z(_z) {}
+    constexpr Vec(T _x = T { 0 }, T _y = T { 0 }, T _z = T { 0 }) : x(_x), y(_y), z(_z) {}
 
     constexpr T dot(const Vec &rhs) const noexcept {
-      T sum{ 0 };
-      for (int i = 0; i < N; ++i) sum += data[i] * rhs.data[i];
+      T sum { 0 };
+      for (int i = 0; i < N; ++i)
+        sum += data[i] * rhs.data[i];
       return sum;
     }
 
     constexpr Vec &operator+=(const Vec &rhs) noexcept {
-      for (int i{ 0 }; i < N; ++i) {
+      for (int i { 0 }; i < N; ++i) {
         data[i] += rhs.data[i];
       }
       return *this;
     }
     constexpr Vec &operator-=(const Vec &rhs) noexcept {
-      for (int i{ 0 }; i < N; ++i) {
+      for (int i { 0 }; i < N; ++i) {
         data[i] -= rhs.data[i];
       }
       return *this;
     }
     constexpr Vec &operator*=(const T rhs) noexcept {
-      for (int i{ 0 }; i < N; ++i) {
+      for (int i { 0 }; i < N; ++i) {
         data[i] *= rhs;
       }
       return *this;
@@ -224,13 +226,13 @@ namespace ROSE::math {
       ROSE_ASSERT_MSG(data != nullptr, "Vector storage must not be null");
       return data[idx];
     }
-    template<size_t I>
-      requires (I < N)
+    template <size_t I>
+      requires(I < N)
     constexpr T &at() noexcept {
       return data[I];
     }
 
-    template<Scalar U>
+    template <Scalar U>
     constexpr operator Vec<U, N>() {
       Vec<U, N> v;
       for (size_t i = 0; i < N; ++i) {
@@ -248,7 +250,7 @@ namespace ROSE::math {
     }
   };
 
-  template<Scalar T>
+  template <Scalar T>
   struct Vec<T, 4> {
     static constexpr size_t N = 4;
     union {
@@ -258,30 +260,31 @@ namespace ROSE::math {
       };
     };
 
-    //constexpr Vec() = default;
+    // constexpr Vec() = default;
 
-    constexpr Vec(T _x = T{}, T _y = T{}) : x(_x), y(_y) {}
+    constexpr Vec(T _x = T {}, T _y = T {}) : x(_x), y(_y) {}
 
     constexpr T dot(const Vec &rhs) const noexcept {
-      T sum{ 0 };
-      for (int i = 0; i < N; ++i) sum += data[i] * rhs.data[i];
+      T sum { 0 };
+      for (int i = 0; i < N; ++i)
+        sum += data[i] * rhs.data[i];
       return sum;
     }
 
     constexpr Vec &operator+=(const Vec &rhs) noexcept {
-      for (int i{ 0 }; i < N; ++i) {
+      for (int i { 0 }; i < N; ++i) {
         data[i] += rhs.data[i];
       }
       return *this;
     }
     constexpr Vec &operator-=(const Vec &rhs) noexcept {
-      for (int i{ 0 }; i < N; ++i) {
+      for (int i { 0 }; i < N; ++i) {
         data[i] -= rhs.data[i];
       }
       return *this;
     }
     constexpr Vec &operator*=(const T rhs) noexcept {
-      for (int i{ 0 }; i < N; ++i) {
+      for (int i { 0 }; i < N; ++i) {
         data[i] *= rhs;
       }
       return *this;
@@ -309,13 +312,13 @@ namespace ROSE::math {
       ROSE_ASSERT_MSG(data != nullptr, "Vector storage must not be null");
       return data[idx];
     }
-    template<size_t I>
-      requires (I < N)
+    template <size_t I>
+      requires(I < N)
     constexpr T &at() noexcept {
       return data[I];
     }
 
-    template<Scalar U>
+    template <Scalar U>
     constexpr operator Vec<U, N>() {
       Vec<U, N> v;
       for (size_t i = 0; i < N; ++i) {
@@ -325,9 +328,12 @@ namespace ROSE::math {
     }
   };
 
-  template<Scalar T> using Vec2 = Vec<T, 2>;
-  template<Scalar T> using Vec3 = Vec<T, 3>;
-  template<Scalar T> using Vec4 = Vec<T, 4>;
+  template <Scalar T>
+  using Vec2 = Vec<T, 2>;
+  template <Scalar T>
+  using Vec3 = Vec<T, 3>;
+  template <Scalar T>
+  using Vec4 = Vec<T, 4>;
 
   using Vec2f = Vec<float, 2>;
   using Vec2d = Vec<double, 2>;
@@ -335,4 +341,4 @@ namespace ROSE::math {
   using Vec3d = Vec<double, 3>;
   using Vec4f = Vec<float, 4>;
   using Vec4d = Vec<double, 4>;
-}
+} // namespace ROSE::math
