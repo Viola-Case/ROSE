@@ -30,6 +30,8 @@ namespace ROSE {
 
     Object *GetObject(const UUID &) noexcept;
 
+    static Scene &FromJSON(void *jsonPtr);
+
 
   private:
     TypedHashMap<UUID, UniquePtr<Object>> m_objects {};

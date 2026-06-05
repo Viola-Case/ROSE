@@ -41,8 +41,8 @@
 #endif
 
 #if ROSE_COMPILER_CLANG || ROSE_COMPILER_GCC
-  #define ROSE_LIKELY(x)   __builtin_expect(!!(x), 1)
-  #define ROSE_UNLIKELY(x) __builtin_expect(!!(x), 0)
+  #define ROSE_LIKELY(x)   (x) [[likely]]
+  #define ROSE_UNLIKELY(x) (x) [[unlikely]]
   #define ROSE_PURE        __attribute__((pure))
   #define ROSE_CONST       __attribute__((const))
 #else

@@ -143,3 +143,16 @@ target_link_libraries(ROSE_AssetMaker PRIVATE
         CLI11::CLI11
 )
 set_property(TARGET ROSE_AssetMaker PROPERTY OUTPUT_NAME ROSE-masset)
+
+file(GLOB_RECURSE ROSE_UUID_GENERATOR_SOURCES
+        "src/Tools/UUIDGenerator/*.cpp"
+        "src/Tools/UUIDGenerator/*.c"
+)
+add_executable(ROSE_UUID_Generator ${ROSE_UUID_GENERATOR_SOURCES})
+target_include_directories(ROSE_UUID_Generator PUBLIC include/)
+set_property(TARGET ROSE_AssetMaker PROPERTY FOLDER "Tools")
+
+target_link_libraries(ROSE_UUID_Generator PRIVATE
+        CLI11::CLI11
+        ROSE_Core
+)

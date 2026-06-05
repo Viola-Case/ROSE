@@ -1,6 +1,6 @@
 /**
   
-  @file      scene.h.cpp
+  @file      scene.cpp
   @brief     
   @details   ~
   @author    Viola Case
@@ -40,6 +40,8 @@ namespace ROSE {
     }
 
   }
+
+  Scene &Scene::FromJSON(void *jsonPtr) {  }
 
   void Scene::AddObject(Object &&obj) noexcept {
     UniquePtr<Object> o (MakeUnique<Object>(Move(obj)));

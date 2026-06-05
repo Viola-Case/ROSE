@@ -26,12 +26,8 @@ namespace ROSE {
     size_t m_size;
     size_t m_capacity;
 
-    static CharT *allocate(const size_t count) {
-      return static_cast<CharT *>(::operator new(count * sizeof(CharT)));
-    }
-    static void deallocate(CharT *ptr) noexcept {
-      ::operator delete(ptr);
-    }
+    static CharT *allocate(const size_t count) { return static_cast<CharT *>(::operator new(count * sizeof(CharT))); }
+    static void deallocate(CharT *ptr) noexcept { ::operator delete(ptr); }
     // Copy `count` characters from `src` into `dst` (no null terminator added)
     static void copy(CharT *dst, const CharT *src, const size_t count) noexcept {
       for (size_t i = 0; i < count; ++i)
@@ -55,14 +51,13 @@ namespace ROSE {
       copy(m_data, other.m_data, m_size);
       m_data[m_size] = CharT { 0 };
     }
-    BasicString(BasicString &&other) noexcept : m_data(other.m_data), m_size(other.m_size), m_capacity(other.m_capacity) {
+    BasicString(BasicString &&other) noexcept
+        : m_data(other.m_data), m_size(other.m_size), m_capacity(other.m_capacity) {
       other.m_data = nullptr;
       other.m_size = 0;
       other.m_capacity = 0;
     }
-    ~BasicString() {
-      deallocate(m_data);
-    }
+    ~BasicString() { deallocate(m_data); }
 
     BasicString &operator=(const BasicString &lvalue) {
       if (this != &lvalue) {
@@ -142,8 +137,7 @@ namespace ROSE {
       size_t newSize = m_size + addLen;
 
       if (newSize + 1 > m_capacity) {
-        size_t newCap = m_capacity == 0 ? newSize + 1
-                                        : m_capacity;
+        size_t newCap = m_capacity == 0 ? newSize + 1 : m_capacity;
         while (newCap < newSize + 1)
           newCap *= 2;
         reserve(newCap);
@@ -224,3 +218,11 @@ namespace ROSE {
 
   uint64_t FNV1A64(const StringView &str);
 } // namespace ROSE
+
+template <ROSE::Character CharT>
+struct std::formatter<ROSE::BasicString<CharT>, CharT> : std::formatter<std::basic_string<CharT>, CharT> {
+  template <typename FormatContext>
+  auto format(const ROSE::BasicString<CharT> &s, FormatContext &ctx) const {
+    return std::formatter<std::basic_string<CharT>, CharT>::format(std::basic_string<CharT>(s.data(), s.size()), ctx);
+  }
+};

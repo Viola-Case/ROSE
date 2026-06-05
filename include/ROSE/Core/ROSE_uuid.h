@@ -17,6 +17,9 @@ namespace ROSE {
     static inline Atomic<uint64_t> s_counter { 0 };
 
     uint128_t value;
+    struct {
+      uint64_t high, low;
+    };
 
     [[nodiscard]] constexpr bool operator==(const UUID &_other) const noexcept {
       return value == _other.value;

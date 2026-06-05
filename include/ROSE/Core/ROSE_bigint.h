@@ -16,7 +16,7 @@
 #include <ROSE/Core/ROSE_utility.h>
 
 #if (defined(__clang__) || defined(__GNUC__))
-#define INT_128_EXISTS
+  #define INT_128_EXISTS
 #endif
 
 #if (defined(INT_128_EXISTS))
@@ -138,10 +138,8 @@ namespace ROSE {
         r.low |= (i >= 64 ? (n.high >> (i - 64)) : (n.low >> i)) & 1ull;
         if (r.high > d.high || (r.high == d.high && r.low >= d.low)) {
           r -= d;
-          if (i >= 64)
-            q.high |= 1ull << (i - 64);
-          else
-            q.low |= 1ull << i;
+          if (i >= 64) q.high |= 1ull << (i - 64);
+          else q.low |= 1ull << i;
         }
       }
     }
@@ -297,8 +295,7 @@ namespace ROSE {
             result += (c - 'a' + 10);
           } else if (c == '\'') {
             continue;
-          } else
-            throw std::invalid_argument("invalid digit");
+          } else throw std::invalid_argument("invalid digit");
         }
       } else if (ToLower(str[1 + idx]) == 'b') {
         // parse binary
@@ -309,8 +306,7 @@ namespace ROSE {
             result += (c - '0');
           } else if (c == '\'') {
             continue;
-          } else
-            throw std::invalid_argument("invalid digit");
+          } else throw std::invalid_argument("invalid digit");
         }
       } else {
         // parse octal
@@ -321,8 +317,7 @@ namespace ROSE {
             result += c - '0';
           } else if (c == '\'') {
             continue;
-          } else
-            throw std::invalid_argument("invalid digit");
+          } else throw std::invalid_argument("invalid digit");
         }
       }
     } else {
@@ -330,35 +325,307 @@ namespace ROSE {
       for (int i = 0 + idx; i < StrLen(str); ++i) {
         auto c = str[i];
         result *= 10;
-        if (c >= '0' && c <= '9')
-          result += c - '0';
+        if (c >= '0' && c <= '9') result += c - '0';
         else if (c == '\'') {
           continue;
-        } else
-          throw std::invalid_argument("invalid digit");
+        } else throw std::invalid_argument("invalid digit");
       }
     }
     return result;
   }
 
-  // "cannot convert unsigned long long to const char*" errors on these literals are a known Clang false positive — ignore them.
+  // "cannot convert unsigned long long to const char*" errors on these literals are a known Clang false positive —
+  // ignore them.
   constexpr int128_t operator""_lll(const char *str) {
-    if (str[0] == '-')
-      return -parse128(str, 1);
-    else
-      return parse128(str, 0);
+    if (str[0] == '-') return -parse128(str, 1);
+    else return parse128(str, 0);
   }
 
-  // "cannot convert unsigned long long to const char*" errors on these literals are a known Clang false positive — ignore them.
-  constexpr uint128_t operator""_ulll(const char *str) {
-    return static_cast<uint128_t>(parse128(str, 0));
-  }
-// "cannot convert unsigned long long to const char*" errors on these literals are a known Clang false positive — ignore them.
-  constexpr int128_t operator""_128(const char *str) {
-    return operator""_lll(str);
-  }
-// "cannot convert unsigned long long to const char*" errors on these literals are a known Clang false positive — ignore them.
-  constexpr uint128_t operator""_u128(const char *str) {
-    return operator""_ulll(str);
-  }
+  // "cannot convert unsigned long long to const char*" errors on these literals are a known Clang false positive —
+  // ignore them.
+  constexpr uint128_t operator""_ulll(const char *str) { return static_cast<uint128_t>(parse128(str, 0)); }
+  // "cannot convert unsigned long long to const char*" errors on these literals are a known Clang false positive —
+  // ignore them.
+  constexpr int128_t operator""_128(const char *str) { return operator""_lll(str); }
+  // "cannot convert unsigned long long to const char*" errors on these literals are a known Clang false positive —
+  // ignore them.
+  constexpr uint128_t operator""_u128(const char *str) { return operator""_ulll(str); }
 } // namespace ROSE
+
+template <>
+struct std::formatter<uint128_t> {
+  char presentation = 'd';
+  bool alt_form = false;
+  bool zero_pad = false;
+  int width = 0;
+
+  constexpr auto parse(std::format_parse_context &ctx) {
+    auto it = ctx.begin();
+    while (it != ctx.end() && *it != '}') {
+      switch (*it) {
+      case '#':
+        alt_form = true;
+        ++it;
+        break;
+      case '0':
+        zero_pad = true;
+        ++it;
+        break;
+      case 'd':
+      case 'x':
+      case 'X':
+      case 'b':
+      case 'B':
+      case 'o':
+        presentation = *it++;
+        return it;
+      default:
+        if (*it >= '1' && *it <= '9') {
+          while (it != ctx.end() && *it >= '0' && *it <= '9')
+            width = width * 10 + (*it++ - '0');
+        } else {
+          throw std::format_error("invalid format spec for uint128_t");
+        }
+      }
+    }
+    return it;
+  }
+
+  auto format(uint128_t val, std::format_context &ctx) const {
+    char buf[130];
+    char *end = buf + sizeof(buf);
+    char *ptr = end;
+    *--ptr = '\0';
+
+    if (val == 0) {
+      *--ptr = '0';
+    } else {
+      switch (presentation) {
+      case 'd': {
+        while (val > 0) {
+          *--ptr = '0' + (val % 10);
+          val /= 10;
+        }
+        break;
+      }
+      case 'x': {
+        while (val > 0) {
+          *--ptr = "0123456789abcdef"[val & 0xF];
+          val >>= 4;
+        }
+        break;
+      }
+      case 'X': {
+        while (val > 0) {
+          *--ptr = "0123456789ABCDEF"[val & 0xF];
+          val >>= 4;
+        }
+        break;
+      }
+      case 'b':
+      case 'B': {
+        while (val > 0) {
+          *--ptr = '0' + (val & 1);
+          val >>= 1;
+        }
+        break;
+      }
+      case 'o': {
+        while (val > 0) {
+          *--ptr = '0' + (val & 7);
+          val >>= 3;
+        }
+        break;
+      }
+      }
+    }
+
+    // prefix
+    char prefix[4] = {};
+    if (alt_form) {
+      switch (presentation) {
+      case 'x':
+        prefix[0] = '0';
+        prefix[1] = 'x';
+        break;
+      case 'X':
+        prefix[0] = '0';
+        prefix[1] = 'X';
+        break;
+      case 'b':
+      case 'B':
+        prefix[0] = '0';
+        prefix[1] = 'b';
+        break;
+      case 'o':
+        prefix[0] = '0';
+        break;
+      }
+    }
+
+    std::string_view digits(ptr, end - ptr - 1);
+    std::string_view pre(prefix, std::char_traits<char>::length(prefix));
+
+    int total = (int)(pre.size() + digits.size());
+    int pad = std::max(0, width - total);
+
+    auto out = ctx.out();
+    if (zero_pad) {
+      out = std::copy(pre.begin(), pre.end(), out);
+      for (int i = 0; i < pad; ++i)
+        *out++ = '0';
+    } else {
+      for (int i = 0; i < pad; ++i)
+        *out++ = ' ';
+      out = std::copy(pre.begin(), pre.end(), out);
+    }
+    return std::copy(digits.begin(), digits.end(), out);
+  }
+};
+
+template <>
+struct std::formatter<int128_t> {
+  char presentation = 'd';
+  bool alt_form = false;
+  bool zero_pad = false;
+  int width = 0;
+  char sign_mode = '-'; // '-' = only negative, '+' = always, ' ' = space for positive
+
+  constexpr auto parse(std::format_parse_context &ctx) {
+    auto it = ctx.begin();
+    while (it != ctx.end() && *it != '}') {
+      switch (*it) {
+      case '#':
+        alt_form = true;
+        ++it;
+        break;
+      case '0':
+        zero_pad = true;
+        ++it;
+        break;
+      case '+':
+        sign_mode = '+';
+        ++it;
+        break;
+      case ' ':
+        sign_mode = ' ';
+        ++it;
+        break;
+      case 'd':
+      case 'x':
+      case 'X':
+      case 'b':
+      case 'B':
+      case 'o':
+        presentation = *it++;
+        return it;
+      default:
+        if (*it >= '1' && *it <= '9') {
+          while (it != ctx.end() && *it >= '0' && *it <= '9')
+            width = width * 10 + (*it++ - '0');
+        } else {
+          throw std::format_error("invalid format spec for int128_t");
+        }
+      }
+    }
+    return it;
+  }
+  template <typename FormatContext>
+  auto format(int128_t val, FormatContext &ctx) const {
+    char buf[130];
+    char *end = buf + sizeof(buf);
+    char *ptr = end;
+    *--ptr = '\0';
+
+    bool negative = val < 0;
+    int128_t uval = negative ? -static_cast<int128_t>(val) : static_cast<int128_t>(val);
+
+    if (uval == 0) {
+      *--ptr = '0';
+    } else {
+      switch (presentation) {
+      case 'd': {
+        while (uval > 0) {
+          *--ptr = '0' + (uval % 10);
+          uval /= 10;
+        }
+        break;
+      }
+      case 'x': {
+        while (uval > 0) {
+          *--ptr = "0123456789abcdef"[uval & 0xF];
+          uval >>= 4;
+        }
+        break;
+      }
+      case 'X': {
+        while (uval > 0) {
+          *--ptr = "0123456789ABCDEF"[uval & 0xF];
+          uval >>= 4;
+        }
+        break;
+      }
+      case 'b':
+      case 'B': {
+        while (uval > 0) {
+          *--ptr = '0' + (uval & 1);
+          uval >>= 1;
+        }
+        break;
+      }
+      case 'o': {
+        while (uval > 0) {
+          *--ptr = '0' + (uval & 7);
+          uval >>= 3;
+        }
+        break;
+      }
+      }
+    }
+
+    char prefix[6] = {};
+    char *pfx = prefix;
+    if (negative) *pfx++ = '-';
+    else if (sign_mode == '+') *pfx++ = '+';
+    else if (sign_mode == ' ') *pfx++ = ' ';
+
+    if (alt_form) {
+      switch (presentation) {
+      case 'x':
+        *pfx++ = '0';
+        *pfx++ = 'x';
+        break;
+      case 'X':
+        *pfx++ = '0';
+        *pfx++ = 'X';
+        break;
+      case 'b':
+      case 'B':
+        *pfx++ = '0';
+        *pfx++ = 'b';
+        break;
+      case 'o':
+        *pfx++ = '0';
+        break;
+      }
+    }
+
+    std::string_view digits(ptr, end - ptr - 1);
+    std::string_view pre(prefix, pfx - prefix);
+
+    int total = (int)(pre.size() + digits.size());
+    int pad = std::max(0, width - total);
+
+    auto out = ctx.out();
+    if (zero_pad) {
+      out = std::copy(pre.begin(), pre.end(), out);
+      for (int i = 0; i < pad; ++i)
+        *out++ = '0';
+    } else {
+      for (int i = 0; i < pad; ++i)
+        *out++ = ' ';
+      out = std::copy(pre.begin(), pre.end(), out);
+    }
+    return std::copy(digits.begin(), digits.end(), out);
+  }
+};

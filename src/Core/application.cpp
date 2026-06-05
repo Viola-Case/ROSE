@@ -11,6 +11,7 @@
 
 #include <ROSE/ROSE.h>
 #include <SDL3/SDL.h>
+#include <nlohmann/json.hpp>
 
 namespace ROSE {
   Application::Application(const char *_title, ApplicationFlags flags, List<Scene> &&scenes) : m_title(_title),
@@ -74,4 +75,9 @@ namespace ROSE {
 
   List<Scene> &Application::GetScenes() noexcept { return m_scenes; }
   Scene &Application::GetCurrentScene() noexcept { return *m_currentScene; }
+
+
+  void AddSceneFromJSON(void *jsonPtr) noexcept {
+
+  }
 }
