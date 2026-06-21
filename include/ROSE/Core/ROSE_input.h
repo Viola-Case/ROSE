@@ -277,11 +277,10 @@ namespace ROSE {
   };
 
   class InputSystem final {
-  private:
     friend class Application;
-    const bool *keyState;
-    bool *keyStatePrevious;
-    void *gamepad { nullptr };
+    const bool *m_keyState;
+    bool *m_keyStatePrevious;
+    void *m_gamepad { nullptr };
     InputSystem();
     ~InputSystem();
     void Init() noexcept;
@@ -291,6 +290,9 @@ namespace ROSE {
     static InputSystem inputSystem;
 
   public:
+    /**
+     * This doesn't do much on its own but
+     */
     static void Prime();
     static InputSystem &GetInstance();
     static bool GetKeyDown(KeyCode) noexcept;
@@ -300,6 +302,11 @@ namespace ROSE {
     static float GetGamepadAxis(GamepadAxis) noexcept;
     static Vec2f GetStickAxes(GamepadStick) noexcept;
     static bool GetGamepadButton(GamepadButton) noexcept;
+
+
+    const bool *GetKeyboardPtr() const noexcept;
+
+    const bool *GetPreviousKeyboardPtr() const noexcept;
 
     static String GetGamepadName() noexcept;
   };

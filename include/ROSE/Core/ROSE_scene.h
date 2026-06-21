@@ -30,7 +30,7 @@ namespace ROSE {
 
     Object *GetObject(const UUID &) noexcept;
 
-    static Scene &FromJSON(void *jsonPtr);
+    static Scene &&FromJSON(void *jsonPtr);
 
 
   private:

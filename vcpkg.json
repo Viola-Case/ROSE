@@ -1,10 +1,10 @@
 ﻿{
   "name": "rose",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "homepage": "https://github.com/Viola-Case/ROSE",
   "license": "BSD-3-Clause",
   "description": "Radical Open Software Engine",
-  "builtin-baseline": "020c8202737fb3ae3bfef5dd78ca537137be0ea0",
+  "builtin-baseline": "a0b1c8d3a477c1cb4813d8e127a56961707ca42b",
   "dependencies": [
     {
       "name": "sdl3",

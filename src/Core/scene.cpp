@@ -11,6 +11,7 @@
 
 
 #include <ROSE/ROSE.h>
+#include <nlohmann/json.hpp>
 
 namespace ROSE {
   Application &Scene::GetApplication() const noexcept {return *m_application;}
@@ -41,7 +42,13 @@ namespace ROSE {
 
   }
 
-  Scene &Scene::FromJSON(void *jsonPtr) {  }
+  Scene &&Scene::FromJSON(void *jsonPtr) {
+    Scene scene;
+
+    // build the scene from JSON
+
+    return Move(scene);
+  }
 
   void Scene::AddObject(Object &&obj) noexcept {
     UniquePtr<Object> o (MakeUnique<Object>(Move(obj)));
