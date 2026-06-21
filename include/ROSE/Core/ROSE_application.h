@@ -44,7 +44,7 @@ namespace ROSE {
 
   class SceneManager;
 
-  class Application {
+  class Application final {
     /**
      * @todo probably just ditch this one
      */

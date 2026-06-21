@@ -15,7 +15,7 @@
 
 namespace ROSE {
   Application::Application(const char *_title, ApplicationFlags flags, List<Scene> &&scenes) : m_title(_title),
-    m_flags(flags), m_scenes(Move(scenes)) {}
+    m_scenes(Move(scenes)), m_flags(flags) {}
 
   Application::Application(const char *_title, ApplicationFlags flags) : Application(_title, flags, {}) {}
 

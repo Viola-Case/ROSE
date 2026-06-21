@@ -16,27 +16,35 @@
 namespace ROSE {
   class Scene final {
     friend class Application;
-    friend class Object;
+    //friend class Object;
 
   public:
     Application &GetApplication() const noexcept;
 
-  private:
     void AddObject(Object &&) noexcept;
     void DestroyObject(const UUID &u) noexcept;
+
+  private:
+    Scene();
+
+    Scene(Scene &&) noexcept = default;
+    Scene &operator=(Scene &&) noexcept = default;
+
 
     void OnStart() noexcept;
     void FrameUpdate() noexcept;
 
     Object *GetObject(const UUID &) noexcept;
 
-    static Scene &&FromJSON(void *jsonPtr);
+    static Scene FromJSONString(const String&) noexcept;
+    String ToJSONString() noexcept;
 
 
   private:
+    String m_name{"Scene"};
     TypedHashMap<UUID, UniquePtr<Object>> m_objects {};
     List<UniquePtr<Object>> m_pendingAdd {};
-    List<const UUID> m_pendingDestroy {};
+    List<UUID> m_pendingDestroy {};
     Application *m_application { nullptr };
   };
 } // namespace ROSE

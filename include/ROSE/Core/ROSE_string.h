@@ -67,6 +67,15 @@ namespace ROSE {
       return *this;
     }
 
+    BasicString &operator=(const CharT *str) {
+      BasicString tmp(str);
+      swap(tmp);
+      return *this;
+    }
+
+    BasicString(const std::basic_string<CharT> &other) : BasicString(other.c_str()) {}
+    BasicString &operator=(const std::basic_string<CharT> &other) { return operator=(other.c_str()); }
+
 
     BasicString &operator=(BasicString &&rvalue) noexcept {
       if (this != &rvalue) {
