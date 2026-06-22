@@ -60,7 +60,7 @@ namespace ROSE {
   *       "name": "Scene Manager",
   *       "behaviors": [
   *         {
-  *           "id": "bcebebababebaaaa-bbbbbbbbbbbbbbbb",
+  *           "typeid": "bcebebababebaaaa-bbbbbbbbbbbbbbbb",
   *           "factoryParameters": [
   *             "this is a piece of text",
   *             32,
@@ -74,6 +74,7 @@ namespace ROSE {
   *       "name": "Camera",
   *       "behaviors": [
   *         {
+  *           "typeid": "cabebaaaaaaaaaaa-bbbbbbbbbbbbbbbb",
   *           "uuid": "cabebaaaaaaaaaaa-bbbbbbbbbbbbbbbb"
   *         }
   *       ]
