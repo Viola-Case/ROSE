@@ -29,6 +29,7 @@ namespace ROSE {
 
     [[nodiscard]] static UUID Generate(const char *str) noexcept;
   };
+
 } // namespace ROSE
 
 template <>
@@ -37,3 +38,7 @@ struct std::hash<ROSE::UUID> {
     return ROSE::FNV1A64(&uuid, sizeof(ROSE::UUID));
   }
 };
+
+// TODO make UUID literal parser and formatter
+// std::format should take only one parser spec, which would return the raw integer instead of the nicer-looking
+// `high000000000000-low0000000000000` format. Usually not very useful unless working in assembly.

@@ -21,6 +21,7 @@ namespace ROSE {
     m_name(_name), m_transform(), m_pendingAdd(), m_pendingDestroy() {
     for (auto &b : _behaviors) {
       m_behaviors.insert(UUID::Generate(), Move(b));
+      std::terminate();
     }
   }
 
@@ -31,7 +32,7 @@ namespace ROSE {
   }
 
   Scene& Object::GetScene() const noexcept { return *m_scene; }
-  Object& Object::GetParent() const noexcept { return *m_parent; }
+  Object *Object::GetParent() const noexcept { return m_parent; }
 
   void Object::OnStart() noexcept {
     for (auto const &b : m_behaviors) {
@@ -39,9 +40,10 @@ namespace ROSE {
     }
   }
 
-  void Object::AddBehavior(UniquePtr<Behavior>&& behavior) noexcept {
+  void Object::AddBehavior(UniquePtr<Behavior>&& behavior) {
     m_pendingAdd.push_back(Move(behavior));
   }
+
   void Object::DestroyBehavior(const UUID &u) noexcept {
     m_pendingDestroy.push_back(u);
   }

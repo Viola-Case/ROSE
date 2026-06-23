@@ -34,3 +34,5 @@
 #include <ROSE/Core/ROSE_camera.h>
 #include <ROSE/Core/ROSE_asset.h>
 #include <ROSE/Core/ROSE_surface.h>
+#include <ROSE/Core/ROSE_factory.h>
+#include <ROSE/Core/ROSE_paramview.h>

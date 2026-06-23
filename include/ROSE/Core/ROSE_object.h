@@ -41,19 +41,24 @@ namespace ROSE {
     //     return static_cast<T *>(it->second.get());
     //   return nullptr;
     // }
+    template <class B, class ...Args>
+      requires std::is_base_of_v<Behavior, B>
+    Behavior *CreateBehavior(Args &&...args) {
+      auto behavior = new B(std::forward<Args>(args)...);
+      m_pendingAdd.push_back(UniquePtr<Behavior>(behavior));
+      return behavior;
+    };
 
   private:
     void OnStart() noexcept;
     void FrameUpdate() noexcept;
 
-    void AddBehavior(UniquePtr<Behavior> &&behavior) noexcept;
-    template <class T>
-      requires std::is_base_of_v<Behavior, T>
-    void CreateBehavior() noexcept;
+    void AddBehavior(UniquePtr<Behavior> &&behavior);
+
     void DestroyBehavior(const UUID &) noexcept;
 
     Scene &GetScene() const noexcept;
-    Object &GetParent() const noexcept;
+    Object *GetParent() const noexcept;
 
     Behavior *GetBehavior(const UUID &) noexcept;
 

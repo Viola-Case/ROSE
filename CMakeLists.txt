@@ -71,7 +71,7 @@ target_link_libraries(ROSE_Core
 )
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
-    target_compile_options(ROSE_Core PRIVATE -mavx2 -mfma)
+    target_compile_options(ROSE_Core PRIVATE -mavx2 -mfma -Wno-unknown-attributes)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")

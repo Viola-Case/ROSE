@@ -103,7 +103,9 @@ namespace ROSE {
     ++s_counter;
 
     const uint64_t counter = s_counter.fetch_add(1, std::memory_order_relaxed);
-    // Returns the number of ticks (unit depends on the clock's period)
+
+    // Returns the number of ticks. This is the reason this generation system is extremely unlikely to result in
+    // collisions.
     uint64_t ticks = __rdtsc();
 
     const auto tempcounter = counter + ticks;

@@ -128,6 +128,8 @@ namespace ROSE {
     JSON json = JSON::parse(jsonString);
     scene.m_name = json.value("name", scene.m_name);
 
+
+
     return scene;
   }
 

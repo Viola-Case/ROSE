@@ -69,9 +69,6 @@ namespace ROSE {
     List<Scene> &GetScenes() noexcept;
 
   private:
-    void AddSceneFromJSON(void *jsonPtr) noexcept;
-
-  private:
     String m_title { "game" };
     ApplicationManager *m_parent { nullptr };
 
