@@ -24,6 +24,8 @@ using int128_t = __int128_t;
 using uint128_t = __uint128_t;
 #else
 
+#error "THIS IS NOT A FUNCTIONAL IMPLEMENTATION!"
+
 namespace ROSE {
   struct int128_t;
   struct uint128_t;

@@ -24,6 +24,7 @@ namespace ROSE {
    */
   class ParamView {
   public:
+    ParamView(const void*) noexcept;
     int      GetInt   (const String& key, int      fallback) const noexcept;
     double   GetDouble(const String& key, double   fallback) const noexcept;
     bool     GetBool  (const String& key, bool     fallback) const noexcept;
@@ -32,6 +33,6 @@ namespace ROSE {
     ParamView Child   (const String& key) const noexcept;   // nested objects
 
   private:
-    const void* m_node{nullptr};
+    const void* m_node;
   };
 }
