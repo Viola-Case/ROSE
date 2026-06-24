@@ -133,5 +133,8 @@ namespace ROSE {
     return (c >= 'A' && c <= 'Z') ? c + ('a' - 'A') : c;
   }
 
+  uint64_t FNV1A64(const void *data, size_t len);
+  uint64_t FNV1A64(const char *str);
+
 
 } // namespace ROSE

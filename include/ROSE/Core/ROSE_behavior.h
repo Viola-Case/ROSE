@@ -11,6 +11,8 @@
 #pragma once
 
 namespace ROSE {
+  class ParamView;
+
   class Behavior {
     friend class Object;
     friend class Scene;
@@ -25,6 +27,8 @@ namespace ROSE {
     virtual constexpr UUID GetTypeID() const noexcept = 0;
 
     virtual ~Behavior();
+
+    virtual void UnpackParameters(const ParamView &);
 
     Scene &GetScene() noexcept;
     Object &GetObject() noexcept;

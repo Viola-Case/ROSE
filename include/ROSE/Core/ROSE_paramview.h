@@ -15,6 +15,7 @@
 
 namespace ROSE {
   /*!
+   * Parameter view class to read behavior data from Scene JSON files
    * @note missing key and wrong-typed key both fall through to the fallback today.
    * These are different animals — missing = honest version skew (limp forward),
    * wrong-type = possible corruption (deserves a louder channel). Split them when
@@ -29,10 +30,12 @@ namespace ROSE {
     double   GetDouble(const String& key, double   fallback) const noexcept;
     bool     GetBool  (const String& key, bool     fallback) const noexcept;
     String   GetString(const String& key, const String& fallback) const;
+
     UUID     GetUUID  (const String& key) const noexcept;
     ParamView Child   (const String& key) const noexcept;   // nested objects
 
   private:
+    ParamView() noexcept;
     const void* m_node;
   };
 }

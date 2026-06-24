@@ -11,6 +11,7 @@
 #pragma once
 
 #include <ROSE/Core/ROSE_stdlib.h>
+#include <ROSE/Core/ROSE_utility.h>
 
 namespace ROSE {
   union UUID {

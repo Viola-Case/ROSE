@@ -225,7 +225,7 @@ namespace ROSE {
   // using UStringView = BasicStringView<char32_t>;
 
 
-  uint64_t FNV1A64(const StringView &str);
+  //uint64_t FNV1A64(const StringView &str);
 } // namespace ROSE
 
 template <ROSE::Character CharT>

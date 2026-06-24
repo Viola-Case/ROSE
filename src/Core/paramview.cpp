@@ -9,13 +9,17 @@
 
 **/
 
-#include "ROSE/Core/ROSE_bigint.h"
+#include <ROSE/Core/ROSE_bigint.h>
 
 
+#include <ROSE/Core/ROSE_utility.h>
 #include <ROSE/Core/ROSE_paramview.h>
 #include <nlohmann/json.hpp>
 
 namespace ROSE {
+  ParamView::ParamView() noexcept : m_node(nullptr) {}
+  ParamView::ParamView(const void *node) noexcept : m_node(node) {}
+
   int ParamView::GetInt(const String &key, int fallback) const noexcept {
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);
@@ -72,7 +76,7 @@ namespace ROSE {
     #undef fallback
   }
   ParamView ParamView::Child(const String &key) const noexcept {
-    constexpr ParamView fallback {};
+    ParamView fallback {};
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);
     auto it = node->find(key.c_str());

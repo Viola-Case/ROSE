@@ -21,5 +21,7 @@ namespace ROSE {
     bool m_Orthographic { false };
 
   public:
+    static constexpr UUID typeID = UUID{0x98b16c050e6597982ba97b3cd1a9dd7c_u128};
+    static constexpr UUID TypeID() { return typeID; }
   };
 } // namespace ROSE
