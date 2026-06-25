@@ -1,17 +1,18 @@
 /**
 
   @file       ROSE_paramview.h
-  @brief      
+  @brief
   @details    ~
   @author     Viola Case
   @date       22.06.2026
   @copyright  © Viola Case, 2026. All rights reserved.
-  
+
 **/
 #pragma once
 
 #include <ROSE/Core/ROSE_string.h>
 #include <ROSE/Core/ROSE_uuid.h>
+#include <ROSE/Core/math/ROSE_vector.h>
 
 namespace ROSE {
   /*!
@@ -25,17 +26,21 @@ namespace ROSE {
    */
   class ParamView {
   public:
-    ParamView(const void*) noexcept;
-    int      GetInt   (const String& key, int      fallback) const noexcept;
-    double   GetDouble(const String& key, double   fallback) const noexcept;
-    bool     GetBool  (const String& key, bool     fallback) const noexcept;
-    String   GetString(const String& key, const String& fallback) const;
+    ParamView(const void *) noexcept;
+    int GetInt(const String &key, int fallback = 0) const noexcept;
+    double GetDouble(const String &key, double fallback = 0) const noexcept;
+    bool GetBool(const String &key, bool fallback = 0) const noexcept;
+    String GetString(const String &key, const String &fallback = "") const;
+    Vec3d GetVec3d(const String &key, const Vec3d fallback = { 0 }) const;
+    Vec4d GetVec4d(const String &key, const Vec4d fallback = { 0 }) const;
 
-    UUID     GetUUID  (const String& key) const noexcept;
-    ParamView Child   (const String& key) const noexcept;   // nested objects
+    UUID GetUUID(const String &key) const noexcept;
+    ParamView Child(const String &key) const noexcept; // nested objects
+
+    const void *GetNode() const noexcept;
 
   private:
     ParamView() noexcept;
-    const void* m_node;
+    const void *m_node;
   };
-}
+} // namespace ROSE

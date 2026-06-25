@@ -58,6 +58,14 @@ namespace ROSE {
   *     {
   *       "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb",
   *       "name": "Scene Manager",
+  *       "transform": {
+  *         "position": [
+  *           0,0,0
+  *         ],
+  *         "rotation": [
+  *           0,0,0
+  *         ]
+  *       },
   *       "behaviors": [
   *         {
   *           "typeid": "bcebebababebaaaa-bbbbbbbbbbbbbbbb",
@@ -72,6 +80,14 @@ namespace ROSE {
   *     {
   *       "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbc",
   *       "name": "Camera",
+  *       "transform": {
+  *         "position": [
+  *           0,0,0
+  *         ],
+  *         "rotation": [
+  *           0,0,0
+  *         ]
+  *       },
   *       "behaviors": [
   *         {
   *           "typeid": "cabebaaaaaaaaaaa-bbbbbbbbbbbbbbbb",
@@ -82,6 +98,14 @@ namespace ROSE {
   *     {
   *       "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbd",
   *       "name": "object3",
+  *       "transform": {
+  *         "position": [
+  *           0,0,0
+  *         ],
+  *         "rotation": [
+  *           0,0,0
+  *         ]
+  *       },
   *       "behaviors": []
   *     }
   *   ]

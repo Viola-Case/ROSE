@@ -9,12 +9,20 @@
 
 **/
 
+#include "ROSE/Core/ROSE_math.h"
+
+
 #include <ROSE/Core/ROSE_bigint.h>
 
 
 #include <ROSE/Core/ROSE_utility.h>
 #include <ROSE/Core/ROSE_paramview.h>
 #include <nlohmann/json.hpp>
+
+/**
+ * Set this to 1 if you want this to throw on failure. Don't touch this if you don't know what you're doing.
+ */
+#define UUID_THROW_ON_FAILURE 0
 
 namespace ROSE {
   ParamView::ParamView() noexcept : m_node(nullptr) {}
@@ -23,67 +31,85 @@ namespace ROSE {
   int ParamView::GetInt(const String &key, int fallback) const noexcept {
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);
-    auto it = node->find(key.c_str());
-    if (it == node->end() || !it->is_number_integer()) return fallback;
-    const auto &v = it->object();
-    if (!v.is_number()) return fallback;
+    const auto it = node->find(key.c_str());
+    if (it == node->end() || !it->is_number()) return fallback;
+    const auto &v = *it;
     return v.get<int>();
   }
+
   double ParamView::GetDouble(const String &key, double fallback) const noexcept {
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);
-    auto it = node->find(key.c_str());
+    const auto it = node->find(key.c_str());
     if (it == node->end() || !it->is_number_float()) return fallback;
-    const auto &v = it->object();
-    if (!v.is_number_float()) return fallback;
+    const auto &v = *it;
     return v.get<double>();
   }
+
   bool ParamView::GetBool(const String &key, bool fallback) const noexcept {
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);
-    auto it = node->find(key.c_str());
+    const auto it = node->find(key.c_str());
     if (it == node->end() || !it->is_boolean()) return fallback;
-    const auto &v = it->object();
-    if (!v.is_boolean()) return fallback;
+    const auto &v = *it;
     return v.get<bool>();
   }
-  String ParamView::GetString(const String &key, const String &fallback) const {
+
+  String ParamView::GetString(const String &key, const String &fallback) const noexcept {
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);
-    auto it = node->find(key.c_str());
+    const auto it = node->find(key.c_str());
     if (it == node->end() || !it->is_string()) return fallback;
-    const auto &v = it->object();
-    if (!v.is_string()) return fallback;
-    return v.get<String>();
-  }
-  UUID ParamView::GetUUID(const String &key) const noexcept {
-    // #if defined(UUID_THROW_ON_FAILURE)
-    // #define fallback() throw
-    // #else
-    #define fallback() return UUID::Invalid()
-    // #endif
-    if (!m_node) fallback();
-    const auto *node = static_cast<const nlohmann::json*>(m_node);
-    auto it = node->find(key.c_str());
-    if (it == node->end() || !it->is_string()) fallback();
     const auto &v = *it;
-    auto s = v.get<String>();
-    if (s.size() != ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR + ROSE_UUID_LOW_LEN) fallback();
+    return String(v.get_ref<const std::string&>().c_str());
+  }
+
+  UUID ParamView::GetUUID(const String &key) const noexcept {
+    #if UUID_THROW_ON_FAILURE
+    #define FALLBACK() throw
+    #else
+    #define FALLBACK() return UUID::Invalid()
+    #endif
+    if (!m_node) FALLBACK();
+    const auto *node = static_cast<const nlohmann::json*>(m_node);
+    const auto it = node->find(key.c_str());
+    if (it == node->end() || !it->is_string()) FALLBACK();
+    const auto &v = *it;
+    auto s = String(v.get_ref<const std::string&>().c_str());
+    if (s.size() != ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR + ROSE_UUID_LOW_LEN) FALLBACK();
     // todo check for corrupted bytes in uuid
     const uint128_t high = strtoull(s.c_str(), nullptr, 16);
     const uint64_t low  = strtoull(s.c_str() + ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR, nullptr, 16);
     return { (high << 64) | low };
-    #undef fallback
+    #undef FALLBACK
   }
+
   ParamView ParamView::Child(const String &key) const noexcept {
-    ParamView fallback {};
+    const ParamView fallback {};
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);
-    auto it = node->find(key.c_str());
+    const auto it = node->find(key.c_str());
     if (it == node->end() || !it->is_object()) return fallback;
     const auto &v = *it;
     ParamView child;
     child.m_node = &v;
     return child;
   }
+
+  Vec3d ParamView::GetVec3d(const String &key, const Vec3d fallback) const {
+    if (!m_node) return fallback;
+    const auto *node = static_cast<const nlohmann::json*>(m_node);
+    const auto it = node->find(key.c_str());
+    if (it == node->end() || !it->is_array() || it->size() != 3) return fallback;
+    Vec3d vec;
+    if (!(*it)[0].is_number() || (*it)[1].is_number() || (*it)[2].is_number()) return fallback;
+    vec.x = (*it)[0].get<double>();
+    vec.y = (*it)[1].get<double>();
+    vec.z = (*it)[2].get<double>();
+    return vec;
+  }
+
+
+
+  const void *ParamView::GetNode() const noexcept { return m_node; }
 } // namespace ROSE

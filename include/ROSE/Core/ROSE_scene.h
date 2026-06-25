@@ -47,4 +47,10 @@ namespace ROSE {
     List<UUID> m_pendingDestroy {};
     Application *m_application { nullptr };
   };
+
+  class SceneManager final {
+    friend class Application;
+    
+  };
+
 } // namespace ROSE

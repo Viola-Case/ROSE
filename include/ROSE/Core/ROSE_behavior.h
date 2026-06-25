@@ -18,19 +18,21 @@ namespace ROSE {
     friend class Scene;
 
   protected:
-    virtual void OnStart() {};
-    virtual void FrameUpdate() {};
-    virtual void FixedUpdate() {};
+    virtual void OnStart() {}
+    virtual void FrameUpdate() {}
+    virtual void FixedUpdate() {}
     // void SetObject() const noexcept;
+
+    virtual void Unpack(const ParamView &view) {}
 
   public:
     virtual constexpr UUID GetTypeID() const noexcept = 0;
 
     virtual ~Behavior();
 
-    virtual void UnpackParameters(const ParamView &);
+    virtual void UnpackParameters(const ParamView &) {}
 
-    Scene &GetScene() noexcept;
+    //Scene &GetScene() noexcept;
     Object &GetObject() noexcept;
 
   protected:
