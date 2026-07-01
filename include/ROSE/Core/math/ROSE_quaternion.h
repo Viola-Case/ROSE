@@ -97,7 +97,7 @@ namespace ROSE::math {
       return *this;
     }
 
-    constexpr const Quat &operator*(const Quat &rhs) const noexcept {
+    constexpr Quat operator*(const Quat &rhs) const noexcept {
       Quat result(*this);
       return (result *= rhs);
     }

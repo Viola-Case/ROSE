@@ -9,14 +9,15 @@
 
 **/
 #pragma once
-#include <ROSE/Core/ROSE_object.h>
+//#include <ROSE/Core/ROSE_object.h>
+
 
 // class Application;
 
 namespace ROSE {
   class Scene final {
     friend class Application;
-    //friend class Object;
+    friend class Object;
 
   public:
     Application &GetApplication() const noexcept;
@@ -36,7 +37,7 @@ namespace ROSE {
 
     Object *GetObject(const UUID &) noexcept;
 
-    static Scene FromJSONString(const String&) noexcept;
+    static Scene FromJSONString(const String&, const Application *) noexcept;
     String ToJSONString() noexcept;
 
 

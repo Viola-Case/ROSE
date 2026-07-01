@@ -23,10 +23,16 @@ namespace ROSE {
     Fatal
   };
 
+  //inline void Log(LogLevel level, const char * format, ...) {
+  //  ;
+  //}
+
+  #define Log(...) ((void)0)
+
 }
 
-#define ROSE_LOG_TRACE(...) // rose::Log(rose::LogLevel::Trace, __VA_ARGS__)
-#define ROSE_LOG_INFO(...)  // rose::Log(ROSE::LogLevel::Info, __VA_ARGS__)
-#define ROSE_LOG_WARN(...)  // rose::Log(ROSE::LogLevel::Warn, __VA_ARGS__)
-#define ROSE_LOG_ERROR(...) // rose::Log(ROSE::LogLevel::Error, __VA_ARGS__)
-#define ROSE_LOG_FATAL(...) // rose::Log(ROSE::LogLevel::Fatal, __VA_ARGS__)
+#define ROSE_LOG_TRACE(...) //{ ROSE::Log(ROSE::LogLevel::Trace, __VA_ARGS__);}
+#define ROSE_LOG_INFO(...)  //{ ROSE::Log(ROSE::LogLevel::Info, __VA_ARGS__);}
+#define ROSE_LOG_WARN(...)  //{ ROSE::Log(ROSE::LogLevel::Warn, __VA_ARGS__);}
+#define ROSE_LOG_ERROR(...) //{ ROSE::Log(ROSE::LogLevel::Error, __VA_ARGS__);}
+#define ROSE_LOG_FATAL(...) //{ ROSE::Log(ROSE::LogLevel::Fatal, __VA_ARGS__);}

@@ -34,7 +34,7 @@ namespace ROSE {
   };
 
   constexpr size_t ROSE_UUID_HIGH_LEN = 16;
-  constexpr size_t ROSE_UUID_SEPARATOR = 1;
+  constexpr size_t ROSE_UUID_SEPARATOR_LEN = 1;
   constexpr size_t ROSE_UUID_LOW_LEN = 16;
 
 

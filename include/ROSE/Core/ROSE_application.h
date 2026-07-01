@@ -13,7 +13,7 @@
 #include <cstdlib>
 #include <cstdint>
 #include <ROSE/Core/ROSE_rtl.h>
-#include <ROSE/Core/ROSE_scene.h>
+#include <ROSE/Core/ROSE_factory.h>
 
 namespace ROSE {
   using AppID = size_t;
@@ -25,6 +25,8 @@ namespace ROSE {
   constexpr ApplicationFlags APPLICATION_LIGHTWEIGHT = 1 << 4;
   constexpr ApplicationFlags APPLICATION_SOFTWARE_RENDERER = 1 << 5;
 
+
+  class Scene;
   // constexpr ApplicationFlags AAA_GAME = APPLICATION_DIRECTX
   //
   //
@@ -66,6 +68,9 @@ namespace ROSE {
     [[nodiscard]] void *GetWindow() const noexcept;
 
     Scene &GetCurrentScene() noexcept;
+
+    BehaviorFactory &GetFactory() const noexcept;
+
     List<Scene> &GetScenes() noexcept;
 
   private:
@@ -78,6 +83,8 @@ namespace ROSE {
     AppID m_id { 0 };
 
     void *m_window { nullptr };
+
+    BehaviorFactory *m_factory { nullptr };
 
     ApplicationFlags m_flags { 0 };
 

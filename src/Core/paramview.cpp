@@ -20,7 +20,7 @@
 #include <nlohmann/json.hpp>
 
 /**
- * Set this to 1 if you want this to throw on failure. Don't touch this if you don't know what you're doing.
+ * Set this to 1 if you want GetUUID to throw on failure. Don't touch this if you don't know what you're doing.
  */
 #define UUID_THROW_ON_FAILURE 0
 
@@ -76,10 +76,10 @@ namespace ROSE {
     if (it == node->end() || !it->is_string()) FALLBACK();
     const auto &v = *it;
     auto s = String(v.get_ref<const std::string&>().c_str());
-    if (s.size() != ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR + ROSE_UUID_LOW_LEN) FALLBACK();
+    if (s.size() != ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR_LEN + ROSE_UUID_LOW_LEN) FALLBACK();
     // todo check for corrupted bytes in uuid
     const uint128_t high = strtoull(s.c_str(), nullptr, 16);
-    const uint64_t low  = strtoull(s.c_str() + ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR, nullptr, 16);
+    const uint64_t low  = strtoull(s.c_str() + ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR_LEN, nullptr, 16);
     return { (high << 64) | low };
     #undef FALLBACK
   }
@@ -102,10 +102,11 @@ namespace ROSE {
     const auto it = node->find(key.c_str());
     if (it == node->end() || !it->is_array() || it->size() != 3) return fallback;
     Vec3d vec;
-    if (!(*it)[0].is_number() || (*it)[1].is_number() || (*it)[2].is_number()) return fallback;
-    vec.x = (*it)[0].get<double>();
-    vec.y = (*it)[1].get<double>();
-    vec.z = (*it)[2].get<double>();
+    const auto &arr = *it;
+    if (!arr[0].is_number() || !arr[1].is_number() || !arr[2].is_number()) return fallback;
+    vec.x = arr[0].get<double>();
+    vec.y = arr[1].get<double>();
+    vec.z = arr[2].get<double>();
     return vec;
   }
 

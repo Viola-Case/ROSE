@@ -15,7 +15,7 @@
 
 namespace ROSE {
   Application::Application(const char *_title, ApplicationFlags flags, List<Scene> &&scenes) : m_title(_title),
-    m_scenes(Move(scenes)), m_flags(flags) {}
+    m_scenes(Move(scenes)), m_flags(flags), m_factory(new BehaviorFactory()) {}
 
   Application::Application(const char *_title, ApplicationFlags flags) : Application(_title, flags, {}) {}
 
@@ -63,6 +63,7 @@ namespace ROSE {
       return;
     }
     SDL_Quit();
+    delete m_factory;
   }
 
   const char *Application::GetTitle() const noexcept {
@@ -75,6 +76,10 @@ namespace ROSE {
 
   List<Scene> &Application::GetScenes() noexcept { return m_scenes; }
   Scene &Application::GetCurrentScene() noexcept { return *m_currentScene; }
+
+  BehaviorFactory &Application::GetFactory() const noexcept {
+    return *m_factory;
+  }
 
 
   void AddSceneFromJSON(void *jsonPtr) noexcept {

@@ -21,14 +21,13 @@ namespace ROSE {
     virtual void OnStart() {}
     virtual void FrameUpdate() {}
     virtual void FixedUpdate() {}
-    // void SetObject() const noexcept;
 
     virtual void Unpack(const ParamView &view) {}
 
   public:
     virtual constexpr UUID GetTypeID() const noexcept = 0;
 
-    virtual ~Behavior();
+    virtual ~Behavior() {}
 
     virtual void UnpackParameters(const ParamView &) {}
 

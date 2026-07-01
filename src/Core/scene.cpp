@@ -21,7 +21,7 @@ namespace ROSE {
 
   Scene::Scene() {
     static size_t sceneCounter = 1;
-    m_name = std::format("Scene{}", sceneCounter++);
+    m_name = String(std::format("Scene{}", sceneCounter++).c_str());
   }
 
   void Scene::FrameUpdate() noexcept {
@@ -52,64 +52,73 @@ namespace ROSE {
  /*!
   * Put something here to specify we need to talk about JSON
   * ```
-  * {
-  *   "name": "scene1"
-  *   "objects": [
-  *     {
-  *       "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb",
-  *       "name": "Scene Manager",
-  *       "transform": {
-  *         "position": [
-  *           0,0,0
-  *         ],
-  *         "rotation": [
-  *           0,0,0
-  *         ]
-  *       },
-  *       "behaviors": [
-  *         {
-  *           "typeid": "bcebebababebaaaa-bbbbbbbbbbbbbbbb",
-  *           "factoryParameters": [
-  *             "this is a piece of text",
-  *             32,
-  *             true
-  *           ]
-  *         }
-  *       ]
-  *     },
-  *     {
-  *       "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbc",
-  *       "name": "Camera",
-  *       "transform": {
-  *         "position": [
-  *           0,0,0
-  *         ],
-  *         "rotation": [
-  *           0,0,0
-  *         ]
-  *       },
-  *       "behaviors": [
-  *         {
-  *           "typeid": "cabebaaaaaaaaaaa-bbbbbbbbbbbbbbbb",
-  *           "uuid": "cabebaaaaaaaaaaa-bbbbbbbbbbbbbbbb"
-  *         }
-  *       ]
-  *     },
-  *     {
-  *       "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbd",
-  *       "name": "object3",
-  *       "transform": {
-  *         "position": [
-  *           0,0,0
-  *         ],
-  *         "rotation": [
-  *           0,0,0
-  *         ]
-  *       },
-  *       "behaviors": []
-  *     }
-  *   ]
-  * }
+{
+  "name": "scene1"
+  "objects": [
+    {
+      "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb",
+      "name": "Scene Manager",
+      "transform": {
+        "position": [
+          0,0,0
+        ],
+        "rotation": [
+          0,0,0
+        ],
+        "scale": [
+          1,1,1
+        ]
+      },
+      "behaviors": [
+        {
+          "typeid": "bcebebababebaaaa-bbbbbbbbbbbbbbbb",
+          "factoryParameters": [
+            "this is a piece of text",
+            32,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbc",
+      "name": "Camera",
+      "transform": {
+        "position": [
+          0,0,0
+        ],
+        "rotation": [
+          0,0,0
+        ],
+        "scale": [
+          1,1,1
+        ]
+      },
+      "behaviors": [
+        {
+          "typeid": "cabebaaaaaaaaaaa-bbbbbbbbbbbbbbbb",
+          "uuid": "cabebaaaaaaaaaaa-bbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    {
+      "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbd",
+      "name": "object3",
+      "transform": {
+        "position": [
+          0,0,0
+        ],
+        "rotation": [
+          0,0,0
+        ],
+        "scale": [
+          1,1,1
+        ]
+      },
+      "behaviors": []
+    }
+  ]
+}
   *
   *
   * @todo Behavior rehydration
@@ -142,20 +151,94 @@ namespace ROSE {
   *      every .value() falls to default. Make sure ParamView handles absent gracefully.
   */
 
+  inline UUID getUUIDFromNode(const nlohmann::basic_json<> &node) {
+    #if UUID_THROW_ON_FAILURE
+    #define FALLBACK() throw
+    #else
+    #define FALLBACK() return UUID::Invalid()
+    #endif
+    auto s = String(node.get_ref<const std::string&>().c_str());
+    if (s.size() != ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR_LEN + ROSE_UUID_LOW_LEN) FALLBACK();
+    // todo check for corrupted bytes in uuid
+    const uint128_t high = strtoull(s.c_str(), nullptr, 16);
+    const uint64_t low  = strtoull(s.c_str() + ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR_LEN, nullptr, 16);
+    return { (high << 64) | low };
+    #undef FALLBACK
+  }
+
+  inline Vec3d getVec3FromNode(const nlohmann::basic_json<> &node) {
+    Vec3d vec;
+    if (!node[0].is_number() || !node[1].is_number() || !node[2].is_number()) return Vec3d{0};
+    vec.x = node[0].get<double>();
+    vec.y = node[1].get<double>();
+    vec.z = node[2].get<double>();
+    return vec;
+  }
+
   /*!
    *
    * @param jsonString
    * @return
    */
-  Scene Scene::FromJSONString(const String &jsonString) noexcept {
-    Scene scene;
-    JSON json = JSON::parse(jsonString);
-    scene.m_name = json.value("name", scene.m_name);
+  Scene Scene::FromJSONString(const String &jsonString, const Application *app) noexcept {
+    Scene scene{};
 
+    try {
+      JSON json = JSON::parse(jsonString);
+      scene.m_name = String(json.at("name").get<std::string>().c_str());
 
+      for (const auto &o : json.at("objects")) {
+        /*{
+            "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb",
+            "name": "Scene Manager",
+            "transform": {
+              "position": [
+                0,0,0
+              ],
+              "rotation": [
+                0,0,0
+              ],
+              "scale": [
+                1,1,1
+              ]
+            },
+            "behaviors": [
+              {
+                "typeid": "bcebebababebaaaa-bbbbbbbbbbbbbbbb",
+                "factoryParameters": [
+                  "this is a piece of text",
+                  32,
+                  true
+                ]
+              }
+            ]
+          }*/
+        Pair<UUID, Object> pair;
+        pair.first = getUUIDFromNode(o.at("uuid"));
+        Object &obj = pair.second;
+        obj.m_name = String(o.at("name").get<std::string>().c_str());
+        const auto &to = o.at("transform");
+        Transform &t = obj.m_transform;
+        t.position = getVec3FromNode(to.at("position"));
+        t.rotation = Quatd::FromEuler(getVec3FromNode(to.at("rotation")));
+        t.scale = getVec3FromNode(to.at("scale"));
 
+        for (const auto &b : o.at("behaviors")) {
+          UUID tID = getUUIDFromNode(b.at("typeid"));
+          auto bvr = app->GetFactory().Create(tID);
+          auto paramObj = b.at("factoryParameters");
+          ParamView pview{&paramObj};
+          bvr->UnpackParameters(pview);
+          obj.m_behaviors.insert(tID, Move(bvr));
+        }
+      }
+    } catch (nlohmann::json::exception &e) {
+      Log(LogLevel::Error, "Scene string corrupt:\n\t{}", e.what());
+      return scene;
+    }
     return scene;
   }
+
 
 
 

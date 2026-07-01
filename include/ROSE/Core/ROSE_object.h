@@ -10,13 +10,15 @@
 **/
 #pragma once
 
+#include <ROSE/Core/ROSE_scene.h>
 #include <utility>
 #include <ROSE/Core/ROSE_rtl.h>
 #include <ROSE/Core/ROSE_uuid.h>
 #include <ROSE/Core/ROSE_transform.h>
+#include <ROSE/Core/ROSE_application.h>
 
 namespace ROSE {
-  class Scene;
+  //class Scene;
   class Behavior;
   template <class T>
   concept BehaviorType = std::derived_from<T, Behavior>;
@@ -41,13 +43,26 @@ namespace ROSE {
     //     return static_cast<T *>(it->second.get());
     //   return nullptr;
     // }
-    template <class B, class ...Args>
+    template <class B>
       requires std::is_base_of_v<Behavior, B>
-    Behavior *CreateBehavior(Args &&...args) {
-      auto behavior = new B(std::forward<Args>(args)...);
-      m_pendingAdd.push_back(UniquePtr<Behavior>(behavior));
-      return behavior;
-    };
+    Behavior *CreateBehavior() {
+      constexpr auto tID = B::GetTypeID();
+      if (auto it = m_behaviors.find(tID); it != m_behaviors.end())
+        // return nullptr;
+        return m_behaviors.find(tID)->second.get();
+      auto b = m_scene->m_application->GetFactory().Create(tID);
+      m_behaviors.insert(tID, Move(b));
+      return m_behaviors.find(tID)->second.get();
+    }
+
+    template <class B>
+      requires std::is_base_of_v<Behavior, B>
+    Behavior *FindBehavior() {
+      constexpr auto tID = B::GetTypeID();
+      if (auto it = m_behaviors.find(tID); it != m_behaviors.end())
+        return it->second.get();
+      return nullptr;
+    }
 
   private:
     void OnStart() noexcept;
