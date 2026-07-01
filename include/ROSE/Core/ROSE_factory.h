@@ -18,7 +18,7 @@ namespace ROSE {
   using FactoryFn = UniquePtr<Behavior> (*)();
 
   class BehaviorFactory {
-    List<String> RegisteredModules {"Core"};
+    List<String> m_registeredModules {"Core"};
     TypedHashMap<UUID, FactoryFn> m_factoryFunctions{};
   public:
     void Register(FactoryFn fn) noexcept;

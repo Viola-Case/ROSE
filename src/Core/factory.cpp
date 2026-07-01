@@ -9,3 +9,8 @@
   
 **/
 
+#include <ROSE/ROSE.h>
+
+extern "C" void RoseRegisterModule(ROSE::BehaviorFactory&) {
+  ROSE::Camera::
+}

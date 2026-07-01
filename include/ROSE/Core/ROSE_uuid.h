@@ -38,6 +38,13 @@ namespace ROSE {
   constexpr size_t ROSE_UUID_LOW_LEN = 16;
 
 
+  constexpr UUID operator ""_uuid(const char *str) noexcept {
+    // TODO replace strtoull with a constexpr hex parser
+
+    const uint128_t high = strtoull(str, nullptr, 16);
+    const uint64_t low  = strtoull(str + ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR_LEN, nullptr, 16);
+    return { (high << 64) | low };
+  }
 
 } // namespace ROSE
 
@@ -51,5 +58,7 @@ struct std::hash<ROSE::UUID> {
 // TODO make UUID literal parser and formatter
 // std::format should take only one parser spec, which would return the raw integer instead of the nicer-looking
 // `high000000000000-low0000000000000` format. Usually not very useful unless working in assembly.
+
+
 
 
