@@ -25,3 +25,5 @@ namespace ROSE {
     UniquePtr<Behavior> Create(UUID id) const noexcept;
   };
 }
+
+extern "C" void RoseRegisterModule(ROSE::BehaviorFactory&);

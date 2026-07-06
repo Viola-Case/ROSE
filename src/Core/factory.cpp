@@ -10,7 +10,12 @@
 **/
 
 #include <ROSE/ROSE.h>
+using namespace ROSE;
+ROSE::UniquePtr<ROSE::Behavior> MakeCamera() {
+  return MakeUnique<Camera>();
+}
 
 extern "C" void RoseRegisterModule(ROSE::BehaviorFactory&) {
-  ROSE::Camera::
+  //ROSE::Camera::
+
 }

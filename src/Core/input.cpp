@@ -103,6 +103,11 @@ namespace ROSE {
     return (SDL_GetGamepadAxis(static_cast<SDL_Gamepad *>(inputSystem.m_gamepad), static_cast<SDL_GamepadAxis>(axis.value)) / 32767.f);
   }
 
+  /**
+   *
+   * @param stick stick
+   * @return Vector from (-1,-1) to (1,1) representing the corresponding stick. Will return zero vector if given an unknown stick.
+   */
   Vec2f InputSystem::GetStickAxes(GamepadStick stick) noexcept {
     static InputSystem &inputSystem = GetInstance();
 
@@ -111,8 +116,11 @@ namespace ROSE {
       return Vec2f(GetGamepadAxis(GamepadAxis::LeftStickX), GetGamepadAxis(GamepadAxis::LeftStickY));
     case static_cast<size_t>(GamepadStick::Right):
       return Vec2f(GetGamepadAxis(GamepadAxis::RightStickX), GetGamepadAxis(GamepadAxis::RightStickY));
+    default:
+      return Vec2f{};
     }
   }
+
   bool InputSystem::GetGamepadButton(GamepadButton button) noexcept {
     return SDL_GetGamepadButton(static_cast<SDL_Gamepad *>(GetInstance().m_gamepad), static_cast<SDL_GamepadButton>(button.value));
   }

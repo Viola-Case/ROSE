@@ -12,14 +12,22 @@
 
 #include <ROSE/Core/ROSE_stdlib.h>
 #include <ROSE/Core/ROSE_utility.h>
+#include <ROSE/Core/ROSE_bigint.h>
 
 namespace ROSE {
-  union UUID {
+  struct UUID {
     static inline Atomic<uint64_t> s_counter { 0 };
 
-    uint128_t value;
-    struct {
-      uint64_t high, low;
+    constexpr UUID() = default;
+    constexpr UUID(const UUID &) = default;
+    constexpr UUID(uint128_t val) noexcept : value(val) {}
+    constexpr UUID(uint64_t h, uint64_t l) noexcept : high(h), low(l) {}
+
+    union {
+      uint128_t value;
+      struct {
+        uint64_t high, low;
+      };
     };
 
     [[nodiscard]] constexpr bool operator==(const UUID &_other) const noexcept {
@@ -38,11 +46,15 @@ namespace ROSE {
   constexpr size_t ROSE_UUID_LOW_LEN = 16;
 
 
-  constexpr UUID operator ""_uuid(const char *str) noexcept {
-    // TODO replace strtoull with a constexpr hex parser
+  constexpr size_t ROSE_UUID_STR_LEN = ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR_LEN + ROSE_UUID_LOW_LEN;
 
-    const uint128_t high = strtoull(str, nullptr, 16);
-    const uint64_t low  = strtoull(str + ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR_LEN, nullptr, 16);
+  class bad_uuid : public std::exception {};
+
+  constexpr UUID operator ""_uuid(const char *str, size_t len) {
+    if (len < ROSE_UUID_STR_LEN) throw bad_uuid();
+
+    const uint128_t high = StrToULL(str);
+    const uint64_t low  = StrToULL(str + ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR_LEN);
     return { (high << 64) | low };
   }
 

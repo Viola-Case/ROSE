@@ -26,6 +26,7 @@
 #include <ROSE/Core/ROSE_scene.h>
 #include <ROSE/Core/ROSE_object.h>
 #include <ROSE/Core/ROSE_behavior.h>
+#include <ROSE/Core/ROSE_paramview.h>
 #include <ROSE/Core/ROSE_input.h>
 #include <ROSE/Core/ROSE_application.h>
 #include <ROSE/Core/ROSE_log.h>
@@ -35,4 +36,3 @@
 #include <ROSE/Core/ROSE_asset.h>
 #include <ROSE/Core/ROSE_surface.h>
 #include <ROSE/Core/ROSE_factory.h>
-#include <ROSE/Core/ROSE_paramview.h>

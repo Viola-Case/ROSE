@@ -133,6 +133,35 @@ namespace ROSE {
     return (c >= 'A' && c <= 'Z') ? c + ('a' - 'A') : c;
   }
 
+  /**
+      @brief  constexpr hexadecimal string -> uint64_t parser (replacement for strtoull with base 16)
+      @param  str - input string; skips leading whitespace and an optional "0x"/"0X" prefix, then
+                    consumes hex digits until the first non-hex character
+      @retval     - parsed value, or 0 if str is null / has no leading hex digits
+  **/
+  constexpr uint64_t StrToULL(const char *str) noexcept {
+    if (!str) return 0;
+
+    while (*str == ' ' || *str == '\t' || *str == '\n' || *str == '\r' || *str == '\f' || *str == '\v')
+      ++str;
+
+    if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+      str += 2;
+
+    uint64_t value = 0;
+    for (; *str != '\0'; ++str) {
+      const int c = *str;
+      uint64_t digit;
+      if (c >= '0' && c <= '9')      digit = uint64_t(c - '0');
+      else if (c >= 'a' && c <= 'f') digit = uint64_t(c - 'a' + 10);
+      else if (c >= 'A' && c <= 'F') digit = uint64_t(c - 'A' + 10);
+      else break;
+
+      value = (value << 4) | digit;
+    }
+    return value;
+  }
+
   uint64_t FNV1A64(const void *data, size_t len);
   uint64_t FNV1A64(const char *str);
 

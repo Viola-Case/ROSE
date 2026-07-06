@@ -10,6 +10,10 @@
 **/
 #pragma once
 
+#include <ROSE/Core/ROSE_uuid.h>
+
+#include <type_traits>
+
 namespace ROSE {
   class ParamView;
 
@@ -49,17 +53,27 @@ namespace ROSE {
    * Remember to generate a new UUID everytime you make a new behavior. You should then pass the constexpr functions
    * into your plugin's factory registry.
    *
+   * @note clangd may report "no member named 'TypeID' in <Derived>" here even when the build is green. I have tried and
+   * failed to figure out why. I think it's just unable to effectively read a CRTP template like this. Pretend the red
+   * squiggle isn't there until there are actual build problems, at which point feel free to show it to an actual dev
+   * who knows what they're doing. Once you finally have that figured out, submit a pull request. I'm gonna fecking kms
+   * this is utterly fecking dumb and I am so tired the melatonin gummies have caught up to meeeeeeeeeeeeeeeeeeeeeeeeeee
+   *
    * @tparam Derived Behavior subclass
    */
   template <class Derived>
   class BehaviorBase : public Behavior {
-    static_assert(std::is_same_v<decltype(Derived::TypeID()), UUID>,
-                  "Behaviors must define: static constexpr UUID TypeID()");
-    static constexpr UUID GetTypeID() noexcept { return Derived::TypeID(); }
-    static_assert(std::is_default_constructible_v<Derived>,
-                  "Registrable behaviors must be default-constructible: "
-                  "the factory builds a blank object, then Deserialize() fills it.");
-    static Behavior *Create() { return new Derived; }
+  public:
+    constexpr UUID GetTypeID() const noexcept { return Derived::TypeID(); }
+  protected:
+    BehaviorBase() noexcept {
+      static_assert(std::is_same_v<decltype(Derived::TypeID()), UUID>,
+                   "Behaviors must define: static constexpr UUID TypeID()");
+      static_assert(std::is_default_constructible_v<Derived>,
+                    "Registrable behaviors must be default-constructible: "
+                    "the factory builds a blank object, then Deserialize() fills it.");
+    }
+    //static Behavior *Create() { return new Derived; }
   };
 
   using Behaviour = Behavior;
