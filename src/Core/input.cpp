@@ -132,42 +132,128 @@ namespace ROSE {
 
 #pragma region static KeyCodes
 
-  constinit const KeyCode KeyCode::A{ static_cast<int>(SDL_SCANCODE_A) };
-  constinit const KeyCode KeyCode::B{ static_cast<int>(SDL_SCANCODE_B) };
-  constinit const KeyCode KeyCode::C{ static_cast<int>(SDL_SCANCODE_C) };
-  constinit const KeyCode KeyCode::D{ static_cast<int>(SDL_SCANCODE_D) };
-  constinit const KeyCode KeyCode::E{ static_cast<int>(SDL_SCANCODE_E) };
-  constinit const KeyCode KeyCode::F{ static_cast<int>(SDL_SCANCODE_F) };
-  constinit const KeyCode KeyCode::G{ static_cast<int>(SDL_SCANCODE_G) };
-  constinit const KeyCode KeyCode::H{ static_cast<int>(SDL_SCANCODE_H) };
-  constinit const KeyCode KeyCode::I{ static_cast<int>(SDL_SCANCODE_I) };
-  constinit const KeyCode KeyCode::J{ static_cast<int>(SDL_SCANCODE_J) };
-  constinit const KeyCode KeyCode::K{ static_cast<int>(SDL_SCANCODE_K) };
-  constinit const KeyCode KeyCode::L{ static_cast<int>(SDL_SCANCODE_L) };
-  constinit const KeyCode KeyCode::M{ static_cast<int>(SDL_SCANCODE_M) };
-  constinit const KeyCode KeyCode::N{ static_cast<int>(SDL_SCANCODE_N) };
-  constinit const KeyCode KeyCode::O{ static_cast<int>(SDL_SCANCODE_O) };
-  constinit const KeyCode KeyCode::P{ static_cast<int>(SDL_SCANCODE_P) };
-  constinit const KeyCode KeyCode::Q{ static_cast<int>(SDL_SCANCODE_Q) };
-  constinit const KeyCode KeyCode::R{ static_cast<int>(SDL_SCANCODE_R) };
-  constinit const KeyCode KeyCode::S{ static_cast<int>(SDL_SCANCODE_S) };
-  constinit const KeyCode KeyCode::T{ static_cast<int>(SDL_SCANCODE_T) };
-  constinit const KeyCode KeyCode::U{ static_cast<int>(SDL_SCANCODE_U) };
-  constinit const KeyCode KeyCode::V{ static_cast<int>(SDL_SCANCODE_V) };
-  constinit const KeyCode KeyCode::W{ static_cast<int>(SDL_SCANCODE_W) };
-  constinit const KeyCode KeyCode::X{ static_cast<int>(SDL_SCANCODE_X) };
-  constinit const KeyCode KeyCode::Y{ static_cast<int>(SDL_SCANCODE_Y) };
-  constinit const KeyCode KeyCode::Z{ static_cast<int>(SDL_SCANCODE_Z) };
-  constinit const KeyCode KeyCode::ONE{ static_cast<int>(SDL_SCANCODE_1) };
-  constinit const KeyCode KeyCode::TWO{ static_cast<int>(SDL_SCANCODE_2) };
-  constinit const KeyCode KeyCode::THREE{ static_cast<int>(SDL_SCANCODE_3) };
-  constinit const KeyCode KeyCode::FOUR{ static_cast<int>(SDL_SCANCODE_4) };
-  constinit const KeyCode KeyCode::FIVE{ static_cast<int>(SDL_SCANCODE_5) };
-  constinit const KeyCode KeyCode::SIX{ static_cast<int>(SDL_SCANCODE_6) };
-  constinit const KeyCode KeyCode::SEVEN{ static_cast<int>(SDL_SCANCODE_7) };
-  constinit const KeyCode KeyCode::EIGHT{ static_cast<int>(SDL_SCANCODE_8) };
-  constinit const KeyCode KeyCode::NINE{ static_cast<int>(SDL_SCANCODE_9) };
-  constinit const KeyCode KeyCode::ZERO{ static_cast<int>(SDL_SCANCODE_0) };
+  constinit const KeyCode KeyCode::Unknown{ static_cast<int>(SDL_SCANCODE_UNKNOWN) };
+
+  constinit const KeyCode KeyCode::A{ SDL_SCANCODE_A };
+  constinit const KeyCode KeyCode::B{ SDL_SCANCODE_B };
+  constinit const KeyCode KeyCode::C{ SDL_SCANCODE_C };
+  constinit const KeyCode KeyCode::D{ SDL_SCANCODE_D };
+  constinit const KeyCode KeyCode::E{ SDL_SCANCODE_E };
+  constinit const KeyCode KeyCode::F{ SDL_SCANCODE_F };
+  constinit const KeyCode KeyCode::G{ SDL_SCANCODE_G };
+  constinit const KeyCode KeyCode::H{ SDL_SCANCODE_H };
+  constinit const KeyCode KeyCode::I{ SDL_SCANCODE_I };
+  constinit const KeyCode KeyCode::J{ SDL_SCANCODE_J };
+  constinit const KeyCode KeyCode::K{ SDL_SCANCODE_K };
+  constinit const KeyCode KeyCode::L{ SDL_SCANCODE_L };
+  constinit const KeyCode KeyCode::M{ SDL_SCANCODE_M };
+  constinit const KeyCode KeyCode::N{ SDL_SCANCODE_N };
+  constinit const KeyCode KeyCode::O{ SDL_SCANCODE_O };
+  constinit const KeyCode KeyCode::P{ SDL_SCANCODE_P };
+  constinit const KeyCode KeyCode::Q{ SDL_SCANCODE_Q };
+  constinit const KeyCode KeyCode::R{ SDL_SCANCODE_R };
+  constinit const KeyCode KeyCode::S{ SDL_SCANCODE_S };
+  constinit const KeyCode KeyCode::T{ SDL_SCANCODE_T };
+  constinit const KeyCode KeyCode::U{ SDL_SCANCODE_U };
+  constinit const KeyCode KeyCode::V{ SDL_SCANCODE_V };
+  constinit const KeyCode KeyCode::W{ SDL_SCANCODE_W };
+  constinit const KeyCode KeyCode::X{ SDL_SCANCODE_X };
+  constinit const KeyCode KeyCode::Y{ SDL_SCANCODE_Y };
+  constinit const KeyCode KeyCode::Z{ SDL_SCANCODE_Z };
+
+  constinit const KeyCode KeyCode::ONE{ SDL_SCANCODE_1 };
+  constinit const KeyCode KeyCode::TWO{ SDL_SCANCODE_2 };
+  constinit const KeyCode KeyCode::THREE{ SDL_SCANCODE_3 };
+  constinit const KeyCode KeyCode::FOUR{ SDL_SCANCODE_4 };
+  constinit const KeyCode KeyCode::FIVE{ SDL_SCANCODE_5 };
+  constinit const KeyCode KeyCode::SIX{ SDL_SCANCODE_6 };
+  constinit const KeyCode KeyCode::SEVEN{ SDL_SCANCODE_7 };
+  constinit const KeyCode KeyCode::EIGHT{ SDL_SCANCODE_8 };
+  constinit const KeyCode KeyCode::NINE{ SDL_SCANCODE_9 };
+  constinit const KeyCode KeyCode::ZERO{ SDL_SCANCODE_0 };
+
+  constinit const KeyCode KeyCode::UP{ SDL_SCANCODE_UP };
+  constinit const KeyCode KeyCode::DOWN{ SDL_SCANCODE_DOWN };
+  constinit const KeyCode KeyCode::LEFT{ SDL_SCANCODE_LEFT };
+  constinit const KeyCode KeyCode::RIGHT{ SDL_SCANCODE_RIGHT };
+
+  constinit const KeyCode KeyCode::F1{ SDL_SCANCODE_F1 };
+  constinit const KeyCode KeyCode::F2{ SDL_SCANCODE_F2 };
+  constinit const KeyCode KeyCode::F3{ SDL_SCANCODE_F3 };
+  constinit const KeyCode KeyCode::F4{ SDL_SCANCODE_F4 };
+  constinit const KeyCode KeyCode::F5{ SDL_SCANCODE_F5 };
+  constinit const KeyCode KeyCode::F6{ SDL_SCANCODE_F6 };
+  constinit const KeyCode KeyCode::F7{ SDL_SCANCODE_F7 };
+  constinit const KeyCode KeyCode::F8{ SDL_SCANCODE_F8 };
+  constinit const KeyCode KeyCode::F9{ SDL_SCANCODE_F9 };
+  constinit const KeyCode KeyCode::F10{ SDL_SCANCODE_F10 };
+  constinit const KeyCode KeyCode::F11{ SDL_SCANCODE_F11 };
+  constinit const KeyCode KeyCode::F12{ SDL_SCANCODE_F12 };
+  constinit const KeyCode KeyCode::F13{ SDL_SCANCODE_F13 };
+  constinit const KeyCode KeyCode::F14{ SDL_SCANCODE_F14 };
+  constinit const KeyCode KeyCode::F15{ SDL_SCANCODE_F15 };
+  constinit const KeyCode KeyCode::F16{ SDL_SCANCODE_F16 };
+  constinit const KeyCode KeyCode::F17{ SDL_SCANCODE_F17 };
+  constinit const KeyCode KeyCode::F18{ SDL_SCANCODE_F18 };
+  constinit const KeyCode KeyCode::F19{ SDL_SCANCODE_F19 };
+  constinit const KeyCode KeyCode::F20{ SDL_SCANCODE_F20 };
+  constinit const KeyCode KeyCode::F21{ SDL_SCANCODE_F21 };
+  constinit const KeyCode KeyCode::F22{ SDL_SCANCODE_F22 };
+  constinit const KeyCode KeyCode::F23{ SDL_SCANCODE_F23 };
+  constinit const KeyCode KeyCode::F24{ SDL_SCANCODE_F24 };
+
+  constinit const KeyCode KeyCode::NUM_LOCK{ SDL_SCANCODE_NUMLOCKCLEAR };
+  constinit const KeyCode KeyCode::KEYPAD_ONE{ SDL_SCANCODE_KP_1 };
+  constinit const KeyCode KeyCode::KEYPAD_TWO{ SDL_SCANCODE_KP_2 };
+  constinit const KeyCode KeyCode::KEYPAD_THREE{ SDL_SCANCODE_KP_3 };
+  constinit const KeyCode KeyCode::KEYPAD_FOUR{ SDL_SCANCODE_KP_4 };
+  constinit const KeyCode KeyCode::KEYPAD_FIVE{ SDL_SCANCODE_KP_5 };
+  constinit const KeyCode KeyCode::KEYPAD_SIX{ SDL_SCANCODE_KP_6 };
+  constinit const KeyCode KeyCode::KEYPAD_SEVEN{ SDL_SCANCODE_KP_7 };
+  constinit const KeyCode KeyCode::KEYPAD_EIGHT{ SDL_SCANCODE_KP_8 };
+  constinit const KeyCode KeyCode::KEYPAD_NINE{ SDL_SCANCODE_KP_9 };
+  constinit const KeyCode KeyCode::KEYPAD_ZERO{ SDL_SCANCODE_KP_0 };
+  constinit const KeyCode KeyCode::KEYPAD_PLUS{ SDL_SCANCODE_KP_PLUS };
+  constinit const KeyCode KeyCode::KEYPAD_MINUS{ SDL_SCANCODE_KP_MINUS };
+  constinit const KeyCode KeyCode::KEYPAD_MULTIPLY{ SDL_SCANCODE_KP_MULTIPLY };
+  constinit const KeyCode KeyCode::KEYPAD_DIVIDE{ SDL_SCANCODE_KP_DIVIDE };
+  constinit const KeyCode KeyCode::KEYPAD_ENTER{ SDL_SCANCODE_KP_ENTER };
+  constinit const KeyCode KeyCode::KEYPAD_PERIOD{ SDL_SCANCODE_KP_PERIOD };
+  constinit const KeyCode KeyCode::KEYPAD_EQUALS{ SDL_SCANCODE_KP_EQUALS };
+
+  constinit const KeyCode KeyCode::LEFT_CTRL{ SDL_SCANCODE_LCTRL };
+  constinit const KeyCode KeyCode::LEFT_SHIFT{ SDL_SCANCODE_LSHIFT };
+  constinit const KeyCode KeyCode::LEFT_ALT{ SDL_SCANCODE_LALT };
+  constinit const KeyCode KeyCode::RIGHT_CTRL{ SDL_SCANCODE_RCTRL };
+  constinit const KeyCode KeyCode::RIGHT_SHIFT{ SDL_SCANCODE_RSHIFT };
+  constinit const KeyCode KeyCode::RIGHT_ALT{ SDL_SCANCODE_RALT };
+
+  constinit const KeyCode KeyCode::INSERT{ SDL_SCANCODE_INSERT };
+  constinit const KeyCode KeyCode::HOME{ SDL_SCANCODE_HOME };
+  constinit const KeyCode KeyCode::END{ SDL_SCANCODE_END };
+  constinit const KeyCode KeyCode::PGUP{ SDL_SCANCODE_PAGEUP };
+  constinit const KeyCode KeyCode::PGDN{ SDL_SCANCODE_PAGEDOWN };
+  constinit const KeyCode KeyCode::DELETE{ SDL_SCANCODE_DELETE };
+
+
+  constinit const KeyCode KeyCode::ENTER{ SDL_SCANCODE_RETURN };
+  constinit const KeyCode KeyCode::ESCAPE{ SDL_SCANCODE_ESCAPE };
+  constinit const KeyCode KeyCode::BACKSPACE{ SDL_SCANCODE_BACKSPACE };
+  constinit const KeyCode KeyCode::TAB{ SDL_SCANCODE_TAB };
+  constinit const KeyCode KeyCode::SPACE{ SDL_SCANCODE_SPACE };
+  constinit const KeyCode KeyCode::MINUS{ SDL_SCANCODE_MINUS };
+  constinit const KeyCode KeyCode::EQUALS{ SDL_SCANCODE_EQUALS };
+  constinit const KeyCode KeyCode::LEFT_BRACKET{ SDL_SCANCODE_LEFTBRACKET };
+  constinit const KeyCode KeyCode::RIGHT_BRACKET{ SDL_SCANCODE_RIGHTBRACKET };
+  constinit const KeyCode KeyCode::BACKSLASH{ SDL_SCANCODE_BACKSLASH };
+  constinit const KeyCode KeyCode::APOSTROPHE{ SDL_SCANCODE_APOSTROPHE };
+  constinit const KeyCode KeyCode::GRAVE{ SDL_SCANCODE_GRAVE };
+  constinit const KeyCode KeyCode::COMMA{ SDL_SCANCODE_COMMA };
+  constinit const KeyCode KeyCode::PERIOD{ SDL_SCANCODE_PERIOD };
+  constinit const KeyCode KeyCode::SLASH{ SDL_SCANCODE_SLASH };
+  constinit const KeyCode KeyCode::CAPS_LOCK{ SDL_SCANCODE_CAPSLOCK };
+
+
 
 
 

@@ -1,7 +1,7 @@
 # Radical Open Software Engine
 The Radical Open Software Engine (ROSE) is a game and software engine built in C++. The idea is for moddability and development to be as easy as including the headers from the game files and linking against the objects also in the game files.
 
-![ROSE logo](assets/img/rose_256x.png)
+![ROSE logo](assets/img/logo/rose.svg)
 
 ## Building ROSE
 **Compiler: LLVM is required.** Compile with either `clang++` or `clang-cl`. MSVC (`cl.exe`) is not supported currently. Install the [LLVM toolchain](https://releases.llvm.org/) and ensure it is on your PATH.
@@ -29,5 +29,5 @@ Feel free to branch and PR. I'll look over your changes and if they follow the s
 
 ## AI agents
 While agentic developers are extremely useful, don't vibe code. Be the primary and let the agent act as an advisor. If you don't know what something does, ***do not touch it***.
-Do not commit a `CLAUDE.md`
+Do not commit a `CLAUDE.md`. 
 

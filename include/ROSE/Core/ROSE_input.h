@@ -29,6 +29,8 @@ namespace ROSE {
   public:
 #pragma region static Key Codes
 
+    static const KeyCode Unknown;
+
     /**
      * @defgroup
      * @name Alphanumeric keys
@@ -85,17 +87,17 @@ namespace ROSE {
     static const KeyCode BACKSPACE; //!< Backspace
     static const KeyCode TAB;       //!< Tab
     static const KeyCode SPACE;     //!< Spacebar
-    static const KeyCode MINUS;     //!< -
-    static const KeyCode EQUALS;    //!< =
-    static const KeyCode LEFT_BRACKET;
-    static const KeyCode RIGHT_BRACKET;
-    static const KeyCode BACKSLASH;
-    static const KeyCode APOSTROPHE;
-    static const KeyCode GRAVE;
-    static const KeyCode COMMA;
-    static const KeyCode PERIOD;
-    static const KeyCode SLASH;
-    static const KeyCode CAPS_LOCK;
+    static const KeyCode MINUS;     //!< `-`
+    static const KeyCode EQUALS;    //!< `=`
+    static const KeyCode LEFT_BRACKET; //!< `[`
+    static const KeyCode RIGHT_BRACKET; //!< `]`
+    static const KeyCode BACKSLASH; //!< `\`
+    static const KeyCode APOSTROPHE; //!< `'`
+    static const KeyCode GRAVE; //!< ```
+    static const KeyCode COMMA; //!< `,`
+    static const KeyCode PERIOD; //!< `.`
+    static const KeyCode SLASH; //!< `/`
+    static const KeyCode CAPS_LOCK; //!< Caps lock
     /**
      * @}
      */
@@ -105,37 +107,37 @@ namespace ROSE {
      * @name Function keys
      * @{
      **/
-    static const KeyCode F1;
-    static const KeyCode F2;
-    static const KeyCode F3;
-    static const KeyCode F4;
-    static const KeyCode F5;
-    static const KeyCode F6;
-    static const KeyCode F7;
-    static const KeyCode F8;
-    static const KeyCode F9;
-    static const KeyCode F10;
-    static const KeyCode F11;
-    static const KeyCode F12;
-    static const KeyCode F13;
-    static const KeyCode F14;
-    static const KeyCode F15;
-    static const KeyCode F16;
-    static const KeyCode F17;
-    static const KeyCode F18;
-    static const KeyCode F19;
-    static const KeyCode F20;
-    static const KeyCode F21;
-    static const KeyCode F22;
-    static const KeyCode F23;
-    static const KeyCode F24;
+    static const KeyCode F1; //!< F1
+    static const KeyCode F2; //!< F2
+    static const KeyCode F3; //!< F3
+    static const KeyCode F4; //!< F4
+    static const KeyCode F5; //!< F5
+    static const KeyCode F6; //!< F6
+    static const KeyCode F7; //!< F7
+    static const KeyCode F8; //!< F8
+    static const KeyCode F9; //!< F9
+    static const KeyCode F10; //!< F10
+    static const KeyCode F11; //!< F11
+    static const KeyCode F12; //!< F12
+    static const KeyCode F13; //!< F13
+    static const KeyCode F14; //!< F14
+    static const KeyCode F15; //!< F15
+    static const KeyCode F16; //!< F16
+    static const KeyCode F17; //!< F17
+    static const KeyCode F18; //!< F18
+    static const KeyCode F19; //!< F19
+    static const KeyCode F20; //!< F20
+    static const KeyCode F21; //!< F21
+    static const KeyCode F22; //!< F22
+    static const KeyCode F23; //!< F23
+    static const KeyCode F24; //!< F24
     /**
      * @}
      **/
 
-    static const KeyCode PRINTSCRN;
-    static const KeyCode SCROLL_LOCK;
-    static const KeyCode PAUSE;
+    static const KeyCode PRINTSCRN; //!< Prntscrn
+    static const KeyCode SCROLL_LOCK; //!< Scroll lock
+    static const KeyCode PAUSE; //!< Pause
 
     /**
      * @defgroup
@@ -158,10 +160,10 @@ namespace ROSE {
      * @name Arrow keys
      * @{
      **/
-    static const KeyCode LEFT;
-    static const KeyCode RIGHT;
-    static const KeyCode UP;
-    static const KeyCode DOWN;
+    static const KeyCode LEFT; //!< ←
+    static const KeyCode RIGHT; //!< →
+    static const KeyCode UP; //!< ↑
+    static const KeyCode DOWN; //!< ↓
     /**
      * @}
      **/
@@ -170,24 +172,24 @@ namespace ROSE {
      * @name Keypad keys
      * @{
      **/
-    static const KeyCode NUM_LOCK;
-    static const KeyCode KEYPAD_ONE;
-    static const KeyCode KEYPAD_TWO;
-    static const KeyCode KEYPAD_THREE;
-    static const KeyCode KEYPAD_FOUR;
-    static const KeyCode KEYPAD_FIVE;
-    static const KeyCode KEYPAD_SIX;
-    static const KeyCode KEYPAD_SEVEN;
-    static const KeyCode KEYPAD_EIGHT;
-    static const KeyCode KEYPAD_NINE;
-    static const KeyCode KEYPAD_ZERO;
-    static const KeyCode KEYPAD_PLUS;
-    static const KeyCode KEYPAD_MINUS;
-    static const KeyCode KEYPAD_MULTIPLY;
-    static const KeyCode KEYPAD_DIVIDE;
-    static const KeyCode KEYPAD_ENTER;
-    static const KeyCode KEYPAD_PERIOD;
-    static const KeyCode KEYPAD_EQUALS;
+    static const KeyCode NUM_LOCK; //!< Num lock
+    static const KeyCode KEYPAD_ONE; //!< (On the keypad)
+    static const KeyCode KEYPAD_TWO; //!< (On the keypad)
+    static const KeyCode KEYPAD_THREE; //!< (On the keypad)
+    static const KeyCode KEYPAD_FOUR; //!< (On the keypad)
+    static const KeyCode KEYPAD_FIVE; //!< (On the keypad)
+    static const KeyCode KEYPAD_SIX; //!< (On the keypad)
+    static const KeyCode KEYPAD_SEVEN; //!< (On the keypad)
+    static const KeyCode KEYPAD_EIGHT; //!< (On the keypad)
+    static const KeyCode KEYPAD_NINE; //!< (On the keypad)
+    static const KeyCode KEYPAD_ZERO; //!< (On the keypad)
+    static const KeyCode KEYPAD_PLUS; //!< (On the keypad)
+    static const KeyCode KEYPAD_MINUS; //!< (On the keypad)
+    static const KeyCode KEYPAD_MULTIPLY; //!< (On the keypad)
+    static const KeyCode KEYPAD_DIVIDE; //!< (On the keypad)
+    static const KeyCode KEYPAD_ENTER; //!< (On the keypad)
+    static const KeyCode KEYPAD_PERIOD; //!< (On the keypad)
+    static const KeyCode KEYPAD_EQUALS; //!< (On the keypad)
     /**
      * @}
      **/
@@ -274,6 +276,10 @@ namespace ROSE {
   enum class GamepadStick {
     Left,
     Right
+  };
+
+  class JoystickAxis {
+
   };
 
   class InputSystem final {
