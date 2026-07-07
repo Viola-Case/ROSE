@@ -50,7 +50,7 @@ namespace ROSE {
       if (auto it = m_behaviors.find(tID); it != m_behaviors.end())
         // return nullptr;
         return m_behaviors.find(tID)->second.get();
-      auto b = m_scene->m_application->GetFactory().Create(tID);
+      auto b = BehaviorFactory::Create(tID);
       m_behaviors.insert(tID, Move(b));
       return m_behaviors.find(tID)->second.get();
     }
@@ -64,6 +64,7 @@ namespace ROSE {
       return nullptr;
     }
 
+    Scene &GetScene() const noexcept;
   private:
     void OnStart() noexcept;
     void FrameUpdate() noexcept;
@@ -72,7 +73,6 @@ namespace ROSE {
 
     void DestroyBehavior(const UUID &) noexcept;
 
-    Scene &GetScene() const noexcept;
     Object *GetParent() const noexcept;
 
     Behavior *GetBehavior(const UUID &) noexcept;

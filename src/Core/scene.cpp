@@ -180,7 +180,7 @@ namespace ROSE {
    * @param jsonString
    * @return
    */
-  Scene Scene::FromJSONString(const String &jsonString, const Application *app) noexcept {
+  Scene Scene::FromJSONString(const String &jsonString) noexcept {
     Scene scene{};
 
     try {
@@ -225,7 +225,7 @@ namespace ROSE {
 
         for (const auto &b : o.at("behaviors")) {
           UUID tID = getUUIDFromNode(b.at("typeid"));
-          auto bvr = app->GetFactory().Create(tID);
+          auto bvr = BehaviorFactory::Create(tID);
           auto paramObj = b.at("factoryParameters");
           ParamView pview{&paramObj};
           bvr->UnpackParameters(pview);

@@ -17,11 +17,12 @@
 namespace ROSE {
   class Camera : public BehaviorBase<Camera> {
     math::Vec2<int16_t> m_aspectRatio;
-    /*[[bounds({ 0, inf })]]*/ float m_focalLength { 30 }; //!< millimeters
+    [[bounds({ 0, inf })]]
+    float m_focalLength { 30 }; //!< millimeters
     bool m_orthographic { false };
 
   public:
-    static constexpr UUID typeID = UUID{0x98b16c050e659798, 0x2ba97b3cd1a9dd7c};
+    static constexpr UUID typeID = "98b16c050e659798-2ba97b3cd1a9dd7c"_uuid;
     static constexpr UUID TypeID() { return typeID; }
   };
 } // namespace ROSE

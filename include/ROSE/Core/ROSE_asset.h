@@ -13,6 +13,8 @@
 
 #include <cstdint>
 
+#include <ROSE/Core/ROSE_utility.h>
+
 namespace ROSE {
 
   enum class AssetType : uint32_t {

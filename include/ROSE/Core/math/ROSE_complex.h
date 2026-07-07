@@ -11,6 +11,7 @@
 #pragma once
 
 #include <ROSE/Core/ROSE_typetraits.h>
+#include <ROSE/Core/math/ROSE_vector.h>
 
 namespace ROSE::math {
   /*!

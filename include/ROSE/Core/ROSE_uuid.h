@@ -38,7 +38,7 @@ namespace ROSE {
 
     [[nodiscard]] static UUID Generate(const char *str) noexcept;
 
-    static UUID Invalid() noexcept { return {}; }
+    constexpr static UUID Invalid() noexcept { return {}; }
   };
 
   constexpr size_t ROSE_UUID_HIGH_LEN = 16;

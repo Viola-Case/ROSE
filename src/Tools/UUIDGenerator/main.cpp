@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
   CLI11_PARSE(app, argc, argv);
 
   auto uuid = ROSE::UUID::Generate();
-  ROSE::PrintF("{:#x}", uuid.value);
+  ROSE::PrintF("{:x}-{:x}", uuid.high, uuid.low);
 
   return 0;
 

@@ -12,7 +12,7 @@
 
 #include <ROSE/Core/ROSE_string.h>
 #include <ROSE/Core/ROSE_uuid.h>
-#include <ROSE/Core/math/ROSE_vector.h>
+#include <ROSE/Core/ROSE_math.h>
 
 namespace ROSE {
   /*!
@@ -30,8 +30,8 @@ namespace ROSE {
     int GetInt(const String &key, int fallback = 0) const noexcept;
     double GetDouble(const String &key, double fallback = 0) const noexcept;
     bool GetBool(const String &key, bool fallback = 0) const noexcept;
-    String GetString(const String &key, const String &fallback = "") const;
-    Vec3d GetVec3d(const String &key, const Vec3d fallback = { 0 }) const;
+    String GetString(const String &key, const String &fallback = "") const noexcept;
+    Vec3d GetVec3d(const String &key, const Vec3d fallback = { 0 }) const noexcept;
     //Vec4d GetVec4d(const String &key, const Vec4d fallback = { 0 }) const;
 
     UUID GetUUID(const String &key) const noexcept;

@@ -10,11 +10,13 @@
 **/
 
 #pragma once
-#include "ROSE/ROSE.h"
+#include <ROSE/ROSE.h>
 
 using namespace ROSE;
 
-class AppCloser : public Behavior {
+class AppCloser : public BehaviorBase<AppCloser> {
+  static constexpr UUID typeID = "1510c09900c8cc39-21a67c5c20659851"_uuid;
+  static constexpr UUID TypeID() { return typeID; }
 protected:
   void FrameUpdate() override;
 };

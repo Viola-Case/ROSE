@@ -1,6 +1,6 @@
 Diagnostics:
-  Suppress:
-    Add: ["incomplete_type"]
+  Suppress: [incomplete_type]
 
 CompileFlags:
   Add: [-Wno-inconsistent-missing-override, -Wno-suggest-override]
+  CompilationDatabase: build/debug

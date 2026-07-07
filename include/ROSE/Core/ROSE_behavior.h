@@ -53,11 +53,10 @@ namespace ROSE {
    * Remember to generate a new UUID everytime you make a new behavior. You should then pass the constexpr functions
    * into your plugin's factory registry.
    *
-   * @note clangd may report "no member named 'TypeID' in <Derived>" here even when the build is green. I have tried and
-   * failed to figure out why. I think it's just unable to effectively read a CRTP template like this. Pretend the red
-   * squiggle isn't there until there are actual build problems, at which point feel free to show it to an actual dev
-   * who knows what they're doing. Once you finally have that figured out, submit a pull request. I'm gonna fecking kms
-   * this is utterly fecking dumb and I am so tired the melatonin gummies have caught up to meeeeeeeeeeeeeeeeeeeeeeeeeee
+   * @note clangd may report "no member named 'TypeID' in <Derived>" on your behavior even when the build is green.
+   * Based on my testing it can't effectively read a CRTP template like this. Pretend the red squiggle isn't there until
+   * there are actual build problems, at which point feel free to show it to an actual dev who knows what they're doing.
+   * Once you finally have that figured out, submit a pull request.
    *
    * @tparam Derived Behavior subclass
    */

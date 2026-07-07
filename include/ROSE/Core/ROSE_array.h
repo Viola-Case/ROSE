@@ -11,7 +11,6 @@
 #pragma once
 
 #include <ROSE/Core/ROSE_stdlib.h>
-#include <ROSE/Core/ROSE_list.h>
 
 namespace ROSE {
   template <typename T, size_t N>

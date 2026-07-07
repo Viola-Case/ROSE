@@ -23,11 +23,11 @@ namespace ROSE {
     Fatal
   };
 
-  //inline void Log(LogLevel level, const char * format, ...) {
-  //  ;
-  //}
+  inline void Log(LogLevel level, const char * format, ...) {
+    (void)0;
+  }
 
-  #define Log(...) ((void)0)
+  //#define Log(...) ((void)0)
 
 }
 

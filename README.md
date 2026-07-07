@@ -22,7 +22,7 @@ Skyrim modding is one difficult son of a bitshift. Everytime the engine updates,
 Also I thought it would be really cool.
 
 ## Code Style
-Figure it out yourself.
+A line should not be more than 120 characters if you can help it. This includes comments.
 
 ## Contributing to ROSE
 Feel free to branch and PR. I'll look over your changes and if they follow the style and don't have any issues I'll merge it in.

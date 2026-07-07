@@ -96,7 +96,7 @@ namespace ROSE {
     return child;
   }
 
-  Vec3d ParamView::GetVec3d(const String &key, const Vec3d fallback) const {
+  Vec3d ParamView::GetVec3d(const String &key, const Vec3d fallback) const noexcept {
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);
     const auto it = node->find(key.c_str());

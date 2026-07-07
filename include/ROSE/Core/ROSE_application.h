@@ -69,8 +69,6 @@ namespace ROSE {
 
     Scene &GetCurrentScene() noexcept;
 
-    BehaviorFactory &GetFactory() const noexcept;
-
     List<Scene> &GetScenes() noexcept;
 
   private:
@@ -83,8 +81,6 @@ namespace ROSE {
     AppID m_id { 0 };
 
     void *m_window { nullptr };
-
-    BehaviorFactory *m_factory { nullptr };
 
     ApplicationFlags m_flags { 0 };
 
