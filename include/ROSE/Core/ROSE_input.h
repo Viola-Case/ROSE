@@ -147,8 +147,8 @@ namespace ROSE {
     static const KeyCode INSERT;
     static const KeyCode HOME;
     static const KeyCode END;
-    static const KeyCode PGUP;
-    static const KeyCode PGDN;
+    static const KeyCode PAGE_UP;
+    static const KeyCode PAGE_DOWN;
     static const KeyCode DELETE;
     /**
      * @}

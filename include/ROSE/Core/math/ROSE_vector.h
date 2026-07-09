@@ -467,7 +467,7 @@ struct std::formatter<ROSE::math::Vec<T, N>> {
       break;
     }
 
-    if (!naked) *out++ = ')';
+    if (!naked) [[likely]] *out++ = ')';
 
     return out;
   }

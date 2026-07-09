@@ -25,7 +25,7 @@ Also I thought it would be really cool.
 A line should not be more than 120 characters if you can help it. This includes comments.
 
 ## Contributing to ROSE
-Feel free to branch and PR. I'll look over your changes and if they follow the style and don't have any issues I'll merge it in.
+Feel free to branch and PR. I'll look over your changes and if they follow the style and spirit and don't have any issues I'll probably merge it in.
 
 ## AI agents
 While agentic developers are extremely useful, don't vibe code. Be the primary and let the agent act as an advisor. If you don't know what something does, ***do not touch it***.

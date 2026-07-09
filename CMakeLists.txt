@@ -88,8 +88,22 @@ target_link_libraries(ControllerTest PRIVATE
         SDL3_ttf::SDL3_ttf
         SDL3_image::SDL3_image
 )
+
 file(GLOB_RECURSE game1srcs "examples/game1/*.cpp")
 add_executable(Game1 ${game1srcs})
+
+
+add_executable(KeyboardTest "examples/KeyboardTest/main.cpp"
+)
+set_property(TARGET KeyboardTest PROPERTY FOLDER "Examples")
+target_link_libraries(KeyboardTest PRIVATE
+        ROSE_Core
+        SDL3_ttf::SDL3_ttf
+        SDL3_image::SDL3_image
+)
+
+add_executable(Game1 "examples/game1/main.cpp")
+
 set_property(TARGET Game1 PROPERTY FOLDER "Examples")
 target_link_libraries(Game1 PRIVATE
         ROSE_Core

@@ -231,8 +231,8 @@ namespace ROSE {
   constinit const KeyCode KeyCode::INSERT{ SDL_SCANCODE_INSERT };
   constinit const KeyCode KeyCode::HOME{ SDL_SCANCODE_HOME };
   constinit const KeyCode KeyCode::END{ SDL_SCANCODE_END };
-  constinit const KeyCode KeyCode::PGUP{ SDL_SCANCODE_PAGEUP };
-  constinit const KeyCode KeyCode::PGDN{ SDL_SCANCODE_PAGEDOWN };
+  constinit const KeyCode KeyCode::PAGE_UP{ SDL_SCANCODE_PAGEUP };
+  constinit const KeyCode KeyCode::PAGE_DOWN{ SDL_SCANCODE_PAGEDOWN };
   constinit const KeyCode KeyCode::DELETE{ SDL_SCANCODE_DELETE };
 
 
