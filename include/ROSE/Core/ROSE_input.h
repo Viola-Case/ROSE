@@ -27,6 +27,8 @@ namespace ROSE {
     operator size_t() const noexcept;
 
   public:
+
+    char ToChar() const noexcept;
 #pragma region static Key Codes
 
     static const KeyCode Unknown;
@@ -92,6 +94,7 @@ namespace ROSE {
     static const KeyCode LEFT_BRACKET; //!< `[`
     static const KeyCode RIGHT_BRACKET; //!< `]`
     static const KeyCode BACKSLASH; //!< `\`
+    static const KeyCode SEMICOLON; //!< `;`
     static const KeyCode APOSTROPHE; //!< `'`
     static const KeyCode GRAVE; //!< ```
     static const KeyCode COMMA; //!< `,`
@@ -134,10 +137,6 @@ namespace ROSE {
     /**
      * @}
      **/
-
-    static const KeyCode PRINTSCRN; //!< Prntscrn
-    static const KeyCode SCROLL_LOCK; //!< Scroll lock
-    static const KeyCode PAUSE; //!< Pause
 
     /**
      * @defgroup
@@ -208,25 +207,8 @@ namespace ROSE {
      * @}
      **/
 
-    /**
-     * @defgroup
-     * @name Media keys
-     * @{
-     **/
-    static const KeyCode MEDIA_PLAY;
-    static const KeyCode MEDIA_PAUSE;
-    static const KeyCode MEDIA_RECORD;
-    static const KeyCode MEDIA_FAST_FORWARD;
-    static const KeyCode MEDIA_REWIND;
-    static const KeyCode MEDIA_NEXT;
-    static const KeyCode MEDIA_PREVIOUS;
-    static const KeyCode MEDIA_STOP;
-    static const KeyCode MEDIA_EJECT;
-    /**
-     * @}
-     **/
-
 #pragma endregion
+
 
     constexpr bool operator==(const KeyCode &other) const { return value == other.value; }
     constexpr bool operator!=(const KeyCode &other) const { return value != other.value; }
@@ -316,4 +298,6 @@ namespace ROSE {
 
     static String GetGamepadName() noexcept;
   };
+
+
 } // namespace ROSE

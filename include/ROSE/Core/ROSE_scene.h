@@ -28,15 +28,20 @@ namespace ROSE {
     void DestroyObject(const UUID &u) noexcept;
 
     static Scene FromJSONString(const String&) noexcept;
+    Scene(Scene &&) noexcept = default;
+    Scene &operator=(Scene &&) noexcept = default;
+
   private:
     Scene();
 
-    Scene(Scene &&) noexcept = default;
-    Scene &operator=(Scene &&) noexcept = default;
 
 
     void OnStart() noexcept;
     void FrameUpdate() noexcept;
+
+    // Points this scene's application/object back-pointers at their final
+    // addresses. Must be re-called if the scene is ever moved.
+    void Bind(Application &) noexcept;
 
     Object *GetObject(const UUID &) noexcept;
 

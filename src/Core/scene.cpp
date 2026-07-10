@@ -19,12 +19,22 @@ using JSON = nlohmann::json;
 namespace ROSE {
   Application &Scene::GetApplication() const noexcept { return *m_application; }
 
+  void Scene::Bind(Application &app) noexcept {
+    m_application = &app;
+    for (auto &o : m_objects) o.second->m_scene = this;
+    for (auto &o : m_pendingAdd) o->m_scene = this;
+  }
+
   Scene::Scene() {
     static size_t sceneCounter = 1;
     m_name = String(std::format("Scene{}", sceneCounter++).c_str());
   }
 
   void Scene::FrameUpdate() noexcept {
+
+    if (m_objects.empty()) {
+
+    }
     for (auto &o : m_objects) {
       o.second->FrameUpdate();
     }
@@ -36,6 +46,7 @@ namespace ROSE {
     for (UniquePtr<Object> &o : m_pendingAdd) {
       const auto &u = UUID::Generate();
       o->m_uuid = u;
+      o->m_scene = this;
       m_objects.insert(u, Move(o));
     }
     m_pendingAdd.clear();
@@ -213,9 +224,10 @@ namespace ROSE {
               }
             ]
           }*/
-        Pair<UUID, Object> pair;
+        Pair<UUID, UniquePtr<Object>> pair;
         pair.first = getUUIDFromNode(o.at("uuid"));
-        Object &obj = pair.second;
+        pair.second = MakeUnique<Object>();
+        Object &obj = *pair.second;
         obj.m_name = String(o.at("name").get<std::string>().c_str());
         const auto &to = o.at("transform");
         Transform &t = obj.m_transform;
@@ -226,11 +238,14 @@ namespace ROSE {
         for (const auto &b : o.at("behaviors")) {
           UUID tID = getUUIDFromNode(b.at("typeid"));
           auto bvr = BehaviorFactory::Create(tID);
+          bvr->m_object = &obj;
           auto paramObj = b.at("factoryParameters");
           ParamView pview{&paramObj};
           bvr->UnpackParameters(pview);
           obj.m_behaviors.insert(tID, Move(bvr));
         }
+
+        scene.m_objects.insert(pair.first, Move(pair.second));
       }
     } catch (nlohmann::json::exception &e) {
       Log(LogLevel::Error, "Scene string corrupt:\n\t{}", e.what());

@@ -102,8 +102,6 @@ target_link_libraries(KeyboardTest PRIVATE
         SDL3_image::SDL3_image
 )
 
-add_executable(Game1 "examples/game1/main.cpp")
-
 set_property(TARGET Game1 PROPERTY FOLDER "Examples")
 target_link_libraries(Game1 PRIVATE
         ROSE_Core

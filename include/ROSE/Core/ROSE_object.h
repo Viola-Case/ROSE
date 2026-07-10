@@ -46,7 +46,7 @@ namespace ROSE {
     template <class B>
       requires std::is_base_of_v<Behavior, B>
     Behavior *CreateBehavior() {
-      constexpr auto tID = B::GetTypeID();
+      constexpr auto tID = B::TypeID();
       if (auto it = m_behaviors.find(tID); it != m_behaviors.end())
         // return nullptr;
         return m_behaviors.find(tID)->second.get();
@@ -58,7 +58,7 @@ namespace ROSE {
     template <class B>
       requires std::is_base_of_v<Behavior, B>
     Behavior *FindBehavior() {
-      constexpr auto tID = B::GetTypeID();
+      constexpr auto tID = B::TypeID();
       if (auto it = m_behaviors.find(tID); it != m_behaviors.end())
         return it->second.get();
       return nullptr;
@@ -86,7 +86,7 @@ namespace ROSE {
     List<UUID> m_pendingDestroy {};
 
     UUID m_uuid {};
-    Scene *const m_scene { nullptr };
+    Scene *m_scene { nullptr };
     Object *m_parent { nullptr };
     Transform m_transform { 0, 1 };
   };

@@ -32,6 +32,13 @@ namespace ROSE {
 
   using FactoryFn = UniquePtr<Behavior> (*)();
 
+  /*!
+   * Canonical FactoryFn for a behavior type; register as `MakeBehavior<MyBehavior>`.
+   * The factory builds a blank object, then Deserialize() fills it.
+   */
+  template <RegistrableBehavior T>
+  UniquePtr<Behavior> MakeBehavior() { return MakeUnique<T>(); }
+
   class BehaviorFactory {
     List<String> m_registeredModules {"Core"};
     TypedHashMap<UUID, FactoryFn> m_factoryFunctions{};

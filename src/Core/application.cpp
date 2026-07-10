@@ -39,11 +39,15 @@ namespace ROSE {
     InputSystem::GetInstance().Init();
 
     m_currentScene = m_scenes.begin();
+    for (Scene &s : m_scenes) s.Bind(*this);
 
     return 0;
   }
 
   void Application::Run() {
+    m_window = SDL_CreateWindow(m_title.c_str(), 800, 800, SDL_WINDOW_HIDDEN);
+    SDL_ShowWindow(static_cast<SDL_Window *>(m_window));
+
     while (!m_shouldClose) {
       SDL_Event e;
       while (SDL_PollEvent(&e)) {
@@ -52,6 +56,8 @@ namespace ROSE {
       Scene &curScene = *m_currentScene;
       curScene.FrameUpdate();
     }
+
+    SDL_DestroyWindow(static_cast<SDL_Window *>(m_window));
   }
 
   void Application::Quit() noexcept {

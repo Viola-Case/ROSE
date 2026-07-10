@@ -16,7 +16,6 @@ namespace ROSE {
     return factory;
   }
 
-  UniquePtr<ROSE::Behavior> MakeCamera() { return MakeUnique<Camera>(); }
 
   UniquePtr<Behavior> BehaviorFactory::Create(const UUID &id) noexcept {
     auto it = get().m_factoryFunctions.find(id);
@@ -34,9 +33,7 @@ namespace ROSE {
       if (ins == factory.m_factoryFunctions.end()) return RegisterResult::Failure;
     } else {
       auto m = factory.m_behaviorLegend.find(id);
-      if (m == factory.m_behaviorLegend.end()) {
-        
-      }
+      if (m == factory.m_behaviorLegend.end()) {}
       Log(LogLevel::Warn, "Duplicate function from {}\n\ttypeid = {}-{}", moduleName, id.high, id.low);
       return RegisterResult::DuplicateID;
     }
@@ -44,6 +41,17 @@ namespace ROSE {
   }
 } // namespace ROSE
 
-extern "C" void RoseRegisterModule(ROSE::BehaviorFactory &) {
-  // ROSE::Camera::
+
+using namespace ROSE;
+extern "C" void RoseRegisterModule(BehaviorFactory &factory) {
+  List<Pair<FactoryFn, UUID>> fns { { MakeBehavior<Camera>, Camera::TypeID() } };
+  for (const auto &p : fns) {
+    switch (factory.Register(p.first, p.second, "Core")) {
+    case RegisterResult::Success: case RegisterResult::DuplicateID:
+      break;
+    case RegisterResult::Failure:
+      Log(LogLevel::Error, "Failed to register Core module behavior\n\ttypeid = {}-{}",p.second.high, p.second.low);
+      break;
+    }
+  }
 }

@@ -130,6 +130,31 @@ namespace ROSE {
     return String(SDL_GetGamepadName(static_cast<SDL_Gamepad *>(inputSystem.m_gamepad)));
   }
 
+  /*!
+   * @return The character this key produces with no modifiers held, under the current
+   *         keyboard layout. '\0' if the key has no printable character.
+   */
+  char KeyCode::ToChar() const noexcept {
+    // Keypad keys have dedicated keycodes with no printable value, so map their glyphs by hand.
+    if (SDL_SCANCODE_KP_1 <= value && value <= SDL_SCANCODE_KP_9)
+      return static_cast<char>(value - SDL_SCANCODE_KP_1 + '1');
+    switch (value) {
+    case SDL_SCANCODE_KP_0:        return '0';
+    case SDL_SCANCODE_KP_PERIOD:   return '.';
+    case SDL_SCANCODE_KP_PLUS:     return '+';
+    case SDL_SCANCODE_KP_MINUS:    return '-';
+    case SDL_SCANCODE_KP_MULTIPLY: return '*';
+    case SDL_SCANCODE_KP_DIVIDE:   return '/';
+    case SDL_SCANCODE_KP_EQUALS:   return '=';
+    default:                       break;
+    }
+
+    // For everything else, SDL knows what character this physical key produces
+    // (falls back to QWERTY when no layout is available yet).
+    SDL_Keycode key = SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(value), SDL_KMOD_NONE, false);
+    return (' ' <= key && key <= '~') ? static_cast<char>(key) : '\0';
+  }
+
 #pragma region static KeyCodes
 
   constinit const KeyCode KeyCode::Unknown{ static_cast<int>(SDL_SCANCODE_UNKNOWN) };
@@ -172,10 +197,10 @@ namespace ROSE {
   constinit const KeyCode KeyCode::NINE{ SDL_SCANCODE_9 };
   constinit const KeyCode KeyCode::ZERO{ SDL_SCANCODE_0 };
 
-  constinit const KeyCode KeyCode::UP{ SDL_SCANCODE_UP };
-  constinit const KeyCode KeyCode::DOWN{ SDL_SCANCODE_DOWN };
-  constinit const KeyCode KeyCode::LEFT{ SDL_SCANCODE_LEFT };
   constinit const KeyCode KeyCode::RIGHT{ SDL_SCANCODE_RIGHT };
+  constinit const KeyCode KeyCode::LEFT{ SDL_SCANCODE_LEFT };
+  constinit const KeyCode KeyCode::DOWN{ SDL_SCANCODE_DOWN };
+  constinit const KeyCode KeyCode::UP{ SDL_SCANCODE_UP };
 
   constinit const KeyCode KeyCode::F1{ SDL_SCANCODE_F1 };
   constinit const KeyCode KeyCode::F2{ SDL_SCANCODE_F2 };
@@ -246,6 +271,7 @@ namespace ROSE {
   constinit const KeyCode KeyCode::LEFT_BRACKET{ SDL_SCANCODE_LEFTBRACKET };
   constinit const KeyCode KeyCode::RIGHT_BRACKET{ SDL_SCANCODE_RIGHTBRACKET };
   constinit const KeyCode KeyCode::BACKSLASH{ SDL_SCANCODE_BACKSLASH };
+  constinit const KeyCode KeyCode::SEMICOLON{ SDL_SCANCODE_SEMICOLON };
   constinit const KeyCode KeyCode::APOSTROPHE{ SDL_SCANCODE_APOSTROPHE };
   constinit const KeyCode KeyCode::GRAVE{ SDL_SCANCODE_GRAVE };
   constinit const KeyCode KeyCode::COMMA{ SDL_SCANCODE_COMMA };
@@ -276,6 +302,9 @@ namespace ROSE {
 
   constinit const GamepadButton GamepadButton::START{ SDL_GAMEPAD_BUTTON_START };
   constinit const GamepadButton GamepadButton::BACK{ SDL_GAMEPAD_BUTTON_BACK };
+
+  constinit const GamepadButton GamepadButton::LEFT_BUMPER{ SDL_GAMEPAD_BUTTON_LEFT_SHOULDER };
+  constinit const GamepadButton GamepadButton::RIGHT_BUMPER{ SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER };
 
 
 
