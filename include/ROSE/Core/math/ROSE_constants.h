@@ -15,11 +15,11 @@
 #include <ROSE/Core/ROSE_bigint.h>
 
 namespace ROSE::math {
-  constexpr float PI = 3.141592653589793f;                                    //!< π
-  constexpr float E = 2.718281828459045f;                                     //!< e
-  constexpr float PHI = 1.618033988749895f;                                   //!< φ
-  constexpr float TAU = 2.f * PI;                                             //!< τ
-  constexpr float SQRT2 = 1.41421356237309504;                                //!< sqrt 2)
+  constexpr double PI = 3.141592653589793f;                                   //!< π
+  constexpr double E = 2.718281828459045f;                                    //!< e
+  constexpr double PHI = 1.618033988749895f;                                  //!< φ
+  constexpr double TAU = 2.f * PI;                                            //!< τ
+  constexpr double SQRT2 = 1.41421356237309504;                               //!< sqrt 2)
   constexpr Compd I = 0 + 1_i;                                                //!< i (sqrt -1)
   constexpr uint32_t FNVPRIME32 = 0x01000193;                                 //!< 32-bit FNV prime
   constexpr uint64_t FNVPRIME64 = 0x00000100000001b3;                         //!< 64-bit FNV prime
@@ -27,5 +27,6 @@ namespace ROSE::math {
   constexpr uint64_t FNVOFFSET64 = 0xcbf29ce484222325;                        //!< 64-bit FNV offset basis
   constexpr uint128_t FNVPRIME128 = 0x0000000001000000000000000000013B_u128;  //!< 128-bit FNV prime
   constexpr uint128_t FNVOFFSET128 = 0x6C62272E07BB014262B821756295C58D_u128; //!< 128-bit FNV offset basis
+
 
 } // namespace ROSE::math
