@@ -15,7 +15,7 @@ using namespace ROSE;
 
 void AppCloser::FrameUpdate() {
   if (InputSystem::GetKey(KeyCode::ESCAPE)) {
-    __debugbreak();
+    //__debugbreak();
     GetObject().GetScene().GetApplication().Quit();
   }
 }

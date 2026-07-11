@@ -17,7 +17,7 @@ using namespace ROSE;
 class AppCloser : public Behavior {
 public:
   static constexpr UUID typeID = "1510c09900c8cc39-21a67c5c20659851"_uuid;
-  static constexpr UUID TypeID() { return typeID; }
+  static constexpr UUID TypeID() noexcept { return typeID; }
   UUID GetTypeID() const noexcept override { return TypeID(); }
 protected:
   void FrameUpdate() override;
