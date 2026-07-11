@@ -9,14 +9,14 @@
 
 **/
 
-#include "ROSE/Core/ROSE_math.h"
+#include <ROSE/Core/math.h>
 
 
-#include <ROSE/Core/ROSE_bigint.h>
+#include <ROSE/Core/bigint.h>
 
 
-#include <ROSE/Core/ROSE_utility.h>
-#include <ROSE/Core/ROSE_paramview.h>
+#include <ROSE/Core/utility.h>
+#include <ROSE/Core/paramview.h>
 #include <nlohmann/json.hpp>
 
 /**

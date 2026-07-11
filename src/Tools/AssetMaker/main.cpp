@@ -13,7 +13,7 @@
 
 #include "assetmaker_version.h"
 #include "assetmaker_input.h"
-#include <ROSE/Editor/ROSE_assetfile.h>
+#include <ROSE/Editor/assetfile.h>
 
 #include <cli/CLI.hpp>
 

@@ -1,0 +1,29 @@
+/**
+
+  @file      camera.h
+  @brief
+  @details   ~
+  @author    Viola Case
+  @date      08.04.2026
+  @copyright © Viola Case, 2026. All rights reserved.
+
+**/
+
+#pragma once
+#include <ROSE/Core/behavior.h>
+#include <ROSE/Core/math.h>
+
+
+namespace ROSE {
+  class Camera : public Behavior {
+    math::Vec2<int16_t> m_aspectRatio;
+    [[bounds({ 0, inf })]]
+    float m_focalLength { 30 }; //!< millimeters
+    bool m_orthographic { false };
+
+  public:
+    static constexpr UUID typeID = "98b16c050e659798-2ba97b3cd1a9dd7c"_uuid;
+    static constexpr UUID TypeID() { return typeID; }
+    UUID GetTypeID() const noexcept override { return TypeID(); }
+  };
+} // namespace ROSE

@@ -10,7 +10,7 @@
 **/
 
 #include <iostream>
-#include <ROSE/Core/ROSE_format.h>
+#include <ROSE/Core/format.h>
 namespace ROSE {
 
   void PrintF(const StringView &fmt_str, const std::format_args args) {

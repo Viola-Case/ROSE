@@ -9,9 +9,9 @@
 
 **/
 
-#include <ROSE/Core/ROSE_buffer.h>
-#include <ROSE/Core/ROSE_surface.h>
-#include <ROSE/Core/ROSE_utility.h>
+#include <ROSE/Core/buffer.h>
+#include <ROSE/Core/surface.h>
+#include <ROSE/Core/utility.h>
 #include <SDL3_image/SDL_image.h>
 
 

@@ -1,0 +1,4 @@
+# Normalize all text files to LF in the repository, regardless of the
+# machine's core.autocrlf setting (repo is used across multiple systems
+# and git clients). Binary files are auto-detected and left untouched.
+* text=auto

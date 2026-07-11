@@ -1,5 +1,5 @@
 
-#include <ROSE/Core/ROSE_bigint.h>
+#include <ROSE/Core/bigint.h>
 
 
 #if !(defined(INT_128_EXISTS))

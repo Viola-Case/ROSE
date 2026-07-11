@@ -10,7 +10,7 @@
 **/
 #pragma once
 
-#include <ROSE/Core/ROSE_version.h>
+#include <ROSE/Core/version.h>
 
 #define ASSET_MAKER_VERSION_MAJOR 0
 #define ASSET_MAKER_VERSION_MINOR 1

@@ -1,6 +1,6 @@
 ﻿#include <chrono>
 #include <thread>
-#include <ROSE/Editor/ROSE_editor.h>
+#include <ROSE/Editor/editor.h>
 #include <SDL3/SDL.h>
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
