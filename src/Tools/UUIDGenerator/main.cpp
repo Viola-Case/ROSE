@@ -30,7 +30,18 @@ int main(int argc, char **argv) {
   CLI11_PARSE(app, argc, argv);
 
   auto uuid = ROSE::UUID::Generate();
-  ROSE::PrintF("{:x}-{:x}", uuid.high, uuid.low);
+
+  std::string h = std::format("{:x}", uuid.high);
+  std::string l = std::format("{:x}", uuid.low);
+
+  while (h.size() < ROSE::ROSE_UUID_HIGH_LEN) {
+    h = '0' + h;
+  }
+  while (l.size() < ROSE::ROSE_UUID_LOW_LEN) {
+    l = '0' + l;
+  }
+
+  ROSE::PrintF("{}-{}", h.c_str(), l.c_str());
 
   return 0;
 
