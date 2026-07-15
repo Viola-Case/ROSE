@@ -16,7 +16,9 @@ namespace ROSE {
   enum class RenderableType {
     Sprite,
     Mesh,
-
+    UI,
+    InstancedMesh,
+    
   };
 
   class Renderable : public Behavior {

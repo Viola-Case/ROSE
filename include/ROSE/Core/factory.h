@@ -55,4 +55,4 @@ namespace ROSE {
   };
 }
 
-extern "C" void RoseRegisterModule(ROSE::BehaviorFactory&);
+extern "C" void RoseRegisterCoreModule(ROSE::BehaviorFactory&);

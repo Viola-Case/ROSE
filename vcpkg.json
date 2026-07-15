@@ -59,7 +59,9 @@
     {
       "name": "mimalloc",
       "features": ["override"]
+    },
+    {
+      "name": "steam-audio"
     }
-
   ]
 }

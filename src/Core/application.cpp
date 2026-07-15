@@ -82,6 +82,13 @@ namespace ROSE {
   List<Scene> &Application::GetScenes() noexcept { return m_scenes; }
   Scene &Application::GetCurrentScene() noexcept { return *m_currentScene; }
 
+  void Application::SetFlag(ApplicationFlag m, bool b) noexcept {
+    const auto mask = 1 << m;
+    if (b) m_flags |= mask;
+    else m_flags &= ~mask;
+  }
+
+
 
   void AddSceneFromJSON(void *jsonPtr) noexcept {
 

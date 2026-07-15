@@ -54,7 +54,7 @@ namespace ROSE::math {
       };
     }
 
-    static constexpr Quat FromEuler(Vec<T, 3> v, EulerOrder order = EulerOrder::XYZ) {
+    static constexpr Quat FromEuler(Vec3<T> v, EulerOrder order = EulerOrder::XYZ) {
       Quat<T> qx = AxisAngle(v.x, T(1), T(0), T(0));
       Quat<T> qy = AxisAngle(v.y, T(0), T(1), T(0));
       Quat<T> qz = AxisAngle(v.z, T(0), T(0), T(1));
@@ -77,6 +77,27 @@ namespace ROSE::math {
       }
 
       return Quat<T> { 1, 0, 0, 0 }; // fallback identity
+    }
+
+    //todo finish
+    Vec3<T> ToEuler(EulerOrder order = EulerOrder::ZYX) {
+      switch (order) {
+      case EulerOrder::XYZ:
+        return {};
+      case EulerOrder::XZY:
+        return {};
+
+      case EulerOrder::YXZ:
+        return {};
+      case EulerOrder::YZX:
+        return {};
+
+      case EulerOrder::ZXY:
+        return {};
+      case EulerOrder::ZYX:
+        return {};
+      }
+      return Vec3<T>{}; // fallback
     }
 
     static constexpr Quat<T> Identity() {

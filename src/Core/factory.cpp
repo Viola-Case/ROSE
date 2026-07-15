@@ -43,8 +43,19 @@ namespace ROSE {
 
 
 using namespace ROSE;
-extern "C" void RoseRegisterModule(BehaviorFactory &factory) {
-  List<Pair<FactoryFn, UUID>> fns { { MakeBehavior<Camera>, Camera::TypeID() } };
+extern "C" void RoseRegisterCoreModule(BehaviorFactory &factory) {
+  /*!
+   * If I rearrange BehaviorFactory this part fucks up. Need to come up with a better way without making it accessible
+   * anywhere.
+   *
+   * It grabs factory::m_registeredModules which is a private member.
+   */
+  List<String> &l = *reinterpret_cast<List<String> *>(&factory);
+  List<Pair<FactoryFn, UUID>> fns {
+    { MakeBehavior<Camera>, Camera::TypeID() },
+    { MakeBehavior<AudioSource>, AudioSource::TypeID() },
+    { MakeBehavior<Renderable>, Renderable::TypeID() }
+  };
   for (const auto &p : fns) {
     switch (factory.Register(p.first, p.second, "Core")) {
     case RegisterResult::Success: case RegisterResult::DuplicateID:

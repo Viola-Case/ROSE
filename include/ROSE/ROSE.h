@@ -24,6 +24,7 @@
 #include <ROSE/Core/version.h>
 #include <ROSE/Core/math.h>
 #include <ROSE/Core/scene.h>
+#include <ROSE/Core/transform.h>
 #include <ROSE/Core/object.h>
 #include <ROSE/Core/behavior.h>
 #include <ROSE/Core/paramview.h>
@@ -33,6 +34,12 @@
 #include <ROSE/Core/format.h>
 #include <ROSE/Core/scene.h>
 #include <ROSE/Core/camera.h>
+#include <ROSE/Core/motion.h>
+#include <ROSE/Core/audio.h>
+#include <ROSE/Core/audiosource.h>
+#include <ROSE/Core/mesh.h>
+#include <ROSE/Core/renderable.h>
+#include <ROSE/Core/collider.h>
 #include <ROSE/Core/asset.h>
 #include <ROSE/Core/surface.h>
 #include <ROSE/Core/factory.h>

@@ -282,6 +282,9 @@ namespace ROSE {
      * This doesn't do much on its own but
      */
     static void Prime();
+    /*!
+     * Meyers singleton (though really all these can just work without having to call `GetInstance()`)
+     */
     static InputSystem &GetInstance();
     static bool GetKeyDown(KeyCode) noexcept;
     static bool GetKeyUp(KeyCode) noexcept;
@@ -291,9 +294,15 @@ namespace ROSE {
     static Vec2f GetStickAxes(GamepadStick) noexcept;
     static bool GetGamepadButton(GamepadButton) noexcept;
 
-
+    /*!
+     * @todo figure out if this should be static like the others or not.
+     * technically it functions the exact same either way it's just kinda clunky if it's not consistent
+     */
     const bool *GetKeyboardPtr() const noexcept;
-
+    /*!
+     * @todo figure out if this should be static like the others or not.
+     * technically it functions the exact same either way it's just kinda clunky if it's not consistent
+     */
     const bool *GetPreviousKeyboardPtr() const noexcept;
 
     static String GetGamepadName() noexcept;

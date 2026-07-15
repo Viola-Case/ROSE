@@ -10,6 +10,7 @@
 **/
 #pragma once
 
+#include <ROSE/Core/math/mathenum.h>
 #include <ROSE/Core/math/tensor.h>
 #include <ROSE/Core/math/vector.h>
 #include <ROSE/Core/math/matrix.h>
