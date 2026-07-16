@@ -275,7 +275,7 @@ namespace ROSE {
     void Poll() noexcept;
     InputSystem(InputSystem &) = delete;
     InputSystem(InputSystem &&) = delete;
-    static InputSystem inputSystem;
+    // static InputSystem inputSystem;
 
   public:
     /**

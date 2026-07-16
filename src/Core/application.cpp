@@ -11,6 +11,7 @@
 
 #include <ROSE/ROSE.h>
 #include <SDL3/SDL.h>
+#include <ROSE/Core/time.h>
 #include <nlohmann/json.hpp>
 
 namespace ROSE {
@@ -45,19 +46,37 @@ namespace ROSE {
   }
 
   void Application::Run() {
+    if (m_isRunning) return;
+    m_isRunning = true;
     m_window = SDL_CreateWindow(m_title.c_str(), 800, 800, SDL_WINDOW_HIDDEN);
     SDL_ShowWindow(static_cast<SDL_Window *>(m_window));
 
+    std::chrono::time_point<std::chrono::high_resolution_clock> start =
+      std::chrono::high_resolution_clock::now();
+
+    Scene &curScene = *m_currentScene;
+
+
+
     while (!m_shouldClose) {
+      static Scene *lastScene{nullptr};
+      if (lastScene != m_currentScene) {
+        curScene.OnStart();
+        lastScene = m_currentScene;
+      }
       SDL_Event e;
       while (SDL_PollEvent(&e)) {
         if (e.type == SDL_EVENT_QUIT) m_shouldClose = true;
       }
-      Scene &curScene = *m_currentScene;
+      std::chrono::time_point<std::chrono::high_resolution_clock> end =
+        std::chrono::high_resolution_clock::now();
+      auto dur = std::chrono::duration_cast<std::chrono::duration<double, std::ratio<1,1>>>(end-start);
+      Time::dT = dur.count();
       curScene.FrameUpdate();
     }
 
     SDL_DestroyWindow(static_cast<SDL_Window *>(m_window));
+    m_isRunning = false;
   }
 
   void Application::Quit() noexcept {

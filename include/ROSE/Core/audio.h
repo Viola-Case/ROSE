@@ -29,8 +29,8 @@ namespace ROSE {
 
   public:
     static AudioSystem &Get();
-    void PlayAudio();
-    void StopAudio();
+    void PlayAudio(UUID);
+    void StopAudio(UUID);
   };
 
   // something something hrtf later

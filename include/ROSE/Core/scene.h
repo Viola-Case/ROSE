@@ -39,6 +39,12 @@ namespace ROSE {
     void OnStart() noexcept;
     void FrameUpdate() noexcept;
 
+    // Promotes every object's pending behaviors into its behavior map and runs
+    // their Create -> Start lifecycle. Loops until the scene settles so that
+    // behaviors spawned during OnCreate/OnStart are themselves initialized
+    // before the next update.
+    void InitializePendingBehaviors() noexcept;
+
     // Points this scene's application/object back-pointers at their final
     // addresses. Must be re-called if the scene is ever moved.
     void Bind(Application &) noexcept;

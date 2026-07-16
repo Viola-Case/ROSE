@@ -47,7 +47,7 @@ namespace ROSE {
    */
   bool InputSystem::GetKeyDown(KeyCode code) noexcept {
     static InputSystem &inputSystem = GetInstance();
-    if (!inputSystem.m_keyState) return 0;
+    if (!inputSystem.m_keyState) return false;
     return (inputSystem.m_keyState[code] && !inputSystem.m_keyStatePrevious[code]);
   }
 
@@ -56,7 +56,7 @@ namespace ROSE {
    */
   bool InputSystem::GetKeyUp(KeyCode code) noexcept {
     static InputSystem &inputSystem = GetInstance();
-    if (!inputSystem.m_keyState) return 0;
+    if (!inputSystem.m_keyState) return false;
     return (!inputSystem.m_keyState[code] && inputSystem.m_keyStatePrevious[code]);
   }
 
@@ -65,7 +65,7 @@ namespace ROSE {
    */
   bool InputSystem::GetKey(KeyCode code) noexcept {
     static InputSystem &inputSystem = GetInstance();
-    if (!inputSystem.m_keyState) return 0;
+    if (!inputSystem.m_keyState) return false;
     return inputSystem.m_keyState[code];
   }
 

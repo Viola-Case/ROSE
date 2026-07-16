@@ -11,28 +11,57 @@
 #pragma once
 
 #include <ROSE/Core/uuid.h>
+#include <ROSE/Core/memory.h>
+#include <ROSE/Core/behavior.h>
 
 #include <concepts>
 
 namespace ROSE {
   class ParamView;
-
+  /*!
+   * The Object-Behavior Model has three phases, Create, Start, and Update, in that order.
+   * - Create phase - behavior is created either at the start of a scene or by another behavior's process.
+   * - Start phase - behavior has the opportunity to survey its surroundings and see who else is around. This is where
+   * it will reach out to get IDs of its neighbors.
+   * - Update phase - behavior performs its tasks as part of the game loop.
+   *
+   * `OnCreate` should never reach out to other behaviors in the scene.
+   * `OnStart` may reach out to other behaviors
+   *
+   * To summarize,
+   * Phase one: touch only yourself. Phase two: reach across and touch your neighbors.
+   */
   class Behavior {
     friend class Object;
     friend class Scene;
 
   protected:
+    /*!
+     * Called immediately after behavior is added to the object
+     */
+    virtual void OnCreate() {}
+    /*!
+     * Called just before first update
+     */
     virtual void OnStart() {}
+    /*!
+     * Called once every frame
+     */
     virtual void FrameUpdate() {}
+    /*!
+     * @note Currently this doesn't get called but I'll get to that I promise
+     */
     virtual void FixedUpdate() {}
 
+    /*!
+     * How the object gets unpacked from scene JSON data
+     */
     virtual void Unpack(const ParamView &view) {}
 
   public:
     virtual UUID GetTypeID() const noexcept = 0;
 
     virtual ~Behavior() {}
-
     virtual void UnpackParameters(const ParamView &) {}
 
     //Scene &GetScene() noexcept;
@@ -62,5 +91,7 @@ namespace ROSE {
       requires { { T::TypeID() } -> std::same_as<UUID>; };
 
   using Behaviour = Behavior;
+
+  using BehaviorReference = UniquePtr<Behavior> *;
 
 } // namespace ROSE

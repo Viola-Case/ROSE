@@ -44,11 +44,6 @@ namespace ROSE {
     m_pendingAdd.push_back(Move(behavior));
   }
 
-  void Object::DestroyBehavior(const UUID &u) noexcept {
-    m_pendingDestroy.push_back(u);
-  }
-
-
   Behavior *Object::GetBehavior(const UUID &u) noexcept {
     auto it = m_behaviors.find(u);
     if (it == m_behaviors.end()) return nullptr;

@@ -22,6 +22,8 @@ if(ROSE_USE_VCPKG AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     endif()
 endif()
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 project(ROSE VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -105,6 +107,11 @@ target_link_libraries(KeyboardTest PRIVATE
 set_property(TARGET Game1 PROPERTY FOLDER "Examples")
 target_link_libraries(Game1 PRIVATE
         ROSE_Core
+)
+add_custom_command(TARGET Game1 POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/examples/game1/assets"
+        "$<TARGET_FILE_DIR:Game1>/assets"
 )
 
 file(GLOB_RECURSE ROSE_EDITOR_SOURCES

@@ -468,7 +468,7 @@ struct std::formatter<uint128_t> {
     std::string_view digits(ptr, end - ptr - 1);
     std::string_view pre(prefix, std::char_traits<char>::length(prefix));
 
-    int total = (int)(pre.size() + digits.size());
+    int total = static_cast<int>(pre.size() + digits.size());
     int pad = std::max(0, width - total);
 
     auto out = ctx.out();
@@ -615,7 +615,7 @@ struct std::formatter<int128_t> {
     std::string_view digits(ptr, end - ptr - 1);
     std::string_view pre(prefix, pfx - prefix);
 
-    int total = (int)(pre.size() + digits.size());
+    int total = static_cast<int>(pre.size() + digits.size());
     int pad = std::max(0, width - total);
 
     auto out = ctx.out();

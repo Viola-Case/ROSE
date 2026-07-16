@@ -20,6 +20,12 @@ namespace ROSE {
   protected:
     Vec3d m_drdt{}; //!< \f$\dv{r}{t}\f$
     Vec3d m_dTdt{}; //!< \f$\dv{\theta}{t}\f$
+    /*!
+     * Unpack takes JSON object {
+     *    "velocity",
+     *    "
+     * }
+     */
     void Unpack(const ParamView &view) override;
     void FrameUpdate() override;
   };

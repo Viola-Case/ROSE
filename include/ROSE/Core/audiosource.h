@@ -9,8 +9,9 @@
   
 **/
 #pragma once
-#include "behavior.h"
-#include "camera.h"
+#include <ROSE/Core/behavior.h>
+#include <ROSE/Core/audio.h>
+
 
 namespace ROSE {
   class AudioSource : public Behavior {
@@ -18,6 +19,9 @@ namespace ROSE {
     static constexpr UUID typeID = "8448e5b94997ad4d-ccee5b44f06598a2"_uuid;
     static constexpr UUID TypeID() noexcept { return typeID; }
     UUID GetTypeID() const noexcept override { return TypeID(); }
+
+  private:
+
 
   };
 }

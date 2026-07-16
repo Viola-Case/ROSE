@@ -16,10 +16,11 @@
 
 namespace ROSE {
   class Camera : public Behavior {
-    math::Vec2<int16_t> m_aspectRatio;
-    [[bounds({ 0, inf })]]
-    float m_focalLength { 30 }; //!< millimeters
+  protected:
+    math::Vec2<int16_t> m_aspectRatio; //!< I should probably make this just a single float
+    [[bounds({ 0, inf })]] float m_focalLength { 30 }; //!< millimeters
     bool m_orthographic { false };
+    void Unpack(const ParamView &view) override;
 
   public:
     static constexpr UUID typeID = "98b16c050e659798-2ba97b3cd1a9dd7c"_uuid;

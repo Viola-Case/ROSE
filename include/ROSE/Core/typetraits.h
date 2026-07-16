@@ -43,4 +43,8 @@ namespace ROSE {
   template <typename T>
   concept MultiByteType =
       sizeof(T) > 1;
+
+  class Behavior;
+  template <class T>
+  concept BehaviorType = std::derived_from<T, Behavior>;
 } // namespace ROSE

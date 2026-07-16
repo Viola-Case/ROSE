@@ -11,19 +11,12 @@
 #pragma once
 
 #include <ROSE/Core/scene.h>
-#include <utility>
 #include <ROSE/Core/rtl.h>
 #include <ROSE/Core/uuid.h>
 #include <ROSE/Core/transform.h>
 #include <ROSE/Core/application.h>
 
 namespace ROSE {
-  //class Scene;
-  class Behavior;
-  template <class T>
-  concept BehaviorType = std::derived_from<T, Behavior>;
-
-
   class Object final {
     friend class Behavior;
     friend class Scene;
@@ -57,7 +50,7 @@ namespace ROSE {
 
     template <class B>
       requires std::is_base_of_v<Behavior, B>
-    Behavior *FindBehavior() {
+    Behavior *FindBehavior() noexcept {
       constexpr auto tID = B::TypeID();
       if (auto it = m_behaviors.find(tID); it != m_behaviors.end())
         return it->second.get();
@@ -71,7 +64,11 @@ namespace ROSE {
 
     void AddBehavior(UniquePtr<Behavior> &&behavior);
 
-    void DestroyBehavior(const UUID &) noexcept;
+    template<BehaviorType B>
+    void DestroyBehavior() {
+      constexpr auto tID = B::TypeID();
+      m_pendingDestroy.push_back(tID);
+    }
 
     Object *GetParent() const noexcept;
 

@@ -30,10 +30,55 @@ namespace ROSE {
     m_name = String(std::format("Scene{}", sceneCounter++).c_str());
   }
 
+  
+
+  void Scene::InitializePendingBehaviors() noexcept {
+    // Drain in batches: OnCreate/OnStart may queue further behaviors, so keep
+    // going until a pass produces nothing new.
+    for (;;) {
+      List<Behavior *> newBehaviors;
+      for (auto &o : m_objects) {
+        Object &obj = *o.second;
+        for (UniquePtr<Behavior> &b : obj.m_pendingAdd) {
+          Behavior *ptr = b.get();
+          b->m_object = &obj;
+          obj.m_behaviors.insert(b->GetTypeID(), Move(b));
+          newBehaviors.push_back(ptr);
+        }
+        obj.m_pendingAdd.clear();
+      }
+
+      if (newBehaviors.empty()) break;
+
+      // Phase one (Create): every new behavior touches only itself.
+      for (Behavior *b : newBehaviors) b->OnCreate();
+      // Phase two (Start): every new behavior may now reach out to its
+      // neighbors, all of which have completed their Create phase.
+      for (Behavior *b : newBehaviors) b->OnStart();
+    }
+  }
+
+  void Scene::OnStart() noexcept {
+    // Phase one (Create): every behavior in the scene touches only itself.
+    for (auto &o : m_objects)
+      for (auto &b : o.second->m_behaviors)
+        b.second->OnCreate();
+
+    // Phase two (Start): every behavior may now reach across to its neighbors,
+    // all of which have completed their Create phase above.
+    for (auto &o : m_objects)
+      for (auto &b : o.second->m_behaviors)
+        b.second->OnStart();
+
+    // Behaviors spawned during Create/Start get the same lifecycle before the
+    // first update.
+    InitializePendingBehaviors();
+  }
+
   void Scene::FrameUpdate() noexcept {
 
     if (m_objects.empty()) {
-
+      // something idk
     }
     for (auto &o : m_objects) {
       o.second->FrameUpdate();
@@ -41,6 +86,15 @@ namespace ROSE {
 
     for (const UUID &u : m_pendingDestroy) {
       m_objects.erase(u);
+    }
+    m_pendingDestroy.clear();
+
+    for (auto &o : m_objects) {
+      auto &l = o.second->m_pendingDestroy;
+      for (const UUID &u : l) {
+        o.second->m_behaviors.erase(u);
+      }
+      l.clear();
     }
 
     for (UniquePtr<Object> &o : m_pendingAdd) {
@@ -51,13 +105,8 @@ namespace ROSE {
     }
     m_pendingAdd.clear();
 
-    for (auto &o : m_objects) {
-      for (UniquePtr<Behavior> &b : o.second->m_pendingAdd) {
-        b->m_object = o.second.get();
-        o.second->m_behaviors.insert(UUID::Generate(), Move(b));
-      }
-      o.second->m_pendingAdd.clear();
-    }
+    // Behaviors added this frame run Create -> Start before their first update.
+    InitializePendingBehaviors();
   }
 
  /*!
@@ -241,7 +290,7 @@ namespace ROSE {
           bvr->m_object = &obj;
           auto paramObj = b.at("factoryParameters");
           ParamView pview{&paramObj};
-          bvr->UnpackParameters(pview);
+          bvr->Unpack(pview);
           obj.m_behaviors.insert(tID, Move(bvr));
         }
 

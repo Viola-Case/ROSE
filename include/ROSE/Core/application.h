@@ -10,7 +10,6 @@
 **/
 #pragma once
 
-#include <cstdlib>
 #include <cstdint>
 #include <ROSE/Core/rtl.h>
 #include <ROSE/Core/factory.h>
@@ -30,7 +29,7 @@ namespace ROSE {
       SoftwareRenderer = 4,
       RichPresence = 5,
     } value;
-    constexpr ApplicationFlag(Value v) noexcept : value(v <= 63 ? v : throw "invalid ApplicationFlag") {}
+    constexpr ApplicationFlag(Value v) : value(v <= 63 ? v : throw "invalid ApplicationFlag") {}
     //constexpr ApplicationFlag(uint8_t v) noexcept : value(static_cast<Value>(v)) {}
     constexpr operator uint64_t() const noexcept { return value; }
   };
@@ -83,9 +82,9 @@ namespace ROSE {
     Application(const char *_title, ApplicationFlags, List<Scene> &&);
     ~Application();
     int Init();
-    void Run();
+    void Run(); //!< Should only be called once. Terminates if called again.
     void Quit() noexcept;
-    void CleanUp();
+    //void CleanUp();
 
     [[nodiscard]] const char *GetTitle() const noexcept;
 
@@ -117,5 +116,6 @@ namespace ROSE {
     UniquePtr<SceneManager> m_manager {};
 
     bool m_shouldClose { false };
+    bool m_isRunning {false};
   };
 } // namespace ROSE

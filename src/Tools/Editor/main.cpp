@@ -69,7 +69,7 @@ int main() {
       if (ImGui::IsMouseClicked(0)) {
         float mx, my;
         SDL_GetGlobalMouseState(&mx, &my);
-        dragStartMouse = { (int) mx, (int) my };
+        dragStartMouse = { static_cast<int>(mx), static_cast<int>(my) };
         SDL_GetWindowPosition(window, &dragStartWindow.x, &dragStartWindow.y);
       }
 
@@ -77,8 +77,8 @@ int main() {
         float mx, my;
         SDL_GetGlobalMouseState(&mx, &my);
         SDL_SetWindowPosition(window,
-          dragStartWindow.x + ((int) mx - dragStartMouse.x),
-          dragStartWindow.y + ((int) my - dragStartMouse.y));
+          dragStartWindow.x + (static_cast<int>(mx) - dragStartMouse.x),
+          dragStartWindow.y + (static_cast<int>(my) - dragStartMouse.y));
       }
 
       if (ImGui::BeginMenu("File")) {
@@ -99,7 +99,7 @@ int main() {
 
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> elapsed_seconds = end - start;
-    PrintF("{:.4f} seconds\n", elapsed_seconds.count());
+    // PrintF("{:.4f} seconds\n", elapsed_seconds.count());
     start = end;
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }

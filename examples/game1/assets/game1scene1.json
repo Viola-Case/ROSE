@@ -1,0 +1,90 @@
+{
+  "name": "scene1",
+  "objects": [
+    {
+      "name": "Scene Manager",
+      "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "behaviors": [
+        {
+          "typeid": "1510c09900c8cc39-21a67c5c20659851",
+          "factoryParameters": []
+        }
+      ]
+    },
+    {
+      "name": "Paddle",
+      "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbc",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "behaviors": [
+        {
+          "typeid": "bceacc50f13cee94-7dbb93fec8659973",
+          "factoryParameters": {
+            "player": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "Paddle",
+      "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbd",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "behaviors": [
+        {
+          "typeid": "bceacc50f13cee94-7dbb93fec8659973",
+          "factoryParameters": {
+            "player": 2
+          }
+        }
+      ]
+    }
+  ]
+}
