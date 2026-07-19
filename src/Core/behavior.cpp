@@ -12,5 +12,14 @@
 #include <ROSE/ROSE.h>
 
 namespace ROSE {
-  Object &Behavior::GetObject() noexcept { return *m_object; }
+  Object &Behavior::GetObject() const noexcept { return *m_object; }
+  void Behavior::OnStart() {}
+  void Behavior::FrameUpdate() {}
+  void Behavior::FixedUpdate() {}
+  void Behavior::Unpack(const ParamView &view) {}
+  void Behavior::OnEnable() {}
+  void Behavior::OnDisable() {}
+  void Behavior::UnpackParameters(const ParamView &) {}
+  Behavior::~Behavior() {}
+
 }

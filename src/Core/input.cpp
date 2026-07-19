@@ -260,7 +260,6 @@ namespace ROSE {
   constinit const KeyCode KeyCode::PAGE_DOWN{ SDL_SCANCODE_PAGEDOWN };
   constinit const KeyCode KeyCode::DELETE{ SDL_SCANCODE_DELETE };
 
-
   constinit const KeyCode KeyCode::ENTER{ SDL_SCANCODE_RETURN };
   constinit const KeyCode KeyCode::ESCAPE{ SDL_SCANCODE_ESCAPE };
   constinit const KeyCode KeyCode::BACKSPACE{ SDL_SCANCODE_BACKSPACE };

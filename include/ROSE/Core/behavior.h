@@ -43,42 +43,42 @@ namespace ROSE {
     /*!
      * Called just before first update
      */
-    virtual void OnStart() {}
+    virtual void OnStart();
     /*!
      * Called once every frame
      */
-    virtual void FrameUpdate() {}
+    virtual void FrameUpdate();
     /*!
      * @note Currently this doesn't get called but I'll get to that I promise
      *
      * @note ...or maybe not
      */
-    virtual void FixedUpdate() {}
+    virtual void FixedUpdate();
 
     /*!
      * How the object gets unpacked from scene JSON data
      */
-    virtual void Unpack(const ParamView &view) {}
+    virtual void Unpack(const ParamView &view);
 
     /*!
      *
      */
-    virtual void OnEnable() {}
+    virtual void OnEnable();
 
     /*!
      *
      */
-    virtual void OnDisable() {}
+    virtual void OnDisable();
 
 
   public:
     virtual UUID GetTypeID() const noexcept = 0;
 
-    virtual ~Behavior() {}
-    virtual void UnpackParameters(const ParamView &) {}
+    virtual ~Behavior();
+    virtual void UnpackParameters(const ParamView &);
 
     // Scene &GetScene() noexcept;
-    Object &GetObject() noexcept;
+    Object &GetObject() const noexcept;
 
   protected:
     UUID m_uuid;
