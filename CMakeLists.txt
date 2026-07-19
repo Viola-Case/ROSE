@@ -107,6 +107,7 @@ target_link_libraries(KeyboardTest PRIVATE
 set_property(TARGET Game1 PROPERTY FOLDER "Examples")
 target_link_libraries(Game1 PRIVATE
         ROSE_Core
+        SDL3_ttf::SDL3_ttf
 )
 add_custom_command(TARGET Game1 POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different

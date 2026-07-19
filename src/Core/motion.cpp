@@ -13,7 +13,8 @@
 
 namespace ROSE {
   void Motion::Unpack(const ParamView &view) {
-
+    m_drdt = view.GetVec3d("drdt", {});
+    m_dTdt = view.GetVec3d("dTdt", {});
   }
   void Motion::FrameUpdate() {
 

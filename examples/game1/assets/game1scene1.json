@@ -85,6 +85,35 @@
           }
         }
       ]
+    },
+    {
+      "name": "FPS Counter",
+      "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbe",
+      "transform": {
+        "position": [
+          10,
+          10,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "behaviors": [
+        {
+          "typeid": "995243d320724db5-5fabb4eb31659861",
+          "factoryParameters": {
+
+          }
+        }
+      ]
     }
   ]
 }

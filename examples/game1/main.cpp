@@ -1,6 +1,7 @@
 #include <ROSE/ROSE.h>
 
 #include "applicationcloser.h"
+#include "fpscounter.h"
 #include "paddle.h"
 
 #include <fstream>
@@ -13,7 +14,8 @@ int main() {
     BehaviorFactory &factory = BehaviorFactory::get();
     Pair<FactoryFn, UUID> fns[] {
       { MakeBehavior<AppCloser>, AppCloser::TypeID() },
-      { MakeBehavior<Paddle>, Paddle::TypeID() }
+      { MakeBehavior<Paddle>, Paddle::TypeID() },
+      { MakeBehavior<FpsCounter>, FpsCounter::TypeID() }
     };
     for (const auto &p : fns)
       factory.Register(p.first, p.second, "Game1");

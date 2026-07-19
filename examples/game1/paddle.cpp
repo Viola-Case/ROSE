@@ -13,10 +13,10 @@
 #include <ROSE/Core/time.h>
 #include <SDL3/SDL.h>
 
-constexpr double speed { .02 };
-constexpr float width { 50.f };
-constexpr float height { 12.f };
-constexpr float margin { 20.f }; //!< gap between a paddle's center and its screen edge
+constexpr double speed { 500 };
+constexpr float width { 120.f };
+constexpr float height { 24.f };
+constexpr float margin { 24.f }; //!< gap between a paddle's center and its screen edge
 
 using namespace ROSE;
 Paddle::Paddle() noexcept : m_keyLeft(KeyCode::LEFT), m_keyRight(KeyCode::RIGHT), m_player(P1) {}

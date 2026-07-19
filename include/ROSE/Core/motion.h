@@ -18,12 +18,20 @@ namespace ROSE {
     static constexpr UUID TypeID() noexcept { return typeID; }
     UUID GetTypeID() const noexcept override { return TypeID(); }
   protected:
-    Vec3d m_drdt{}; //!< \f$\dv{r}{t}\f$
-    Vec3d m_dTdt{}; //!< \f$\dv{\theta}{t}\f$
+    Vec3d m_drdt{}; //!< \f$\dv{\overset{\rightharpoonup}{r}}{t}\f$
+    Vec3d m_dTdt{}; //!< \f$\dv{\overset{\rightharpoonup}{\theta}}{t}\f$
+    Vec3d m_d2rdt2{}; //!< \f$\dv[2]{\overset{\rightharpoonup}{r}}{t}\f$
+    Vec3d m_d2Tdt2{}; //!< \f$\dv[2]{\overset{\rightharpoonup}{\theta}}{t}\f$
+
     /*!
-     * Unpack takes JSON object {
-     *    "velocity",
-     *    "
+     * Unpack takes JSON object
+     * {
+     *    "drdt": [
+     *      0,0,0
+     *    ],
+     *    "dTdt": [
+     *      0,0,0
+     *    ]
      * }
      */
     void Unpack(const ParamView &view) override;
