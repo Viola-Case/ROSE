@@ -29,7 +29,7 @@
       ]
     },
     {
-      "name": "Paddle",
+      "name": "Paddle1",
       "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbc",
       "transform": {
         "position": [
@@ -58,7 +58,7 @@
       ]
     },
     {
-      "name": "Paddle",
+      "name": "Paddle2",
       "uuid": "aaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbd",
       "transform": {
         "position": [

@@ -77,14 +77,18 @@ namespace ROSE {
 
 
   private:
+    UUID m_uuid {};
     String m_name { "Object" };
     TypedHashMap<UUID, UniquePtr<Behavior>> m_behaviors {};
     List<UniquePtr<Behavior>> m_pendingAdd {};
     List<UUID> m_pendingDestroy {};
 
-    UUID m_uuid {};
     Scene *m_scene { nullptr };
     Object *m_parent { nullptr };
-    Transform m_transform { 0, 1 };
+  public:
+    Transform transform {
+      {0,0,0},
+      {1,0,0,0}
+    };
   };
 } // namespace ROSE

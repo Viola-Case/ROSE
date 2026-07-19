@@ -9,8 +9,16 @@
 using namespace ROSE;
 int main() {
 
-  BehaviorFactory::get().Register(MakeBehavior<AppCloser>, AppCloser::TypeID(), "Game1");
-  BehaviorFactory::get().Register(MakeBehavior<Paddle>, Paddle::TypeID(), "Game1");
+  {
+    BehaviorFactory &factory = BehaviorFactory::get();
+    Pair<FactoryFn, UUID> fns[] {
+      { MakeBehavior<AppCloser>, AppCloser::TypeID() },
+      { MakeBehavior<Paddle>, Paddle::TypeID() }
+    };
+    for (const auto &p : fns)
+      factory.Register(p.first, p.second, "Game1");
+  }
+
 
 
   auto scenes = List<Scene>();
@@ -25,10 +33,9 @@ int main() {
   scenes.push_back(Scene::FromJSONString(sceneJSON));
 
   Application Game("Game 1", 0, Move(scenes));
+  Game.SetFlag(ApplicationFlag::SoftwareRenderer, 1);
 
   Game.Init();
 
   Game.Run();
-
-
 }

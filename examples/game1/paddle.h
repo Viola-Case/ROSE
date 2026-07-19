@@ -1,16 +1,18 @@
 /**
 
   @file       paddle.h
-  @brief      
+  @brief
   @details    ~
   @author     Viola Case
   @date       15.07.2026
   @copyright  © Viola Case, 2026. All rights reserved.
-  
+
 **/
 #pragma once
 
 #include <ROSE/ROSE.h>
+
+struct SDL_Renderer;
 
 using namespace ROSE;
 
@@ -23,6 +25,7 @@ public:
 protected:
   void Unpack(const ParamView &view) override;
   void OnCreate() override;
+  void OnStart() override;
   void FrameUpdate() override;
 private:
   KeyCode m_keyLeft;
@@ -31,4 +34,7 @@ private:
     P1 = 1,
     P2 = 2
   } m_player;
+  SDL_Renderer *m_renderer {};
+  int m_screenW {};
+  int m_screenH {};
 };

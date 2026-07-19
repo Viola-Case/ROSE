@@ -279,7 +279,7 @@ namespace ROSE {
         Object &obj = *pair.second;
         obj.m_name = String(o.at("name").get<std::string>().c_str());
         const auto &to = o.at("transform");
-        Transform &t = obj.m_transform;
+        Transform &t = obj.transform;
         t.position = getVec3FromNode(to.at("position"));
         t.rotation = Quatd::FromEuler(getVec3FromNode(to.at("rotation")));
         t.scale = getVec3FromNode(to.at("scale"));
@@ -320,6 +320,14 @@ namespace ROSE {
   void Scene::AddObject(Object &&obj) noexcept {
     UniquePtr<Object> o(MakeUnique<Object>(Move(obj)));
     m_pendingAdd.push_back(Move(o));
+  }
+
+  Object *Scene::FindObjectByName(const StringView &name) noexcept {
+    for (auto &p : m_objects) {
+      auto &o = p.second;
+      if (o->m_name == name) return o.get();
+    }
+    return nullptr;
   }
 
   void Scene::DestroyObject(const UUID &u) noexcept { m_pendingDestroy.push_back(u); }

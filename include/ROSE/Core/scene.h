@@ -25,6 +25,11 @@ namespace ROSE {
     Application &GetApplication() const noexcept;
 
     void AddObject(Object &&) noexcept;
+
+    Object *FindObjectByName(const StringView &) noexcept;
+
+    Object *GetObject(const UUID &) noexcept;
+
     void DestroyObject(const UUID &u) noexcept;
 
     static Scene FromJSONString(const String&) noexcept;
@@ -49,7 +54,6 @@ namespace ROSE {
     // addresses. Must be re-called if the scene is ever moved.
     void Bind(Application &) noexcept;
 
-    Object *GetObject(const UUID &) noexcept;
 
     String ToJSONString() noexcept;
 

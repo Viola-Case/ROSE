@@ -54,11 +54,19 @@ namespace ROSE {
     std::chrono::time_point<std::chrono::high_resolution_clock> start =
       std::chrono::high_resolution_clock::now();
 
+    if (GetFlag(ApplicationFlag::SoftwareRenderer)) {
+      m_renderer = SDL_CreateRenderer(static_cast<SDL_Window *>(m_window), nullptr);
+    }
+
     Scene &curScene = *m_currentScene;
 
-
-
     while (!m_shouldClose) {
+
+      if (GetFlag(ApplicationFlag::SoftwareRenderer)) {
+        SDL_SetRenderDrawColor(static_cast<SDL_Renderer *>(m_renderer), 0, 0, 0, SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(static_cast<SDL_Renderer *>(m_renderer));
+      }
+
       static Scene *lastScene{nullptr};
       if (lastScene != m_currentScene) {
         curScene.OnStart();
@@ -73,6 +81,10 @@ namespace ROSE {
       auto dur = std::chrono::duration_cast<std::chrono::duration<double, std::ratio<1,1>>>(end-start);
       Time::dT = dur.count();
       curScene.FrameUpdate();
+
+      if (GetFlag(ApplicationFlag::SoftwareRenderer)) {
+        SDL_RenderPresent(static_cast<SDL_Renderer *>(m_renderer));
+      }
     }
 
     SDL_DestroyWindow(static_cast<SDL_Window *>(m_window));
@@ -105,6 +117,11 @@ namespace ROSE {
     const auto mask = 1 << m;
     if (b) m_flags |= mask;
     else m_flags &= ~mask;
+  }
+
+  bool Application::GetFlag(ApplicationFlag m) const noexcept {
+    const auto mask = 1 << m;
+    return m_flags & mask;
   }
 
 

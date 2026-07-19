@@ -50,6 +50,8 @@ namespace ROSE {
     virtual void FrameUpdate() {}
     /*!
      * @note Currently this doesn't get called but I'll get to that I promise
+     *
+     * @note ...or maybe not
      */
     virtual void FixedUpdate() {}
 
@@ -58,18 +60,31 @@ namespace ROSE {
      */
     virtual void Unpack(const ParamView &view) {}
 
+    /*!
+     *
+     */
+    virtual void OnEnable() {}
+
+    /*!
+     *
+     */
+    virtual void OnDisable() {}
+
+
   public:
     virtual UUID GetTypeID() const noexcept = 0;
 
     virtual ~Behavior() {}
     virtual void UnpackParameters(const ParamView &) {}
 
-    //Scene &GetScene() noexcept;
+    // Scene &GetScene() noexcept;
     Object &GetObject() noexcept;
 
   protected:
     UUID m_uuid;
     Object *m_object { nullptr };
+
+    bool m_enabled { true };
   };
 
   /**
@@ -85,10 +100,9 @@ namespace ROSE {
    * RegistrableBehavior can then be passed into your plugin's factory registry via MakeBehavior<T>.
    */
   template <class T>
-  concept RegistrableBehavior =
-      std::derived_from<T, Behavior> &&
-      std::default_initializable<T> &&
-      requires { { T::TypeID() } -> std::same_as<UUID>; };
+  concept RegistrableBehavior = std::derived_from<T, Behavior> && std::default_initializable<T> && requires {
+    { T::TypeID() } -> std::same_as<UUID>;
+  };
 
   using Behaviour = Behavior;
 

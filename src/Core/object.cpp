@@ -18,7 +18,7 @@ namespace ROSE {
   Object::Object(const char* _name) : Object(_name, {}, {}) {}
   Object::Object(const char* _name, const Transform &_transform) : Object(_name, _transform, {}) {}
   Object::Object(const char* _name, const Transform &_transform, List<UniquePtr<Behavior>> &&_behaviors) :
-    m_name(_name), m_transform(), m_pendingAdd(), m_pendingDestroy() {
+    m_name(_name), transform(), m_pendingAdd(), m_pendingDestroy() {
     for (auto &b : _behaviors) {
       m_behaviors.insert(UUID::Generate(), Move(b));
       std::terminate();

@@ -60,6 +60,33 @@ namespace ROSE {
     MemCpy(_Dst, _Src, Min(sizeof(T), sizeof(U)));
   } // TODO either remove the constexpr or inline `MemCpy`
 
+  /**
+      @brief  constexpr element-wise memcmp replacement; safe to call with null pointers
+      @tparam T     - element type; count is in elements, not bytes
+      @param  a     - left buffer (null compares less than non-null, equal to null)
+      @param  b     - right buffer
+      @param  count - number of elements to compare
+      @retval       - <0, 0 or >0 like memcmp
+  **/
+  template <typename T>
+  constexpr int MemCmp(const T *a, const T *b, size_t count) noexcept {
+    if (count == 0 || a == b) return 0;
+    if (!a) return -1;
+    if (!b) return 1;
+    for (size_t i = 0; i < count; ++i) {
+      if (a[i] != b[i]) {
+        // memcmp orders bytes as unsigned, so integral types compare unsigned here too
+        if constexpr (std::is_integral_v<T>) {
+          using U = std::make_unsigned_t<T>;
+          return U(a[i]) < U(b[i]) ? -1 : 1;
+        } else {
+          return a[i] < b[i] ? -1 : 1;
+        }
+      }
+    }
+    return 0;
+  }
+
 #pragma region Byte swapping
 
   constexpr uint16_t ByteSwap(uint16_t v) noexcept {

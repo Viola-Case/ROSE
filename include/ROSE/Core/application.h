@@ -43,37 +43,15 @@ namespace ROSE {
   constexpr ApplicationFlags APPLICATION_SERVER = static_cast<ApplicationFlags>(1) << static_cast<int>(ApplicationFlag::Server);
   constexpr ApplicationFlags APPLICATION_LIGHTWEIGHT = static_cast<ApplicationFlags>(1) << static_cast<int>(ApplicationFlag::Light);
   constexpr ApplicationFlags APPLICATION_SOFTWARE_RENDERER = static_cast<ApplicationFlags>(1) << static_cast<int>(ApplicationFlag::SoftwareRenderer);
-  constexpr ApplicationFlags APPLICATION_RICHPRESENCE = static_cast<ApplicationFlags>(1) << static_cast<int>(ApplicationFlag::RichPresence);
 
 
 
   class Scene;
-  // constexpr ApplicationFlags AAA_GAME = APPLICATION_DIRECTX
-  //
-  //
-  //
-  //
-  //  class Application;
-  //
-  //  class ApplicationManager {
-  //  public:
-  //    static void Close(AppID);
-  //    static void CloseAll();
-  //    static Application &GetApplication(AppID idx = 0);
-  //    static void LinkApplication(Application &app);
-  //  private:
-  //    static TypedHashMap<AppID, Application *> m_applications;
-  //  };
+
 
   class SceneManager;
 
-
-
   class Application final {
-    /**
-     * @todo probably just ditch this one
-     */
-    friend class ApplicationManager;
 
   public:
     Application();
@@ -94,13 +72,15 @@ namespace ROSE {
 
     List<Scene> &GetScenes() noexcept;
 
-
-
     void SetFlag(ApplicationFlag, bool) noexcept;
 
-  private:
+    bool GetFlag(ApplicationFlag) const noexcept;
+
+    bool LoadModule(StringView name) noexcept;
+
+  protected:
+
     String m_title { "game" };
-    ApplicationManager *m_parent { nullptr };
 
     List<Scene> m_scenes {};
     Scene *m_currentScene { nullptr };

@@ -10,8 +10,6 @@
 **/
 #pragma once
 
-// TODO make this PCH
-
 
 #include <ROSE/Core/buffer.h>
 #include <ROSE/Core/list.h>

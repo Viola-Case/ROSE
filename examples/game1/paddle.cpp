@@ -10,10 +10,13 @@
 **/
 
 #include "paddle.h"
+#include <ROSE/Core/time.h>
 #include <SDL3/SDL.h>
 
-constexpr double speed { 50. };
-constexpr int width { 50 };
+constexpr double speed { .02 };
+constexpr float width { 50.f };
+constexpr float height { 12.f };
+constexpr float margin { 20.f }; //!< gap between a paddle's center and its screen edge
 
 using namespace ROSE;
 Paddle::Paddle() noexcept : m_keyLeft(KeyCode::LEFT), m_keyRight(KeyCode::RIGHT), m_player(P1) {}
@@ -34,11 +37,35 @@ void Paddle::OnCreate() {
   }
 }
 
+void Paddle::OnStart() {
+  auto window = static_cast<SDL_Window *>(GetObject().GetScene().GetApplication().GetWindow());
+  SDL_GetWindowSize(window, &m_screenW, &m_screenH);
+  m_renderer = SDL_GetRenderer(window);
+
+  auto &pos = m_object->transform.position;
+  pos.x = m_screenW * 0.5;
+  pos.y = m_player == P1 ? m_screenH - margin : margin;
+}
+
 void Paddle::FrameUpdate() {
-  static int screenWidth {};
-  if (!screenWidth) {
-    auto w = static_cast<SDL_Window *>(GetObject().GetScene().GetApplication().GetWindow());
-    int h;
-    SDL_GetWindowSize(w, &screenWidth, &h);
-  }
+  auto &pos = m_object->transform.position;
+
+  double dir {};
+  if (InputSystem::GetKey(m_keyLeft)) dir -= 1.;
+  if (InputSystem::GetKey(m_keyRight)) dir += 1.;
+  pos.x += dir * speed * Time::deltaTime;
+
+  constexpr double half { width * 0.5 };
+  if (pos.x < half) pos.x = half;
+  if (pos.x > m_screenW - half) pos.x = m_screenW - half;
+
+  if (!m_renderer) return;
+  SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+  const SDL_FRect rect {
+    static_cast<float>(pos.x) - width * 0.5f,
+    static_cast<float>(pos.y) - height * 0.5f,
+    width,
+    height
+  };
+  SDL_RenderFillRect(m_renderer, &rect);
 }
