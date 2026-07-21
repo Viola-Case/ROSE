@@ -29,6 +29,8 @@ namespace ROSE {
   unsigned int GetVersion();
 
   String VersionStr(unsigned int version);
+
+  bool DebugCheckVersion(unsigned int version); //!< This is called by ROSE_CHECK_VERSION() macro
 } // namespace ROSE
 
 // const char *Rose_Versionnum_Str(unsigned int version);
@@ -36,3 +38,7 @@ namespace ROSE {
 #define ROSE_VERSION_STR        \
   ROSE_XSTR(ROSE_VERSION_MAJOR) \
   "." ROSE_XSTR(ROSE_VERSION_MINOR) "." ROSE_XSTR(ROSE_VERSION_PATCH)
+
+
+
+#define ROSE_CHECK_VERSION() ROSE::DebugCheckVersion(ROSE_VERSION)

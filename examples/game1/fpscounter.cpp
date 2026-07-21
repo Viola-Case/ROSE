@@ -9,11 +9,11 @@
 
 **/
 
+#define ROSE_LOGLEVELS_USE_NERDFONT_SYMBOLS
 #include "fpscounter.h"
 #include <ROSE/Core/time.h>
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
-
 constexpr float fontSize { 18.f };
 constexpr double refreshInterval { 0.25 }; //!< seconds between texture rebuilds
 constexpr const char *fontPath { "assets/font.ttf" };

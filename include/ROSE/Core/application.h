@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <ROSE/Core/rtl.h>
 #include <ROSE/Core/factory.h>
+#include <ROSE/Core/gfx.h>
 
 namespace ROSE {
   // using AppID = size_t;
@@ -27,7 +28,14 @@ namespace ROSE {
       Server = 2,
       Light = 3,
       SoftwareRenderer = 4,
-      RichPresence = 5,
+      ControllerSupport = 5,
+      NoSound = 6,
+      Vulkan = 7,
+      OpenGL = 8,
+      DirectX9 = 9,
+      Metal = 10,
+      DirectX11 = 11,
+      DirectX12 = 12,
     } value;
     constexpr ApplicationFlag(Value v) : value(v <= 63 ? v : throw "invalid ApplicationFlag") {}
     // constexpr ApplicationFlag(uint8_t v) noexcept : value(static_cast<Value>(v)) {}
@@ -39,15 +47,17 @@ namespace ROSE {
    */
   using ApplicationFlags = uint64_t;
   constexpr ApplicationFlags APPLICATION_HEADLESS = static_cast<ApplicationFlags>(1)
-                                                    << static_cast<int>(ApplicationFlag::Headless);
+                                                              << static_cast<int>(ApplicationFlag::Headless);
   constexpr ApplicationFlags APPLICATION_NO_RENDERER = static_cast<ApplicationFlags>(1)
-                                                       << static_cast<int>(ApplicationFlag::NoRenderer);
+                                                              << static_cast<int>(ApplicationFlag::NoRenderer);
   constexpr ApplicationFlags APPLICATION_SERVER = static_cast<ApplicationFlags>(1)
-                                                  << static_cast<int>(ApplicationFlag::Server);
+                                                              << static_cast<int>(ApplicationFlag::Server);
   constexpr ApplicationFlags APPLICATION_LIGHTWEIGHT = static_cast<ApplicationFlags>(1)
-                                                       << static_cast<int>(ApplicationFlag::Light);
+                                                              << static_cast<int>(ApplicationFlag::Light);
   constexpr ApplicationFlags APPLICATION_SOFTWARE_RENDERER = static_cast<ApplicationFlags>(1)
-                                                             << static_cast<int>(ApplicationFlag::SoftwareRenderer);
+                                                              << static_cast<int>(ApplicationFlag::SoftwareRenderer);
+  constexpr ApplicationFlags APPLICATION_CONTROLLER_SUPPORT = static_cast<ApplicationFlags>(1)
+                                                              << static_cast<int>(ApplicationFlag::ControllerSupport);
 
 
 
@@ -98,7 +108,7 @@ namespace ROSE {
 
     ApplicationFlags m_flags { 0 };
 
-    void *m_renderer { nullptr };
+    RenderBackend *m_renderer { nullptr };
 
     UniquePtr<SceneManager> m_manager {};
 

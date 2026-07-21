@@ -23,6 +23,8 @@ namespace ROSE {
    * the corruption-detection story is real. Until then: survive everything, detect nothing.
    *
    * @var m_node - pointer to a json node
+   *
+   * @todo Rename this to some sort of general JSON view or Node view or something
    */
   class ParamView {
   public:

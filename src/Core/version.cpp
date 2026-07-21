@@ -20,4 +20,10 @@ namespace ROSE {
       ROSE_VERSIONNUM_PATCH(v)
     );
   }
+
+  bool DebugCheckVersion(unsigned int v) {
+    if (ROSE_VERSION != ROSE::GetVersion()) {\
+      ROSE_LOG_FATAL("ROSE API version and linked version mismatch!");
+    }
+  }
 }

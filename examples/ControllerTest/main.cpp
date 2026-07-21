@@ -171,9 +171,6 @@ int main(int argc, char **argv) {
 
     if (keys[SDL_SCANCODE_ESCAPE]) quit = true;
 
-    //ImGui_ImplSDL3_NewFrame();
-    //ImGui::NewFrame();
-
     Vec2f GamepadLeft{InputSystem::GetStickAxes(GamepadStick::Left)};
     Vec2f GamepadRight{ InputSystem::GetStickAxes(GamepadStick::Right) };
     

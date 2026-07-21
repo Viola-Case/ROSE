@@ -1,3 +1,5 @@
+#define ROSE_LOGLEVELS_USE_NERDFONT_SYMBOLS
+
 #include <ROSE/ROSE.h>
 
 #include "applicationcloser.h"
@@ -36,6 +38,7 @@ int main() {
 
   Application Game("Game 1", 0, Move(scenes));
   Game.SetFlag(ApplicationFlag::SoftwareRenderer, 1);
+  Game.SetFlag(ApplicationFlag::ControllerSupport, 1);
 
   Game.Init();
 

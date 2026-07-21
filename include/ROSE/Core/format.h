@@ -31,10 +31,17 @@ namespace ROSE {
     return String(result.c_str());
   }
 
+
+  /*!
+   * Basically an implementation of std::println(std::format_string<Args...>, Args &&...args)
+   */
   template <typename... Args>
   void PrintF(const StringView fmt_str, Args &&...args) {
     PrintF(fmt_str, std::format_args(std::make_format_args(args...)));
   }
+  /*!
+   * Basically an implementation of std::println(std::format_string<Args...>, Args &&...args)
+   */
   template <typename... Args>
   void PrintF(const char *fmt_str, Args &&...args) {
     PrintF(fmt_str, std::format_args(std::make_format_args(args...)));
