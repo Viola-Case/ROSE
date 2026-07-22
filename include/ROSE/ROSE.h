@@ -19,6 +19,7 @@
 #include <ROSE/Core/macros.h>
 #include <ROSE/Core/rtl.h>
 #include <ROSE/Core/typetraits.h>
+#include <ROSE/Core/metadata.h>
 #include <ROSE/Core/uuid.h>
 #include <ROSE/Core/main.h>
 #include <ROSE/Core/version.h>

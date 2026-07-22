@@ -16,10 +16,10 @@
 
 using namespace ROSE;
 
-OpenGLBackend::OpenGLBackend(int majorVersion, int minorVersion)
+OpenGLRenderer::OpenGLRenderer(int majorVersion, int minorVersion)
     : m_versionMajor(majorVersion), m_versionMinor(minorVersion) {};
-OpenGLBackend::~OpenGLBackend() { SDL_GL_DestroyContext(static_cast<SDL_GLContext>(m_context)); }
-BackendStatus OpenGLBackend::Init(const RenderBackendContext &ctx) {
+OpenGLRenderer::~OpenGLRenderer() { SDL_GL_DestroyContext(static_cast<SDL_GLContext>(m_context)); }
+BackendStatus OpenGLRenderer::Init(const RenderBackendContext &ctx) {
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, m_versionMajor);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, m_versionMinor);
@@ -49,7 +49,19 @@ BackendStatus OpenGLBackend::Init(const RenderBackendContext &ctx) {
   glViewport(0, 0, ctx.width, ctx.height);
 }
 
-const char *OpenGLBackend::GetName() const {
+void OpenGLRenderer::Shutdown() {
+
+}
+
+void OpenGLRenderer::BeginFrame() {
+
+}
+
+void OpenGLRenderer::EndFrame() {
+
+}
+
+const char *OpenGLRenderer::GetName() const {
   static char name[16];
   if (!name[0]) {
     String v;
@@ -60,6 +72,6 @@ const char *OpenGLBackend::GetName() const {
   return name;
 }
 
-void *OpenGLBackend::GetNativeHandle() const {
+void *OpenGLRenderer::GetNativeHandle() const {
   return m_context;
 }

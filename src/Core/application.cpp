@@ -68,7 +68,7 @@ namespace ROSE {
 
         // maybe eventually figure out directx but maybe not
       } else {
-        m_renderer = new SoftwareRenderBackend();
+        m_renderer = new SoftwareRenderer();
       }
     }
 

@@ -24,6 +24,8 @@ namespace ROSE {
   bool DebugCheckVersion(unsigned int v) {
     if (ROSE_VERSION != ROSE::GetVersion()) {\
       ROSE_LOG_FATAL("ROSE API version and linked version mismatch!");
+      return false;
     }
+    return true;
   }
 }

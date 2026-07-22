@@ -64,15 +64,15 @@ namespace ROSE {
     virtual const char *GetName() const = 0; // for logs and humans
   };
 
-  class OpenGLBackend : public RenderBackend {
+  class OpenGLRenderer : public RenderBackend {
   public:
-    explicit OpenGLBackend(int majorVersion = 4, int minorVersion = 5);
-    ~OpenGLBackend();
+    explicit OpenGLRenderer(int majorVersion = 4, int minorVersion = 5);
+    ~OpenGLRenderer();
 
-    OpenGLBackend(const OpenGLBackend &) = delete;
-    OpenGLBackend(OpenGLBackend &&) = delete;
-    OpenGLBackend &operator=(const OpenGLBackend &) = delete;
-    OpenGLBackend &operator=(OpenGLBackend &&) = delete;
+    OpenGLRenderer(const OpenGLRenderer &) = delete;
+    OpenGLRenderer(OpenGLRenderer &&) = delete;
+    OpenGLRenderer &operator=(const OpenGLRenderer &) = delete;
+    OpenGLRenderer &operator=(OpenGLRenderer &&) = delete;
 
     BackendStatus Init(const RenderBackendContext &) override;
     void Shutdown() override;
@@ -82,20 +82,22 @@ namespace ROSE {
     void OnResize(int width, int height) override;
     void *GetNativeHandle() const override;
     const char *GetName() const override;
+
+    void UpdateBuffers();
   protected:
     void *m_context;
     int m_versionMajor;
     int m_versionMinor;
   };
 
-  class SoftwareRenderBackend : public RenderBackend {
+  class SoftwareRenderer : public RenderBackend {
   public:
-    SoftwareRenderBackend();
-    ~SoftwareRenderBackend() override;
-    SoftwareRenderBackend(const SoftwareRenderBackend &) = delete;
-    SoftwareRenderBackend(SoftwareRenderBackend &&) = delete;
-    SoftwareRenderBackend &operator=(const SoftwareRenderBackend &) = delete;
-    SoftwareRenderBackend &operator=(SoftwareRenderBackend &&) = delete;
+    SoftwareRenderer();
+    ~SoftwareRenderer() override;
+    SoftwareRenderer(const SoftwareRenderer &) = delete;
+    SoftwareRenderer(SoftwareRenderer &&) = delete;
+    SoftwareRenderer &operator=(const SoftwareRenderer &) = delete;
+    SoftwareRenderer &operator=(SoftwareRenderer &&) = delete;
 
     BackendStatus Init(const RenderBackendContext &) override;
     void Shutdown() override;
