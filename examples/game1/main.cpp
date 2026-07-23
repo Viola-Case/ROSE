@@ -5,6 +5,7 @@
 #include "applicationcloser.h"
 #include "fpscounter.h"
 #include "paddle.h"
+#include "ball.h"
 
 #include <fstream>
 #include <sstream>
@@ -17,7 +18,8 @@ int main() {
     Pair<FactoryFn, UUID> fns[] {
       { MakeBehavior<AppCloser>, AppCloser::TypeID() },
       { MakeBehavior<Paddle>, Paddle::TypeID() },
-      { MakeBehavior<FpsCounter>, FpsCounter::TypeID() }
+      { MakeBehavior<FpsCounter>, FpsCounter::TypeID() },
+      { MakeBehavior<Ball>, Ball::TypeID() }
     };
     for (const auto &p : fns)
       factory.Register(p.first, p.second, "Game1");
@@ -36,11 +38,15 @@ int main() {
   }
   scenes.push_back(Scene::FromJSONString(sceneJSON));
 
-  Application Game("Game 1", 0, Move(scenes));
+  Application &Game = *new Application("Game 1", 0, Move(scenes));
   Game.SetFlag(ApplicationFlag::SoftwareRenderer, 1);
   Game.SetFlag(ApplicationFlag::ControllerSupport, 1);
 
   Game.Init();
 
   Game.Run();
+
+  delete &Game;
+
+  return 0;
 }

@@ -1,38 +1,25 @@
 /**
 
-  @file       fpscounter.h
-  @brief
+  @file       ball.h
+  @brief      
   @details    ~
   @author     Viola Case
-  @date       19.07.2026
+  @date       22.07.2026
   @copyright  © Viola Case, 2026. All rights reserved.
-
+  
 **/
 #pragma once
 
 #include <ROSE/ROSE.h>
 
-struct SDL_Renderer;
-struct SDL_Texture;
-struct TTF_Font;
-
 using namespace ROSE;
 
-class FpsCounter : public Behavior {
+class Ball : public Behavior {
 public:
-  static constexpr UUID typeID = "995243d320724db5-5fabb4eb31659861"_uuid;
+  static constexpr UUID typeID = "8dbf834ef011a57f-a9bf2a7d82659778"_uuid;
   static constexpr UUID TypeID() noexcept { return typeID; }
   UUID GetTypeID() const noexcept override { return TypeID(); }
-
 protected:
   void OnStart() override;
   void FrameUpdate() override;
-
-private:
-
-  double m_tAccum {};
-  int m_fAccum {};
-
-  double m_fps {};
-
 };
