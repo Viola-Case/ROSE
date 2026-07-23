@@ -29,7 +29,7 @@ namespace ROSE {
    * `OnStart` may reach out to other behaviors
    *
    * To summarize,
-   * Phase one: touch only yourself. Phase two: reach across and touch your neighbors.
+   * Phase one: touch only yourself. Phase two: reach across and touch your neighbors. (heh)
    */
   class Behavior {
     friend class Object;

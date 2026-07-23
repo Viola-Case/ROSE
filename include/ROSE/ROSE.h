@@ -45,3 +45,4 @@
 #include <ROSE/Core/asset.h>
 #include <ROSE/Core/surface.h>
 #include <ROSE/Core/factory.h>
+#include <ROSE/Core/time.h>

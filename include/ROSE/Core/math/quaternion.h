@@ -14,6 +14,7 @@
 
 #include <ROSE/Core/math/complex.h>
 #include <ROSE/Core/math/vector.h>
+#include <ROSE/Core/math/mathfunctions.h>
 
 namespace ROSE::math {
   enum class EulerOrder {
@@ -102,6 +103,32 @@ namespace ROSE::math {
 
     static constexpr Quat<T> Identity() {
       return Quat<T> { 1, 0, 0, 0 };
+    }
+
+    constexpr T Norm() const noexcept {
+      return Sqrt(w * w + x * x + y * y + z * z);
+    }
+
+    /*!
+     * Rescales to unit length in place. Only unit quaternions represent a
+     * rotation, and repeated products drift off the unit sphere, so anything
+     * accumulating rotations needs to renormalize periodically. A degenerate
+     * quaternion collapses to identity rather than producing NaNs.
+     */
+    constexpr Quat &Normalize() noexcept {
+      const T n = Norm();
+      if (!(n > T(0))) return (*this = Identity());
+      const T inv = T(1) / n;
+      w *= inv;
+      x *= inv;
+      y *= inv;
+      z *= inv;
+      return *this;
+    }
+
+    constexpr Quat Normalized() const noexcept {
+      Quat result(*this);
+      return result.Normalize();
     }
 
     constexpr Quat &operator*=(const Quat &rhs) noexcept {

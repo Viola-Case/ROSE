@@ -22,8 +22,10 @@ namespace ROSE {
     UUID GetTypeID() const noexcept override { return TypeID(); }
 
   protected:
-    math::Vec2<int16_t> m_aspectRatio;                 //!< I should probably make this just a single float
-    [[bounds({ 0, inf })]] float m_focalLength { 30 }; //!< millimeters
+    math::Vec2<int16_t> m_aspectRatio; //!< I should probably make this just a single float
+    // [[bounds({ 0, inf })]] <--- I really need to figure out what the hell im gonna do with these attributes because
+    // there ain't no clear answer
+    float m_focalLength { 30 }; //!< millimeters
     bool m_orthographic { false };
     void Unpack(const ParamView &view) override;
   };

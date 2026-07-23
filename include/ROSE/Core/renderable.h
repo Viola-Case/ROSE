@@ -18,7 +18,7 @@ namespace ROSE {
     Mesh,
     UI,
     InstancedMesh,
-    
+    Rect
   };
 
   class Renderable : public Behavior {
