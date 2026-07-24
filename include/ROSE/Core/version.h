@@ -13,6 +13,8 @@
 #include <ROSE/Core/macros.h>
 #include <ROSE/Core/rtl.h>
 
+// so anyway I stole basically all of this from SDL
+
 #define ROSE_VERSION_MAJOR 0
 #define ROSE_VERSION_MINOR 1
 #define ROSE_VERSION_PATCH 5

@@ -59,7 +59,6 @@ namespace ROSE {
 
     virtual void OnResize(int width, int height) = 0;
 
-    // The fire exit, clearly labeled:
     virtual void *GetNativeHandle() const = 0;
     virtual const char *GetName() const = 0; // for logs and humans
   };

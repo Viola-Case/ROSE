@@ -48,7 +48,7 @@ extern "C" void RoseRegisterCoreModule(BehaviorFactory &factory) {
    * If I rearrange BehaviorFactory this part fucks up. Need to come up with a better way without making it accessible
    * anywhere.
    *
-   * It grabs factory::m_registeredModules which is a private member.
+   * PSA don't do this
    */
   List<String> &l = *reinterpret_cast<List<String> *>(&factory);
   List<Pair<FactoryFn, UUID>> fns {
@@ -66,4 +66,5 @@ extern "C" void RoseRegisterCoreModule(BehaviorFactory &factory) {
       break;
     }
   }
+  l.push_back("Core");
 }

@@ -40,7 +40,7 @@ namespace ROSE {
   UniquePtr<Behavior> MakeBehavior() { return MakeUnique<T>(); }
 
   class BehaviorFactory {
-    List<String> m_registeredModules {"Core"};
+    List<String> m_registeredModules {};
     TypedHashMap<UUID, FactoryFn> m_factoryFunctions{};
     TypedHashMap<UUID, String> m_behaviorLegend{};
   public:

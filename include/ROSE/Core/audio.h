@@ -11,6 +11,7 @@
 #pragma once
 
 namespace ROSE {
+
   class AudioTrack {
   public:
     AudioTrack();
@@ -21,6 +22,9 @@ namespace ROSE {
     void *m_track{nullptr};
   };
 
+  /*!
+   * This doesn't work yet.
+   */
   class AudioSystem {
     void *m_mixer{nullptr};
     TypedHashMap<UUID, AudioTrack> m_tracks{};

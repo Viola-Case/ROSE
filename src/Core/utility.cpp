@@ -98,34 +98,16 @@ namespace ROSE {
   }
 
 
+  // this is a really dumb implementation but it's mine and i love it anyway
   UUID UUID::Generate() noexcept {
-
-    ++s_counter;
-
-    const uint64_t counter = s_counter.fetch_add(1, std::memory_order_relaxed);
-
-    // Returns the number of ticks. This is the reason this generation system is extremely unlikely to result in
-    // collisions.
-    uint64_t ticks = __rdtsc();
-
-    const auto tempcounter = counter + ticks;
-    return UUID { FNV1A128(&tempcounter, sizeof(tempcounter)) };
-  }
-
-
-
-  UUID UUID::Generate(const char *str) noexcept {
-
-    const uint64_t counter = s_counter.fetch_add(1, std::memory_order_relaxed);
+    /* Returns the number of ticks. This is the reason this generation system is extremely unlikely to result in
+     * collisions.
+     * @note Callers should probably be single-threaded: two cores reading the TSC at the same instant get the same
+     * value, and there is no longer a tie-breaker to separate them. */
     const uint64_t ticks = __rdtsc();
-    const size_t len = str ? StrLen(str) : 0;
 
-    FNV1A128State state = FNV1A128Begin();
-    FNV1A128Update(state, &counter, sizeof(counter));
-    FNV1A128Update(state, &ticks, sizeof(ticks));
-    if (len > 0) {
-      FNV1A128Update(state, str, len);
-    }
-    return UUID { FNV1A128Finalize(state) };
+    return UUID { FNV1A128(&ticks, sizeof(ticks)) };
   }
+
+
 } // namespace ROSE

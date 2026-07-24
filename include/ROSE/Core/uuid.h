@@ -16,8 +16,6 @@
 
 namespace ROSE {
   struct UUID {
-    static inline Atomic<uint64_t> s_counter { 0 };
-
     constexpr UUID() = default;
     constexpr UUID(const UUID &) = default;
     constexpr UUID(uint128_t val) noexcept : value(val) {}
@@ -35,8 +33,6 @@ namespace ROSE {
     }
 
     [[nodiscard]] static UUID Generate() noexcept;
-
-    [[nodiscard]] static UUID Generate(const char *str) noexcept;
 
     constexpr static UUID Invalid() noexcept { return {}; }
   };
