@@ -29,7 +29,8 @@
 ## Examples
 - [ ] Game 1: Pong
   - [x] Paddles move
-  - [ ] Ball
+  - [x] Ball
+  - [ ] Scoring system
 - [ ] Game 2: Visual novel
 - [ ] Game 3: [Santa vs the Children](https://viola-case.itch.io/santa-vs-the-children) (or similar)
 - [ ] Game 4: 3D environment

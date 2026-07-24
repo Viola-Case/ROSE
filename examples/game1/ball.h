@@ -24,4 +24,5 @@ protected:
   void FrameUpdate() override;
   void *m_renderer{nullptr};
   Motion *m_motion{nullptr};
+  Object *m_paddles[2]{nullptr, nullptr};
 };

@@ -22,6 +22,9 @@ public:
   static constexpr UUID typeID = "bceacc50f13cee94-7dbb93fec8659973"_uuid;
   static constexpr UUID TypeID() noexcept { return typeID; }
   UUID GetTypeID() const noexcept override { return TypeID(); }
+
+  static constexpr float width { 120.f };
+  static constexpr float height { 24.f };
 protected:
   void Unpack(const ParamView &view) override;
   void OnCreate() override;

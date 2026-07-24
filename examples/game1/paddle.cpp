@@ -14,8 +14,8 @@
 #include <SDL3/SDL.h>
 
 constexpr double speed { 500 };
-constexpr float width { 120.f };
-constexpr float height { 24.f };
+constexpr float width { Paddle::width };
+constexpr float height { Paddle::height };
 constexpr float margin { 24.f }; //!< gap between a paddle's center and its screen edge
 
 using namespace ROSE;
