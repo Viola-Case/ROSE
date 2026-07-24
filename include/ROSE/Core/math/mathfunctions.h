@@ -68,6 +68,61 @@ namespace ROSE::math {
       const float r = v * y;
       return 0.5f * (r + v / r);
     }
+
+    /*!
+     * Sine and cosine together, for the constant-evaluated path only.
+     *
+     * `std::sin`/`std::cos` are not constexpr until C++26 and Clang will not
+     * fold `__builtin_sin` in a constant expression either, so compile-time
+     * evaluation reduces the argument into \f$[-\pi/4, \pi/4]\f$ and sums a
+     * Taylor series there. \f$\pi/2\f$ is split into a high part with its low
+     * mantissa bits zeroed and a correction term (Cody–Waite), so \f$k\cdot
+     * \text{hi}\f$ stays exact and the subtraction keeps the argument's low
+     * bits. The engine's @ref ROSE::math::PI is only float-precise (see the
+     * note in `constants.h`) and would poison the reduction, so full-precision
+     * literals live here instead.
+     *
+     * Both are returned at once because the quadrant dispatch computes them from
+     * the same reduced polynomial; @ref Sin, @ref Cos and @ref Tan all read from
+     * this. Accurate to within a couple of ulps for arguments up to roughly
+     * \f$2^{20}\f$; beyond that the reduction loses low bits, in the same spirit
+     * as @ref SqrtConst — the runtime builtins are the accurate path.
+     */
+    struct SinCosPair {
+      double sin;
+      double cos;
+    };
+    constexpr SinCosPair SinCosConst(double v) noexcept {
+      if (v != v) return {v, v};                                          // NaN in, NaN out
+      if (v < 0.0) { const SinCosPair r = SinCosConst(-v); return {-r.sin, r.cos}; } // sin odd, cos even
+      if (v > MAXFINITE64) return {__builtin_nan(""), __builtin_nan("")}; // ±∞ → NaN
+
+      constexpr double INVPIO2 = 0.636619772367581382433;    // 2/π
+      constexpr double PIO2_HI = 1.57079632673412561417;     // π/2, high part (low mantissa bits zero)
+      constexpr double PIO2_LO = 6.07710050650619224932e-11; // π/2 − PIO2_HI
+
+      const long long k = static_cast<long long>(v * INVPIO2 + 0.5);
+      const double kd = static_cast<double>(k);
+      const double r = (v - kd * PIO2_HI) - kd * PIO2_LO; // r ∈ [−π/4, π/4]
+      const double r2 = r * r;
+
+      // Taylor on [−π/4, π/4], Horner form. Enough terms for near-double accuracy.
+      const double s =
+        r * (1.0 + r2 * (-1.66666666666666666e-01 + r2 * (8.33333333333333333e-03 +
+        r2 * (-1.98412698412698413e-04 + r2 * (2.75573192239858907e-06 +
+        r2 * (-2.50521083854417188e-08 + r2 * 1.60590438368216146e-10))))));
+      const double c =
+        1.0 + r2 * (-5.00000000000000000e-01 + r2 * (4.16666666666666667e-02 +
+        r2 * (-1.38888888888888889e-03 + r2 * (2.48015873015873016e-05 +
+        r2 * (-2.75573192239858907e-07 + r2 * 2.08767569878680990e-09)))));
+
+      switch (k & 3) {                 // which quarter-turn the reduction stepped through
+        case 0:  return { s,  c};
+        case 1:  return { c, -s};
+        case 2:  return {-s, -c};
+        default: return {-c,  s};
+      }
+    }
   } // namespace detail
 
   /*!
@@ -104,5 +159,53 @@ namespace ROSE::math {
   constexpr const T &Max(const T &a, const T &b) noexcept
     requires(std::is_arithmetic_v<T>)
   { return (a < b ? b : a); }
+
+  /*!
+   * Trigonometric functions usable in a constant expression.
+   *
+   * Like @ref Sqrt, each branches on `__builtin_is_constant_evaluated()`: at
+   * runtime it lowers to the hardware/libm intrinsic (`__builtin_sin` and
+   * friends), which is the accurate path; at compile time it falls back to the
+   * manual range-reduce-and-Taylor implementation in @ref detail::SinCosConst.
+   * Arguments are in radians.
+   *
+   * @warning As with @ref Sqrt, the two paths need not agree in the last bit,
+   *          and the compile-time path loses accuracy for very large arguments.
+   *          Don't `static_assert` a folded result against a decimal literal.
+   */
+  constexpr double Sin(double value) noexcept {
+    if (__builtin_is_constant_evaluated()) return detail::SinCosConst(value).sin;
+    return __builtin_sin(value);
+  }
+  constexpr float Sin(float value) noexcept {
+    if (__builtin_is_constant_evaluated()) return static_cast<float>(detail::SinCosConst(value).sin);
+    return __builtin_sinf(value);
+  }
+  constexpr double Cos(double value) noexcept {
+    if (__builtin_is_constant_evaluated()) return detail::SinCosConst(value).cos;
+    return __builtin_cos(value);
+  }
+  constexpr float Cos(float value) noexcept {
+    if (__builtin_is_constant_evaluated()) return static_cast<float>(detail::SinCosConst(value).cos);
+    return __builtin_cosf(value);
+  }
+  constexpr double Tan(double value) noexcept {
+    if (__builtin_is_constant_evaluated()) {
+      const detail::SinCosPair sc = detail::SinCosConst(value);
+      return sc.sin / sc.cos;
+    }
+    return __builtin_tan(value);
+  }
+  constexpr float Tan(float value) noexcept {
+    if (__builtin_is_constant_evaluated()) {
+      const detail::SinCosPair sc = detail::SinCosConst(value);
+      return static_cast<float>(sc.sin / sc.cos);
+    }
+    return __builtin_tanf(value);
+  }
+
+
+
+
 
 } // namespace ROSE::math

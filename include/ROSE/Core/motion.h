@@ -17,6 +17,17 @@ namespace ROSE {
     static constexpr UUID typeID = "ab0a57d02d8e9fde-462c4cdfe26597d3"_uuid;
     static constexpr UUID TypeID() noexcept { return typeID; }
     UUID GetTypeID() const noexcept override { return TypeID(); }
+
+    void SetVelocity(const Vec3d &);
+    void SetAcceleration(const Vec3d &);
+    void SetAngularVelocity(const Vec3d &);
+    void SetAngularAcceleration(const Vec3d &);
+
+    Vec3d &GetVelocity() noexcept;
+    Vec3d &GetAcceleration() noexcept;
+    Vec3d &GetAngularVelocity() noexcept;
+    Vec3d &GetAngularAcceleration() noexcept;
+
   protected:
     Vec3d m_drdt{}; //!< \f$\dv{\overset{\rightharpoonup}{r}}{t}\f$
     Vec3d m_dTdt{}; //!< \f$\dv{\overset{\rightharpoonup}{\theta}}{t}\f$

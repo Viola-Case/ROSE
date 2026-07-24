@@ -11,13 +11,13 @@
 - [ ] Mesh loading
   - [ ] Or really any sort of functional 3D graphics at all
 - [ ] Working audio API
-- 
 
 ## Tools
 - [ ] Editor
   - [ ] Scene preview viewport
   - [ ] Camera view
   - [ ] Object maker
+  - [ ] Bundled compiler
 - [ ] UUID generator 
 
 ## Plugins

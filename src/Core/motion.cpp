@@ -41,4 +41,13 @@ namespace ROSE {
       tran.rotation.Normalize();
     }
   }
+
+  void Motion::SetVelocity(const Vec3d &v) { m_drdt = v; }
+  void Motion::SetAcceleration(const Vec3d &a) { m_d2rdt2 = a; }
+  void Motion::SetAngularVelocity(const Vec3d &v) { m_dTdt = v; }
+  void Motion::SetAngularAcceleration(const Vec3d &a) { m_d2Tdt2 = a; }
+  Vec3d &Motion::GetVelocity() noexcept { return m_drdt; }
+  Vec3d &Motion::GetAcceleration() noexcept { return m_d2rdt2; }
+  Vec3d &Motion::GetAngularVelocity() noexcept { return m_dTdt; }
+  Vec3d &Motion::GetAngularAcceleration() noexcept { return m_d2Tdt2; }
 } // namespace ROSE

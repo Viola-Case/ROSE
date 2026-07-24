@@ -50,21 +50,21 @@ namespace ROSE {
 
     template <class B>
       requires std::is_base_of_v<Behavior, B>
-    Behavior *FindBehavior() noexcept {
+    B *FindBehavior() noexcept {
       constexpr auto tID = B::TypeID();
-      if (auto it = m_behaviors.find(tID); it != m_behaviors.end())
-        return it->second.get();
+      if (auto it = m_behaviors.find(tID); it != m_behaviors.end()) return static_cast<B *>(it->second.get());
       return nullptr;
     }
 
     Scene &GetScene() const noexcept;
+
   private:
     void OnStart() noexcept;
     void FrameUpdate() noexcept;
 
     void AddBehavior(UniquePtr<Behavior> &&behavior);
 
-    template<BehaviorType B>
+    template <BehaviorType B>
     void DestroyBehavior() {
       constexpr auto tID = B::TypeID();
       m_pendingDestroy.push_back(tID);
@@ -85,10 +85,8 @@ namespace ROSE {
 
     Scene *m_scene { nullptr };
     Object *m_parent { nullptr };
+
   public:
-    Transform transform {
-      {0,0,0},
-      {1,0,0,0}
-    };
+    Transform transform { { 0, 0, 0 }, { 1, 0, 0, 0 } };
   };
 } // namespace ROSE

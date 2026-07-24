@@ -290,7 +290,7 @@ it is worth remembering before someone puts a `Vec` batch in a map.
 | `utility.h:59` | `SmartMemCpy(dst, src, count)` ignores `count` entirely; it copies `Min(sizeof(T), sizeof(U))` bytes once |
 | `string.h:173` | `at()`'s bounds check is commented out — it is `operator[]` with a different name |
 | `bigint.h:27` | The non-`__int128` fallback is a hard `#error`, so MSVC cannot compile the RTL at all |
-| `mathfunctions.h` | `Sqrt` relies on `__builtin_sqrt`/`__builtin_bit_cast`/`__builtin_is_constant_evaluated` with no MSVC path |
+| `mathfunctions.h` | `Sqrt` (and `Sin`/`Cos`/`Tan`) rely on `__builtin_*` — `__builtin_sqrt`/`sin`/`cos`/`tan`, `__builtin_bit_cast`, `__builtin_is_constant_evaluated` — with no MSVC path |
 | `mathenum.h:62` | `LeviCivita`'s `static_assert` message still says `cse::math::` |
 | `utility.h` vs `mathfunctions.h` | Two different `Min`/`Max` pairs; ambiguous if both namespaces are in scope |
 | `hashmap.h:306` | `TypedHashMap::insert`/`emplace` probe twice per insert (once to insert, once to build the returned iterator) |

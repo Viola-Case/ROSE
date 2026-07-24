@@ -54,7 +54,8 @@ extern "C" void RoseRegisterCoreModule(BehaviorFactory &factory) {
   List<Pair<FactoryFn, UUID>> fns {
     { MakeBehavior<Camera>, Camera::TypeID() },
     { MakeBehavior<AudioSource>, AudioSource::TypeID() },
-    { MakeBehavior<Renderable>, Renderable::TypeID() }
+    { MakeBehavior<Renderable>, Renderable::TypeID() },
+    { MakeBehavior<Motion>, Motion::TypeID() },
   };
   for (const auto &p : fns) {
     switch (factory.Register(p.first, p.second, "Core")) {

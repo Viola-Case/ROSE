@@ -292,6 +292,10 @@ template <StdScalar T> constexpr T Clamp(T value, T min, T max) noexcept;
 constexpr double Sqrt(double) noexcept;
 constexpr float  Sqrt(float)  noexcept;
 
+constexpr double Sin(double)  noexcept;   constexpr float Sin(float) noexcept;
+constexpr double Cos(double)  noexcept;   constexpr float Cos(float) noexcept;
+constexpr double Tan(double)  noexcept;   constexpr float Tan(float) noexcept;
+
 template <T> constexpr const T& Min(const T& a, const T& b) noexcept requires std::is_arithmetic_v<T>;
 template <T> constexpr const T& Max(const T& a, const T& b) noexcept requires std::is_arithmetic_v<T>;
 ```
@@ -314,12 +318,27 @@ the constant-evaluated path is **not always** — `Sqrt(2.0)` folds to
 (`static_assert(Sqrt(4.0) == 2.0)` holds). Don't `static_assert` a constant-folded
 `Sqrt` against a decimal literal you got from elsewhere.
 
+`Sin`/`Cos`/`Tan` follow the exact same `__builtin_is_constant_evaluated()`
+pattern: at runtime they lower to `__builtin_sin`/`cos`/`tan` (+`f` variants),
+which match libm bit-for-bit; at compile time they go through a shared
+`detail::SinCosConst`, which does Cody–Waite range reduction into
+\f$[-\pi/4, \pi/4]\f$ and a Horner-form Taylor series, returning sin and cos
+together (the quadrant dispatch produces both; `Tan` is `sin/cos`). Arguments are
+in **radians**. Note the reduction uses full-precision π/2 literals baked into
+`SinCosConst`, **not** `math::PI` — `math::PI` is only float-precise (see #8) and
+would poison it. Same accuracy caveat as `Sqrt`: the two paths need not agree in
+the last bit (constexpr `Sin(2.0)` is ~1 ulp off libm), and the compile-time path
+loses low bits for very large arguments (roughly beyond \f$2^{20}\f$). Verified:
+`static_assert(Sin(0.0) == 0.0)` and `Cos(0.0) == 1.0` hold; constexpr errors stay
+≤ ~1 ulp, including `Sin(100.0)` after reduction.
+
 ⚠️ `math::Min`/`Max` and `ROSE::Min`/`Max` (from `utility.h`) both exist, with
 different signatures — `ROSE::` takes by value and is unconstrained, `math::`
 takes by const reference and requires an arithmetic type. With both namespaces in
 scope an unqualified call is ambiguous.
 
-Missing: `Abs`, `Floor`/`Ceil`/`Round`, `Lerp`, `Pow`, trig, `ToRadians`/`ToDegrees`.
+Missing: `Abs`, `Floor`/`Ceil`/`Round`, `Lerp`, `Pow`, inverse trig
+(`Asin`/`Acos`/`Atan`/`Atan2`), `ToRadians`/`ToDegrees`.
 
 ---
 
@@ -379,6 +398,7 @@ and `hashmap.cpp` both reach into `math::` for them.
 | quaternion product, normalize, axis-angle, from-euler | ✅ |
 | quaternion inverse / slerp / rotate-a-vector / to-euler | ❌ |
 | `constexpr` sqrt | ✅ `math::Sqrt` |
+| `constexpr` sin / cos / tan | ✅ `math::Sin`/`Cos`/`Tan` (radians; runtime builtin, constexpr fallback) |
 | clamp / min / max | ✅ (mind the `ROSE::` vs `math::` overload clash) |
-| abs, floor, lerp, trig, deg↔rad | ❌ |
+| abs, floor, lerp, deg↔rad, inverse trig | ❌ |
 | π to double precision | ❌ `math::PI` is float-precision |
