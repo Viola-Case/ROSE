@@ -22,4 +22,6 @@ public:
 protected:
   void OnStart() override;
   void FrameUpdate() override;
+  void *m_renderer{nullptr};
+  Motion *m_motion{nullptr};
 };

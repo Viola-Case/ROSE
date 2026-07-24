@@ -15,6 +15,7 @@ int main() {
 
   {
     BehaviorFactory &factory = BehaviorFactory::get();
+    RoseRegisterCoreModule(factory);
     Pair<FactoryFn, UUID> fns[] {
       { MakeBehavior<AppCloser>, AppCloser::TypeID() },
       { MakeBehavior<Paddle>, Paddle::TypeID() },

@@ -1,23 +1,75 @@
 /**
 
   @file       ball.cpp
-  @brief      
+  @brief
   @details    ~
   @author     Viola Case
   @date       22.07.2026
   @copyright  © Viola Case, 2026. All rights reserved.
-  
+
 **/
 
 #include "ball.h"
 #include "paddle.h"
+#include <random>
+#include <SDL3/SDL.h>
 
 using namespace ROSE;
 
-void Ball::OnStart() {
+constexpr float size { 10 };
+constexpr double speed {300.};
 
+
+namespace {
+  int w {}, h {};
+}
+
+void Ball::OnStart() {
+  auto window = static_cast<SDL_Window *>(m_object->GetScene().GetApplication().GetWindow());
+  m_renderer = SDL_GetRenderer(window);
+  SDL_GetWindowSize(window, &w, &h);
+
+
+  static std::random_device rd;
+  static std::mt19937 gen(rd());
+  static std::uniform_real_distribution<> dis(-3. / 8. * math::PI, 3. / 8. * math::PI);
+  static std::uniform_int_distribution<> intdis(0, 127);
+
+  auto &pos = m_object->transform.position;
+
+  pos.x = std::uniform_real_distribution<>{0, (double) w}(gen);
+  pos.y = h/2;
+
+  auto angle = dis(gen);
+  auto dir = intdis(gen) % 2 == 0 ? -1. : 1.;
+
+  m_motion = m_object->FindBehavior<Motion>();
+  if (!m_motion) {
+    ROSE_LOG_ERROR("Motion object not found!");
+    return;
+  }
+  Vec3d v { math::Cos(angle) * dir, math::Sin(angle) * dir, 0 };
+  m_motion->SetVelocity(v * speed);
 }
 
 void Ball::FrameUpdate() {
+  auto &pos = m_object->transform.position;
 
+  if (m_motion) {
+    auto &v = m_motion->GetVelocity();
+    if (v.x > 0 && pos.x >= w || v.x < 0 && pos.x <= 0) {
+      v.x *= -1;
+    }
+  }
+
+  if (!m_renderer) {return;}
+  auto renderer = static_cast<SDL_Renderer *>(m_renderer);
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+  const SDL_FRect rect {
+    static_cast<float>(pos.x) - size * 0.5f,
+    static_cast<float>(pos.y) - size * 0.5f,
+    size,
+    size
+  };
+  SDL_RenderFillRect(renderer, &rect);
 }
