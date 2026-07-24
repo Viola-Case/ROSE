@@ -18,7 +18,6 @@ constexpr double refreshInterval { .125 };
 using namespace ROSE;
 
 void FpsCounter::OnStart() {
-
 }
 
 void FpsCounter::FrameUpdate() {
@@ -29,8 +28,10 @@ void FpsCounter::FrameUpdate() {
     m_fAccum = 0;
     m_tAccum = 0;
   }
-  if (ImGui::Begin("FPS")) {
-    ImGui::Text("%s", Format("FPS: {:.2f}", m_fps).c_str());
+  ImGui::SetNextWindowBgAlpha(.5f);
+
+  if (ImGui::Begin("FPS", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar)) {
+    ImGui::Text("%s", Format("FPS: {:.1f}", m_fps).c_str());
     ImGui::End();
   }
 }

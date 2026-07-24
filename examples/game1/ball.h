@@ -22,6 +22,7 @@ public:
 protected:
   void OnStart() override;
   void FrameUpdate() override;
+  void Reset();
   void *m_renderer{nullptr};
   Motion *m_motion{nullptr};
   Object *m_paddles[2]{nullptr, nullptr};

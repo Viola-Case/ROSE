@@ -25,15 +25,10 @@ namespace {
   int w {}, h {};
 }
 
-void Ball::OnStart() {
-  auto window = static_cast<SDL_Window *>(m_object->GetScene().GetApplication().GetWindow());
-  m_renderer = SDL_GetRenderer(window);
-  SDL_GetWindowSize(window, &w, &h);
-
-
+void Ball::Reset() {
   static std::random_device rd;
   static std::mt19937 gen(rd());
-  static std::uniform_real_distribution<> dis(-3. / 8. * math::PI, 3. / 8. * math::PI);
+  static std::uniform_real_distribution<> dis(1. / 8. * math::PI, 7. / 8. * math::PI);
   static std::uniform_int_distribution<> intdis(0, 127);
 
   auto &pos = m_object->transform.position;
@@ -51,6 +46,14 @@ void Ball::OnStart() {
   }
   Vec3d v { math::Cos(angle) * dir, math::Sin(angle) * dir, 0 };
   m_motion->SetVelocity(v * speed);
+}
+
+void Ball::OnStart() {
+  auto window = static_cast<SDL_Window *>(m_object->GetScene().GetApplication().GetWindow());
+  m_renderer = SDL_GetRenderer(window);
+  SDL_GetWindowSize(window, &w, &h);
+
+  this->Reset();
 
   auto &scene = m_object->GetScene();
   m_paddles[0] = scene.FindObjectByName("Paddle1");
@@ -61,6 +64,10 @@ void Ball::FrameUpdate() {
   auto &pos = m_object->transform.position;
 
   if (m_motion) {
+
+    if (InputSystem::GetKeyDown(KeyCode::R))
+      this->Reset();
+
     auto &v = m_motion->GetVelocity();
     if (v.x > 0 && pos.x >= w || v.x < 0 && pos.x <= 0) {
       v.x *= -1;

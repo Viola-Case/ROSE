@@ -1,5 +1,3 @@
-#define ROSE_LOGLEVELS_USE_NERDFONT_SYMBOLS
-
 #include <ROSE/ROSE.h>
 
 #include "applicationcloser.h"

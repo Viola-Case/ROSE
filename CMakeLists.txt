@@ -1,6 +1,21 @@
 cmake_minimum_required(VERSION 4.2)
 
 # ==============================================================================
+# Compiler selection  (must run before project())
+# ==============================================================================
+
+# On Windows, default to clang-cl -- the MSVC-compatible clang driver -- so we
+# build with cl-style flags and the MSVC ABI. Off Windows (Linux/macOS) this is
+# skipped and the native clang++/gcc is used. An explicit -DCMAKE_CXX_COMPILER
+# or a CXX environment variable always wins.
+if(CMAKE_HOST_WIN32
+        AND NOT DEFINED CMAKE_CXX_COMPILER
+        AND NOT DEFINED ENV{CXX})
+    set(CMAKE_C_COMPILER   clang-cl CACHE STRING "C compiler")
+    set(CMAKE_CXX_COMPILER clang-cl CACHE STRING "C++ compiler")
+endif()
+
+# ==============================================================================
 # vcpkg bootstrap  (must run before project())
 # ==============================================================================
 
@@ -29,6 +44,26 @@ if(ROSE_USE_VCPKG AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     endif()
 endif()
 
+# Pin the vcpkg triplet on Windows. x64-windows means dynamic CRT and dynamic
+# dependency DLLs: the executable stays small and vcpkg deploys dependency DLLs
+# next to it, at the cost of shipping the VC++ runtime alongside the game (see
+# the CRT deployment block further down). x64 is safe to hardcode: the math code
+# requires AVX2. Set outside the block above because the presets supply
+# CMAKE_TOOLCHAIN_FILE themselves, which skips it.
+#
+# x64-windows-static builds a single self-contained exe with no redistributable,
+# but costs the mimalloc `override` feature and sdl3-image's `webp` feature --
+# neither is supported under static library linkage -- and produces a much larger
+# binary. Switching back also means restoring CMAKE_MSVC_RUNTIME_LIBRARY below.
+#
+# FORCE is deliberate: vcpkg's toolchain caches VCPKG_TARGET_TRIPLET on the first
+# configure, so a `NOT DEFINED` guard would never fire again and a stale triplet
+# would stick across a change. Override the choice with -DROSE_VCPKG_TRIPLET=...
+if(CMAKE_HOST_WIN32)
+    set(ROSE_VCPKG_TRIPLET "x64-windows" CACHE STRING "vcpkg triplet used on Windows")
+    set(VCPKG_TARGET_TRIPLET "${ROSE_VCPKG_TRIPLET}" CACHE STRING "Vcpkg target triplet" FORCE)
+endif()
+
 # ==============================================================================
 # Project
 # ==============================================================================
@@ -53,6 +88,38 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Editor" CACHE STRING "" FORCE)
 if(MSVC)
     add_compile_options(/utf-8)
 endif()
+
+# ------------------------------------------------------- VC++ runtime deployment
+# vcpkg's applocal deployment copies dependency DLLs (SDL3, libpng, ...) next to
+# the executable automatically, but deliberately skips system DLLs, so the VC++
+# runtime is on us. InstallRequiredSystemLibraries locates the redistributable
+# DLLs for the active toolset and puts them in CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS.
+#
+# _SKIP stops it from generating install() rules; we only want the variable, and
+# copy the DLLs ourselves so the build tree is runnable too.
+#
+# The UCRT (ucrtbase.dll) is intentionally not included: it ships as an OS
+# component on Windows 10 and later. Set CMAKE_INSTALL_UCRT_LIBRARIES to bundle it.
+if(MSVC)
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
+    include(InstallRequiredSystemLibraries)
+endif()
+
+# Copies the VC++ runtime DLLs next to <target>'s executable after it is built.
+# Note this deploys the *release* runtime; Debug builds link the debug CRT
+# (msvcp140d.dll etc.), which is not redistributable and is only present on
+# machines with Visual Studio installed.
+function(rose_deploy_crt target)
+    if(MSVC AND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
+                "$<TARGET_FILE_DIR:${target}>"
+            COMMAND_EXPAND_LISTS
+            VERBATIM
+        )
+    endif()
+endfunction()
 
 # ==============================================================================
 # Dependencies
@@ -95,12 +162,15 @@ target_compile_definitions(ROSE_Core
 )
 
 # The math code assumes AVX2 + FMA are available.
-if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
-    target_compile_options(ROSE_Core PRIVATE -mavx2 -mfma -Wno-unknown-attributes)
-endif()
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    # cl.exe or clang-cl: MSVC-style flags. /arch:AVX2 also enables FMA.
     target_compile_options(ROSE_Core PRIVATE /arch:AVX2)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_compile_options(ROSE_Core PRIVATE -Wno-unknown-attributes)
+    endif()
+else()
+    # gcc or clang++ (GNU driver)
+    target_compile_options(ROSE_Core PRIVATE -mavx2 -mfma -Wno-unknown-attributes)
 endif()
 
 set_target_properties(ROSE_Core PROPERTIES
@@ -135,6 +205,8 @@ target_compile_definitions(ROSE_Editor
 
 set_property(TARGET ROSE_Editor PROPERTY FOLDER "Tools")
 
+rose_deploy_crt(ROSE_Editor)
+
 # --------------------------------------------------------------- ROSE_AssetMaker
 file(GLOB_RECURSE ROSE_ASSET_MAKER_SOURCES
         "src/Tools/AssetMaker/*.cpp"
@@ -158,6 +230,8 @@ set_target_properties(ROSE_AssetMaker PROPERTIES
     FOLDER      "Tools"
 )
 
+rose_deploy_crt(ROSE_AssetMaker)
+
 # ----------------------------------------------------------- ROSE_UUID_Generator
 file(GLOB_RECURSE ROSE_UUID_GENERATOR_SOURCES
         "src/Tools/UUIDGenerator/*.cpp"
@@ -174,6 +248,8 @@ target_link_libraries(ROSE_UUID_Generator PRIVATE
 )
 
 set_property(TARGET ROSE_UUID_Generator PROPERTY FOLDER "Tools")
+
+rose_deploy_crt(ROSE_UUID_Generator)
 
 # --------------------------------------------------------- aggregate build target
 add_custom_target(ENGINE_BUILD)
@@ -194,6 +270,8 @@ target_link_libraries(ControllerTest PRIVATE
 
 set_property(TARGET ControllerTest PROPERTY FOLDER "Examples")
 
+rose_deploy_crt(ControllerTest)
+
 # ----------------------------------------------------------------- KeyboardTest
 add_executable(KeyboardTest "examples/KeyboardTest/main.cpp")
 
@@ -204,6 +282,8 @@ target_link_libraries(KeyboardTest PRIVATE
 )
 
 set_property(TARGET KeyboardTest PROPERTY FOLDER "Examples")
+
+rose_deploy_crt(KeyboardTest)
 
 # ------------------------------------------------------------------------ Game1
 file(GLOB_RECURSE GAME1_SOURCES "examples/game1/*.cpp")
@@ -216,6 +296,8 @@ target_link_libraries(Game1 PRIVATE
 )
 
 set_property(TARGET Game1 PROPERTY FOLDER "Examples")
+
+rose_deploy_crt(Game1)
 
 add_custom_command(TARGET Game1 POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different

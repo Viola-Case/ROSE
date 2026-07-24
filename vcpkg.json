@@ -1,6 +1,6 @@
 ﻿{
   "name": "rose",
-  "version": "0.1.0",
+  "version": "0.1.5",
   "homepage": "https://github.com/Viola-Case/ROSE",
   "license": "BSD-3-Clause",
   "description": "Radical Open Software Engine",
@@ -35,8 +35,7 @@
       "features": [
         "jpeg",
         "png",
-        "tiff",
-        "webp"
+        "tiff"
       ]
     },
     {

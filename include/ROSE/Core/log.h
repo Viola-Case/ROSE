@@ -16,53 +16,55 @@
 // todo make custom sinks
 // todo make debug a runtime flag instead of preprocessor
 
+// todo let non-nerdfont users use this effectively
+
 namespace ROSE {
   enum class LogLevel : uint8_t { Trace, Debug, Info, Warn, Error, Fatal };
 
   inline String LogLevelToString(const LogLevel level) noexcept {
     switch (level) {
     case LogLevel::Trace:
-#if defined(ROSE_LOGLEVELS_USE_NERDFONT_SYMBOLS)
+
       return "󰍉";
-#else
+
       return "[  TRACE  ]";
-#endif
+
     case LogLevel::Debug:
-#if defined(ROSE_LOGLEVELS_USE_NERDFONT_SYMBOLS)
+
       return "";
-#else
+
       return "[    D    ]";
-#endif
+
     case LogLevel::Info:
-#if defined(ROSE_LOGLEVELS_USE_NERDFONT_SYMBOLS)
+
       return "";
-#else
+
       return "[    i    ]";
-#endif
+
     case LogLevel::Warn:
-#if defined(ROSE_LOGLEVELS_USE_NERDFONT_SYMBOLS)
+
       return "";
-#else
+
       return "[ WARNING ]";
-#endif
+
     case LogLevel::Error:
-#if defined(ROSE_LOGLEVELS_USE_NERDFONT_SYMBOLS)
+
       return "";
-#else
+
       return "[  ERROR  ]";
-#endif
+
     case LogLevel::Fatal:
-#if defined(ROSE_LOGLEVELS_USE_NERDFONT_SYMBOLS)
+
       return "󰚌";
-#else
+
       return "[!!FATAL!!]";
-#endif
+
     default:
-#if defined(ROSE_LOGLEVELS_USE_NERDFONT_SYMBOLS)
+
       return " ";
-#else
+
       return "           ";
-#endif
+
     }
   }
 
@@ -79,19 +81,24 @@ namespace ROSE {
 #if !(defined(_DEBUG) || defined(ROSE_DEBUG))
       return;
 #endif
+      colorcode = "\033[32m";
       break;
     case LogLevel::Info:
       colorcode = "\033[36m";
+      break;
     case LogLevel::Warn:
       colorcode = "\033[33m";
+      break;
     case LogLevel::Error:
       colorcode = "\033[31m";
+      break;
     case LogLevel::Fatal:
       colorcode = "\033[1;31m";
+      break;
     default:
       break;
     }
-    PrintF("{} \033[0m", LogLevelToString(level));
+    PrintF("{}{} \033[0m ", colorcode, LogLevelToString(level));
     PrintF(format, args...);
     if (level >= LogLevel::Info) PrintF("\033[0m");
   }

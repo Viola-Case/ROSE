@@ -109,6 +109,8 @@ namespace ROSE {
 
     while (!m_shouldClose) {
 
+      MemCpy(InputSystem::GetInstance().m_keyStatePrevious, InputSystem::GetInstance().m_keyState, 256);
+
       m_renderer->BeginFrame();
       ImGui::NewFrame();
 
@@ -134,7 +136,7 @@ namespace ROSE {
 
       m_renderer->EndFrame();
 
-      // std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     m_isRunning = false;
 

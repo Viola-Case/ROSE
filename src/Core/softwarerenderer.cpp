@@ -34,7 +34,7 @@ BackendStatus SoftwareRenderer::Init(const RenderBackendContext &ctx) {
   for (int i = 0; i < n; ++i) {
     Log(LogLevel::Debug, "\t{}\n", SDL_GetRenderDriver(i));
   }
-  SDL_Renderer *renderer = SDL_CreateRenderer(window, nullptr);
+  SDL_Renderer *renderer = SDL_CreateRenderer(window, "vulkan, direct3d11, opengl, gpu, software");
   m_renderer = renderer;
   BackendStatus status;
   if (renderer) {
