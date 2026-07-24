@@ -37,6 +37,8 @@ namespace ROSE {
     return v.get<int>();
   }
 
+  /* TODO is_number_float() rejects JSON integers, so `"focalLength": 30` silently falls
+   * back while `30.0` works. GetInt uses the wider is_number() - this should too. */
   double ParamView::GetDouble(const String &key, double fallback) const noexcept {
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);

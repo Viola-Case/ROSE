@@ -36,6 +36,13 @@ namespace ROSE {
     //     return static_cast<T *>(it->second.get());
     //   return nullptr;
     // }
+    /* TODO this bypasses the whole Create -> Start lifecycle. Inserting straight into
+     * m_behaviors means Scene::InitializePendingBehaviors never sees the behavior, so
+     * m_object stays null and OnCreate/OnStart never run - the first FrameUpdate then
+     * dereferences null through GetObject(). Route through m_pendingAdd/AddBehavior instead.
+     *
+     * TODO BehaviorFactory::Create returns nullptr for an unregistered type; that null is
+     * inserted as-is and crashes next frame. Bail out and log instead. */
     template <class B>
       requires std::is_base_of_v<Behavior, B>
     Behavior *CreateBehavior() {
@@ -84,6 +91,8 @@ namespace ROSE {
     List<UUID> m_pendingDestroy {};
 
     Scene *m_scene { nullptr };
+    /* TODO m_parent is never assigned by anything, so GetParent() always returns nullptr.
+     * Either implement the hierarchy (parenting + transform composition) or drop the member. */
     Object *m_parent { nullptr };
 
   public:

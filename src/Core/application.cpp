@@ -114,6 +114,12 @@ namespace ROSE {
       m_renderer->BeginFrame();
       ImGui::NewFrame();
 
+      /* TODO this only tracks the previous scene, so switching back to one that already
+       * ran replays OnCreate and OnStart over every behavior in it. Wants a per-scene
+       * "started" flag rather than a pointer compare. Only bites once there are 2+ scenes.
+       *
+       * TODO curScene is bound once before the loop, so it never follows m_currentScene -
+       * a scene switch would call OnStart on the new scene but keep updating the old one. */
       static Scene *lastScene { nullptr };
       if (lastScene != m_currentScene) {
         curScene.OnStart();

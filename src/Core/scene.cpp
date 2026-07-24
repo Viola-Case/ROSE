@@ -89,6 +89,9 @@ namespace ROSE {
     }
     m_pendingDestroy.clear();
 
+    /* TODO neither destroy pass gives anything a shutdown callback - the map entry is
+     * erased and the destructor runs. Needs an OnDestroy hook (and an OnDisable call)
+     * before erasing, so behaviors can drop cached neighbor pointers. */
     for (auto &o : m_objects) {
       auto &l = o.second->m_pendingDestroy;
       for (const UUID &u : l) {
@@ -97,6 +100,8 @@ namespace ROSE {
       l.clear();
     }
 
+    /* TODO this overwrites whatever UUID the caller set on the object with a fresh one,
+     * so AddObject silently discards a caller-chosen identity. Honor a non-Invalid m_uuid. */
     for (UniquePtr<Object> &o : m_pendingAdd) {
       const auto &u = UUID::Generate();
       o->m_uuid = u;
@@ -273,6 +278,9 @@ namespace ROSE {
               }
             ]
           }*/
+        /* TODO the parsed UUID becomes the map key but is never written to obj.m_uuid, so
+         * objects loaded from JSON keep a default-constructed member that disagrees with
+         * Scene::GetObject's key. (AddObject has the mirror-image problem - see FrameUpdate.) */
         Pair<UUID, UniquePtr<Object>> pair;
         pair.first = getUUIDFromNode(o.at("uuid"));
         pair.second = MakeUnique<Object>();
@@ -287,6 +295,10 @@ namespace ROSE {
         for (const auto &b : o.at("behaviors")) {
           UUID tID = getUUIDFromNode(b.at("typeid"));
           auto bvr = BehaviorFactory::Create(tID);
+          /* TODO Create returns nullptr for an unregistered/misspelled typeid and this
+           * dereferences it immediately - a bad scene file is a crash on load. Per the
+           * rehydration notes above this should log loudly, skip the behavior, and keep
+           * loading the rest of the scene. */
           bvr->m_object = &obj;
           auto paramObj = b.at("factoryParameters");
           ParamView pview{&paramObj};
@@ -306,6 +318,12 @@ namespace ROSE {
 
 
 
+  /*!
+   * @todo This is a stub - it emits only {"name": ...}. The loop below builds a local
+   * struct and discards it, so no object, transform, or behavior ever reaches the output
+   * and a scene cannot be round-tripped. Needs the inverse of FromJSONString, which in
+   * turn needs a Pack(ParamView&)/serialization hook on Behavior to emit factoryParameters.
+   */
   String Scene::ToJSONString() noexcept {
     JSON json = { { "name", m_name } };
     for (auto &o : m_objects) {

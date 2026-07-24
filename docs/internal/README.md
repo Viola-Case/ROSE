@@ -1,6 +1,6 @@
 # Internal notes — ROSE Core
 
-Condensed reference for the two hand-rolled foundation layers of the engine, so
+Condensed reference for the hand-rolled foundation layers of the engine, so
 the headers don't need re-reading from scratch every session.
 
 | File | Covers |
@@ -8,11 +8,16 @@ the headers don't need re-reading from scratch every session.
 | [`rtl.md`](rtl.md) | `ROSE/Core/rtl.h` — the ROSE Template Library (containers, string, smart pointers, hash map, 128-bit ints) plus its support headers |
 | [`math.md`](math.md) | `ROSE/Core/math.h` — vectors, matrices, complex, quaternions, constants, scalar helpers |
 | [`known-issues.md`](known-issues.md) | Verified defects and sharp edges in both layers, with the reproduction for each |
+| [`scene-object-behavior.md`](scene-object-behavior.md) | The composition layer — `Scene`/`Object`/`Behavior` lifecycle, `BehaviorFactory`, scene JSON and `ParamView` |
+| [`behaviors.md`](behaviors.md) | Every concrete `Behavior` in the tree, its type ID, and what it does |
+| [`conventions.md`](conventions.md) | House style — comments, formatting, naming, header layering, language rules |
 
-Everything in these three files was checked against the headers as of
+The RTL and math files were checked against the headers as of
 **2026-07-23** (branch `master`, at `8510b49`). Behavioural claims were confirmed
 by compiling and running the code, not inferred from reading — see
-`known-issues.md` for the specific repros.
+`known-issues.md` for the specific repros. The two composition-layer files were
+written against `master` @ `6870ee3` (**2026-07-24**) by reading the sources; the
+sharp edges they list are traced to specific lines but were not each run.
 
 ## Ground rules for both layers
 

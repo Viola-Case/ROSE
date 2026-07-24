@@ -17,6 +17,12 @@ namespace ROSE {
 
   Object::Object(const char* _name) : Object(_name, {}, {}) {}
   Object::Object(const char* _name, const Transform &_transform) : Object(_name, _transform, {}) {}
+  /* TODO _transform is dropped on the floor - the member init is `transform()`, not
+   * `transform(_transform)`, so both this and the 2-arg overload silently discard it.
+   *
+   * TODO the loop body terminates unconditionally, so passing a non-empty behavior list
+   * kills the process. Also the insert keys by UUID::Generate() instead of b->GetTypeID(),
+   * which contradicts how every other path keys m_behaviors. Finish or delete this ctor. */
   Object::Object(const char* _name, const Transform &_transform, List<UniquePtr<Behavior>> &&_behaviors) :
     m_name(_name), transform(), m_pendingAdd(), m_pendingDestroy() {
     for (auto &b : _behaviors) {

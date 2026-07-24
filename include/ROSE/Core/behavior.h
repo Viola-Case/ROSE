@@ -52,6 +52,9 @@ namespace ROSE {
      * @note Currently this doesn't get called but I'll get to that I promise
      *
      * @note ...or maybe not
+     *
+     * @todo No call site anywhere. Needs a fixed-timestep accumulator in
+     * Application::Run/Scene::FrameUpdate, or the hook should go.
      */
     virtual void FixedUpdate();
 
@@ -61,29 +64,44 @@ namespace ROSE {
     virtual void Unpack(const ParamView &view);
 
     /*!
-     *
+     * @todo Never called. There is no SetEnabled()/enable path at all, so nothing can
+     * flip m_enabled and nothing fires this. UI (gui.h) already overrides it as dead code.
      */
     virtual void OnEnable();
 
     /*!
-     *
+     * @todo Never called - same as OnEnable. Should also fire on teardown, which is
+     * currently silent (Scene::FrameUpdate just erases the map entry).
      */
     virtual void OnDisable();
 
+    /*!
+     * @todo There is no OnDestroy hook. A behavior that cached neighbor pointers in
+     * OnStart has no way to learn they went away.
+     */
 
   public:
     virtual UUID GetTypeID() const noexcept = 0;
 
     virtual ~Behavior();
+    /*!
+     * @todo Vestigial second spelling of Unpack() - nothing calls this. Unpack() is the
+     * hook the scene loader actually uses. Pick one name and delete the other.
+     */
     virtual void UnpackParameters(const ParamView &);
 
     // Scene &GetScene() noexcept;
     Object &GetObject() const noexcept;
 
   protected:
+    /* TODO never assigned by anything - default constructed and left that way. Behaviors
+     * are keyed by GetTypeID() in Object::m_behaviors, so either give this a real instance
+     * identity at install time or drop it. */
     UUID m_uuid;
     Object *m_object { nullptr };
 
+    /* TODO never read. Nothing gates OnStart/FrameUpdate on it and there's no setter, so
+     * enabling/disabling a behavior isn't actually expressible yet. See OnEnable/OnDisable. */
     bool m_enabled { true };
   };
 

@@ -49,6 +49,10 @@ extern "C" void RoseRegisterCoreModule(BehaviorFactory &factory) {
    * anywhere.
    *
    * PSA don't do this
+   *
+   * @todo This reinterpret_casts the factory to its first member to reach the module list.
+   * Reordering BehaviorFactory's members silently corrupts memory with no diagnostic.
+   * Give it a real RegisterModule(name) entry point instead.
    */
   List<String> &l = *reinterpret_cast<List<String> *>(&factory);
   List<Pair<FactoryFn, UUID>> fns {
