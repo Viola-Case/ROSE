@@ -32,6 +32,9 @@ namespace ROSE {
 
     void DestroyObject(const UUID &u) noexcept;
 
+    // todo come up with a better thing because this is so unsafe oh my god
+    List<Object *> GetObjects() noexcept;
+
     static Scene FromJSONString(const String&) noexcept;
     Scene(Scene &&) noexcept = default;
     Scene &operator=(Scene &&) noexcept = default;

@@ -65,9 +65,6 @@ void Ball::FrameUpdate() {
 
   if (m_motion) {
 
-    if (InputSystem::GetKeyDown(KeyCode::R))
-      this->Reset();
-
     auto &v = m_motion->GetVelocity();
     if (v.x > 0 && pos.x >= w || v.x < 0 && pos.x <= 0) {
       v.x *= -1;

@@ -103,7 +103,9 @@ namespace ROSE {
     /* Returns the number of ticks. This is the reason this generation system is extremely unlikely to result in
      * collisions.
      * @note Callers should probably be single-threaded: two cores reading the TSC at the same instant get the same
-     * value, and there is no longer a tie-breaker to separate them. */
+     * value, and there is no longer a tie-breaker to separate them. But that's really unlikely so whatever I guess.
+     *
+     */
     const uint64_t ticks = __rdtsc();
 
     return UUID { FNV1A128(&ticks, sizeof(ticks)) };

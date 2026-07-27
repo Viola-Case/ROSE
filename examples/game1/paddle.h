@@ -12,11 +12,13 @@
 
 #include <ROSE/ROSE.h>
 
+#include "reset.h"
+
 struct SDL_Renderer;
 
 using namespace ROSE;
 
-class Paddle : public Behavior {
+class Paddle : public Behavior, public Resetter {
 public:
   Paddle() noexcept;
   static constexpr UUID typeID = "bceacc50f13cee94-7dbb93fec8659973"_uuid;
@@ -30,6 +32,7 @@ protected:
   void OnCreate() override;
   void OnStart() override;
   void FrameUpdate() override;
+  void Reset() override;
 private:
   KeyCode m_keyLeft;
   KeyCode m_keyRight;

@@ -10,11 +10,14 @@
 **/
 #pragma once
 
+#include "reset.h"
+
+
 #include <ROSE/ROSE.h>
 
 using namespace ROSE;
 
-class Ball : public Behavior {
+class Ball : public Behavior, public Resetter {
 public:
   static constexpr UUID typeID = "8dbf834ef011a57f-a9bf2a7d82659778"_uuid;
   static constexpr UUID TypeID() noexcept { return typeID; }
@@ -22,7 +25,7 @@ public:
 protected:
   void OnStart() override;
   void FrameUpdate() override;
-  void Reset();
+  void Reset() override;
   void *m_renderer{nullptr};
   Motion *m_motion{nullptr};
   Object *m_paddles[2]{nullptr, nullptr};

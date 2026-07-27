@@ -69,3 +69,8 @@ void Paddle::FrameUpdate() {
   };
   SDL_RenderFillRect(m_renderer, &rect);
 }
+
+void Paddle::Reset() {
+  auto &pos = m_object->transform.position;
+  pos.x = m_screenW * 0.5;
+}

@@ -73,6 +73,10 @@ namespace ROSE {
 
     Scene &GetScene() const noexcept;
 
+    // todo come up with a better thing because this is so unsafe oh my god
+    List<Behavior *> GetBehaviors();
+
+    const char *GetName() const noexcept;
   private:
     void OnStart() noexcept;
     void FrameUpdate() noexcept;

@@ -355,4 +355,13 @@ namespace ROSE {
     if (it != m_objects.end()) return it->second.get();
     return nullptr;
   }
+
+  // todo come up with a better thing because this is so unsafe oh my god
+  List<Object *> Scene::GetObjects() noexcept {
+    List <Object *> os;
+    for (auto &p : m_objects) {
+      os.push_back(p.second.get());
+    }
+    return os;
+  }
 } // namespace ROSE

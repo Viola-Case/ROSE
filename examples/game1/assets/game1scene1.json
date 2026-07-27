@@ -176,6 +176,27 @@
           "factoryParameters": {}
         }
       ]
+    },
+    {
+      "name": "Reset controller",
+      "uuid": "a4c08f9b23d1a46c-49ac4100bf659a9d",
+      "transform": {
+        "position": [
+          0,0,0
+        ],
+        "rotation": [
+          0,0,0
+        ],
+        "scale": [
+          1,1,1
+        ]
+      },
+      "behaviors": [
+        {
+          "typeid": "ba001a59e555ec31-9b2847c718659683",
+          "factoryParameters": {}
+        }
+      ]
     }
   ]
 }

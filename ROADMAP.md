@@ -2,7 +2,7 @@
 ## Engine
 - [x] Scene data dynamically constructs objects/behaviors
 - [ ] Logging system
-  - [x] Barebones console
+  - [x] Barebones console stdio
   - [ ] Timestamps
   - [ ] Custom sinks
   - [ ] Formatter initializer
@@ -11,6 +11,7 @@
 - [ ] Mesh loading
   - [ ] Or really any sort of functional 3D graphics at all
 - [ ] Working audio API
+  - [ ] Native HRTF
 
 ## Tools
 - [ ] Editor

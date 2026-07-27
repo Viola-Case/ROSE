@@ -4,6 +4,7 @@
 #include "fpscounter.h"
 #include "paddle.h"
 #include "ball.h"
+#include "scoreboard.h"
 
 #include <fstream>
 #include <sstream>
@@ -18,7 +19,9 @@ int main() {
       { MakeBehavior<AppCloser>, AppCloser::TypeID() },
       { MakeBehavior<Paddle>, Paddle::TypeID() },
       { MakeBehavior<FpsCounter>, FpsCounter::TypeID() },
-      { MakeBehavior<Ball>, Ball::TypeID() }
+      { MakeBehavior<Ball>, Ball::TypeID() },
+      { MakeBehavior<Scoreboard>, Scoreboard::TypeID() },
+      { MakeBehavior<ResetController>, ResetController::TypeID() },
     };
     for (const auto &p : fns)
       factory.Register(p.first, p.second, "Game1");
