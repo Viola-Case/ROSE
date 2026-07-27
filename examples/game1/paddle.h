@@ -23,7 +23,7 @@ public:
   static constexpr UUID TypeID() noexcept { return typeID; }
   UUID GetTypeID() const noexcept override { return TypeID(); }
 
-  static constexpr float width { 120.f };
+  static constexpr float width { 240.f };
   static constexpr float height { 24.f };
 protected:
   void Unpack(const ParamView &view) override;
