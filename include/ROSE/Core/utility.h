@@ -19,6 +19,14 @@ namespace ROSE {
   template <typename T>
   using Atomic = std::atomic<T>;
 
+  /*!
+   * Only allows implicit conversion
+   * @return
+   */
+  template <typename U>
+  constexpr U ImplicitCast(std::type_identity_t<U> &&v) noexcept {
+    return v;
+  }
 
   template <typename T>
   constexpr std::remove_reference_t<T> &&Move(T &t) noexcept { return static_cast<std::remove_reference_t<T> &&>(t); }

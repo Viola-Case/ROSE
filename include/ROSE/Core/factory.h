@@ -52,6 +52,7 @@ namespace ROSE {
      */
     static RegisterResult Register(FactoryFn fn, const UUID &id, const char *moduleName = "");
     static UniquePtr<Behavior> Create(const UUID &id) noexcept;
+    static bool IsRegistered(const UUID &id) noexcept;
   };
 }
 

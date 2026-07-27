@@ -46,5 +46,5 @@ namespace ROSE {
 
   class Behavior;
   template <class T>
-  concept BehaviorType = std::derived_from<T, Behavior>;
+  concept BehaviorType = std::is_base_of_v<Behavior, T>;
 } // namespace ROSE

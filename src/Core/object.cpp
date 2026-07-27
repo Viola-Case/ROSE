@@ -23,11 +23,18 @@ namespace ROSE {
    * TODO the loop body terminates unconditionally, so passing a non-empty behavior list
    * kills the process. Also the insert keys by UUID::Generate() instead of b->GetTypeID(),
    * which contradicts how every other path keys m_behaviors. Finish or delete this ctor. */
-  Object::Object(const char* _name, const Transform &_transform, List<UniquePtr<Behavior>> &&_behaviors) :
-    m_name(_name), transform(), m_pendingAdd(), m_pendingDestroy() {
+  Object::Object(
+    const char* _name,
+    const Transform &_transform,
+    List<UniquePtr<Behavior>> &&_behaviors
+    ) :
+  m_name(_name),
+  transform(_transform),
+  m_pendingAdd(),
+  m_pendingDestroy() {
     for (auto &b : _behaviors) {
-      m_behaviors.insert(UUID::Generate(), Move(b));
-      std::terminate();
+      m_behaviors.insert(b->GetTypeID(), Move(b));
+      // std::terminate();
     }
   }
 

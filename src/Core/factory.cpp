@@ -18,6 +18,7 @@ namespace ROSE {
 
 
   UniquePtr<Behavior> BehaviorFactory::Create(const UUID &id) noexcept {
+    if (!IsRegistered(id)) return nullptr;
     auto it = get().m_factoryFunctions.find(id);
     if (it == get().m_factoryFunctions.end()) {
       return nullptr;
@@ -38,6 +39,14 @@ namespace ROSE {
       return RegisterResult::DuplicateID;
     }
     return RegisterResult::Success;
+  }
+
+  bool BehaviorFactory::IsRegistered(const UUID &id) noexcept {
+    auto it = get().m_factoryFunctions.find(id);
+    if (it == get().m_factoryFunctions.end()) {
+      return false;
+    }
+    return true;
   }
 } // namespace ROSE
 

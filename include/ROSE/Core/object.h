@@ -10,6 +10,9 @@
 **/
 #pragma once
 
+#include <ROSE/Core/log.h>
+
+
 #include <ROSE/Core/scene.h>
 #include <ROSE/Core/rtl.h>
 #include <ROSE/Core/uuid.h>
@@ -27,32 +30,37 @@ namespace ROSE {
     Object(const char *, const Transform &);
     Object(const char *, const Transform &, List<UniquePtr<Behavior>> &&);
 
-
-
-    // template<BehaviorType T>
-    // T *GetBehaviorOfType() {
-    //   auto it = m_behaviors.find(TypeIdOf<T>());
-    //   if (it != m_behaviors.end())
-    //     return static_cast<T *>(it->second.get());
-    //   return nullptr;
-    // }
-    /* TODO this bypasses the whole Create -> Start lifecycle. Inserting straight into
-     * m_behaviors means Scene::InitializePendingBehaviors never sees the behavior, so
-     * m_object stays null and OnCreate/OnStart never run - the first FrameUpdate then
-     * dereferences null through GetObject(). Route through m_pendingAdd/AddBehavior instead.
+    /*!
+     * @note A competent dev will probably do null checks afterwards. If they don't, they will have a bad time.
      *
-     * TODO BehaviorFactory::Create returns nullptr for an unregistered type; that null is
-     * inserted as-is and crashes next frame. Bail out and log instead. */
+     * TODO change name because the "of type" is already implied by the template
+     */
+    template <BehaviorType T>
+    T *GetBehaviorOfType() {
+      auto it = m_behaviors.find(T::TypeID());
+      if (it != m_behaviors.end()) return static_cast<T *>(it->second.get());
+      return nullptr;
+    }
+
+    /*!
+     * @note This doesn't initialize the behavior upon creation; that happens at the end of the frame during which
+     * this function is called. Should probably address this more strongly later.
+     */
     template <class B>
       requires std::is_base_of_v<Behavior, B>
-    Behavior *CreateBehavior() {
+    B *CreateBehavior() {
       constexpr auto tID = B::TypeID();
+      if (!BehaviorFactory::IsRegistered(tID)) {
+        ROSE_LOG_ERROR("Failed to register behavior {} to {}", tID, m_name);
+        return nullptr;
+      }
       if (auto it = m_behaviors.find(tID); it != m_behaviors.end())
         // return nullptr;
         return m_behaviors.find(tID)->second.get();
       auto b = BehaviorFactory::Create(tID);
-      m_behaviors.insert(tID, Move(b));
-      return m_behaviors.find(tID)->second.get();
+      B *ptr = b.get();
+      AddBehavior(Move(b));
+      return ptr; // TODO disallow interaction until it's fully added
     }
 
     template <class B>
