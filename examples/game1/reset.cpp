@@ -14,18 +14,17 @@
 using namespace ROSE;
 
 void ResetController::OnStart() {
-  auto l = m_object->GetScene().GetObjects();
-  for (auto &o : l) {
-    for (auto &b : o->GetBehaviors()) {
-      Log(LogLevel::Info, "Attempting dynamic cast to resetter on {}-{} from object {} to list\n", b->GetTypeID().high, b->GetTypeID().low, o->GetName());
-      if (Resetter *r = dynamic_cast<Resetter *>(b)) {
-        Log(LogLevel::Info,"Success.\n");
+  m_object->GetScene().ForEachObject([&](Object &o) {
+    o.ForEachBehavior([&](Behavior &b) {
+      Log(LogLevel::Debug, "Attempting dynamic cast to resetter on {}-{} from object {} to list\n", b.GetTypeID().high, b.GetTypeID().low, o.GetName());
+      if (Resetter *r = dynamic_cast<Resetter *>(&b)) {
+        Log(LogLevel::Debug,"Success.\n");
         m_resetters.push_back(r);
       } else {
-        Log(LogLevel::Info, "Failure.\n");
+        Log(LogLevel::Debug, "Failure.\n");
       }
-    }
-  }
+    });
+  });
 }
 
 void ResetController::FrameUpdate() {

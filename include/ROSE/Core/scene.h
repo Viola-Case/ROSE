@@ -32,8 +32,14 @@ namespace ROSE {
 
     void DestroyObject(const UUID &u) noexcept;
 
-    // todo come up with a better thing because this is so unsafe oh my god
-    List<Object *> GetObjects() noexcept;
+    /// Visit every live object in the scene. `fn` is called as `fn(Object&)`.
+    /// Adds/destroys are deferred to the frame boundary, so mutating the scene
+    /// from inside the visitor is safe; nothing is allocated and no pointer
+    /// escapes the call.
+    template <class F>
+    void ForEachObject(F &&fn) {
+      for (auto &p : m_objects) fn(*p.second.get());
+    }
 
     static Scene FromJSONString(const String&) noexcept;
     Scene(Scene &&) noexcept = default;

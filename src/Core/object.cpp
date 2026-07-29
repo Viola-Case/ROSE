@@ -63,15 +63,6 @@ namespace ROSE {
     return it->second.get();
   }
 
-  // todo come up with a better thing because this is so unsafe oh my god
-  List<Behavior *> Object::GetBehaviors() {
-    List<Behavior *> bs;
-    for (auto &b : m_behaviors) {
-      bs.push_back(b.second.get());
-    }
-    return bs;
-  }
-
   const char *Object::GetName() const noexcept { return m_name.c_str(); }
 
 }
