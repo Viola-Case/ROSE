@@ -20,7 +20,7 @@ namespace ROSE {
   using Atomic = std::atomic<T>;
 
   /*!
-   * Only allows implicit conversion
+   * Only allows implicit conversion, for when templates can't figure out the implicit parameter
    * @return
    */
   template <typename U>
@@ -28,12 +28,38 @@ namespace ROSE {
     return v;
   }
 
+  template <typename T, typename U>
+  constexpr
+
+  namespace detail {
+
+  }
+
+  // todo finish this with detail namespace
+  template <typename T>
+  [[deprecated("Do NOT use PublicCast<> unless you ABSOLUTELY are one HUNDRED percent sure you know what you are doing.")]]
+  constexpr T &PublicCast(T &v) noexcept {
+    return v;
+  }
+
+  /*!
+   * Functions identically to `std::move`. Technically you can use the STL version without breaking ABI, but
+   * we like having the explicit option.
+   */
   template <typename T>
   constexpr std::remove_reference_t<T> &&Move(T &t) noexcept { return static_cast<std::remove_reference_t<T> &&>(t); }
 
+  /*!
+   * Functions identically to `std::forward`. Technically using the STL version doesn't break ABI but I like
+   * explicitly defining a ROSE version just in case.
+   */
   template <typename T>
   constexpr T &&Forward(std::remove_reference_t<T> &t) noexcept { return static_cast<T &&>(t); }
 
+  /*!
+   * Functions identically to `std::forward`. Technically using the STL version doesn't break ABI but I like
+   * explicitly defining a ROSE version just in case.
+   */
   template <typename T>
   constexpr T &&Forward(std::remove_reference_t<T> &&t) noexcept {
     static_assert(!std::is_lvalue_reference_v<T>,
@@ -41,6 +67,9 @@ namespace ROSE {
     return static_cast<T &&>(t);
   }
 
+  /*!
+   * I don't need to tell you how this works.
+   */
   template <typename T>
   constexpr void Swap(T &A, T &B) {
     T temp { Move(A) };
@@ -145,7 +174,7 @@ namespace ROSE {
   }
 
   /**
-      @brief  General StrLen template for any Character type
+      @brief  General constexpr StrLen template for any Character type
       @tparam CharT - character type
       @param  str   - input string
       @retval       - length of string
@@ -159,13 +188,22 @@ namespace ROSE {
     return len;
   }
 
-  constexpr uint32_t Tag(const char (&s)[5]) noexcept {
+  /*!
+   * Converts a four-character string to a
+   */
+  constexpr uint32_t CharTagToInt32(const char (&s)[5]) noexcept {
     if (StrLen(s) < 4) return 0;
     return (uint32_t(s[3]) << 24) | (uint32_t(s[2]) << 16) | (uint32_t(s[1]) << 8) | (uint32_t(s[0]));
   }
 
+  /*!
+   * @note This doesn't currently work for non-ascii letters, so any uppercase characters with diacritics
+   * won't return the lowercase version unless they use a compound character composition.
+   * TODO add unicode support to this whole damn thing
+   */
   constexpr int ToLower(const int c) {
-    return (c >= 'A' && c <= 'Z') ? c + ('a' - 'A') : c;
+    return (c >= 'A' && c <= 'Z') ? c + ('a' - 'A') :
+    c;
   }
 
   /**
@@ -174,7 +212,7 @@ namespace ROSE {
                     consumes hex digits until the first non-hex character
       @retval     - parsed value, or 0 if str is null / has no leading hex digits
   **/
-  constexpr uint64_t StrToULL(const char *str) noexcept {
+  constexpr uint64_t HexToULL(const char *str) noexcept {
     if (!str) return 0;
 
     while (*str == ' ' || *str == '\t' || *str == '\n' || *str == '\r' || *str == '\f' || *str == '\v')

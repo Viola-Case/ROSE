@@ -49,8 +49,8 @@ namespace ROSE {
   constexpr UUID operator ""_uuid(const char *str, size_t len) {
     if (len < ROSE_UUID_STR_LEN) throw bad_uuid();
 
-    const uint128_t high = StrToULL(str);
-    const uint64_t low  = StrToULL(str + ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR_LEN);
+    const uint128_t high = HexToULL(str);
+    const uint64_t low  = HexToULL(str + ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR_LEN);
     return { (high << 64) | low };
   }
 

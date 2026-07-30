@@ -73,10 +73,13 @@ namespace ROSE {
 
     Scene &GetScene() const noexcept;
 
-    /// Visit every behavior on this object. `fn` is called as `fn(Behavior&)`.
+    /*!
+     * Visit every behavior on this object. `fn` is called as `fn(Behavior&)`.
+     */
     template <class F>
     void ForEachBehavior(F &&fn) {
-      for (auto &b : m_behaviors) fn(*b.second.get());
+      for (auto &b : m_behaviors)
+        fn(*b.second.get());
     }
 
     const char *GetName() const noexcept;

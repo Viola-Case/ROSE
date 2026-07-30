@@ -18,9 +18,12 @@ namespace ROSE {
     Mesh,
     UI,
     InstancedMesh,
-    Rect
+    Shape
   };
 
+  /*!
+   * Todo maybe make this a pure virtual? Or an interface.
+   */
   class Renderable : public Behavior {
   public:
     static constexpr UUID typeID = "0f01169dcb6855ae-daead65ffc659aec"_uuid;

@@ -73,6 +73,7 @@ namespace ROSE {
   /**
    * @note Forward declaration to builtin intrinsic function. Do not delete.
    *          Clangd's indexer yells at you without this.
+   *          May need to delete this in the linux version (frankly the difference in compiler is weird to me idk)
    */
   extern "C" uint64_t __rdtsc();
 #endif

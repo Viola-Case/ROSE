@@ -18,10 +18,10 @@ namespace ROSE {
 
   enum class FileType : uint32_t {
     Unknown = 0,
-    Asset = Tag("ASET"),
-    Archive = Tag("ARCH"),
-    Scene = Tag("SCNE"),
-    Plugin = Tag("PLGN"),
+    Asset = CharTagToInt32("ASET"),
+    Archive = CharTagToInt32("ARCH"),
+    Scene = CharTagToInt32("SCNE"),
+    Plugin = CharTagToInt32("PLGN"),
 
   };
 

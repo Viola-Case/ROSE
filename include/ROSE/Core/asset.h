@@ -18,16 +18,16 @@
 namespace ROSE {
 
   enum class AssetType : uint32_t {
-    Texture = Tag("TXTR"),
-    Audio = Tag("AUDO"),
-    Mesh = Tag("MESH"),
-    Shader = Tag("SHDR"),
-    Prefab = Tag("PRFB"),
-    Material = Tag("MTRL"),
-    Animation = Tag("ANIM"),
-    Font = Tag("FONT"),
-    Script = Tag("SRPT"),
-    Raw = Tag("RAWF"),
+    Texture = CharTagToInt32("TXTR"),
+    Audio = CharTagToInt32("AUDO"),
+    Mesh = CharTagToInt32("MESH"),
+    Shader = CharTagToInt32("SHDR"),
+    Prefab = CharTagToInt32("PRFB"),
+    Material = CharTagToInt32("MTRL"),
+    Animation = CharTagToInt32("ANIM"),
+    Font = CharTagToInt32("FONT"),
+    Script = CharTagToInt32("SRPT"),
+    Raw = CharTagToInt32("RAWF"),
 
 
 

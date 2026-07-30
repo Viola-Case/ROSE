@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
 
     char t[5] {};
     MemCpy(t, typeStr.c_str(), 4);
-    aType = static_cast<AssetType>(Tag(t));
+    aType = static_cast<AssetType>(CharTagToInt32(t));
   }
 
   header.type = aType;
