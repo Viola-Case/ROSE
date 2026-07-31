@@ -14,6 +14,13 @@
 #include <ROSE/Core/typetraits.h>
 
 namespace ROSE {
+
+  template <typename T>
+  constexpr T &&Forward(std::remove_reference_t<T> &t) noexcept;
+
+  template <typename T>
+  constexpr T &&Forward(std::remove_reference_t<T> &&t) noexcept;
+
   /// might implement thread safety a different way later but for now im gonna keep everything nice and easy and
   /// comfortable and not awful by just using `std::atomic` instead of custom multithreading terribleness
   template <typename T>
@@ -29,13 +36,16 @@ namespace ROSE {
   }
 
   template <typename T, typename U>
-  constexpr
+    requires std::convertible_to<U, T>
+  constexpr T FunctionalCast(U &&v) noexcept {
+    return T(Forward(v));
+  }
 
   namespace detail {
 
   }
 
-  // todo finish this with detail namespace
+  // todo remove this because we really don't need it
   template <typename T>
   [[deprecated("Do NOT use PublicCast<> unless you ABSOLUTELY are one HUNDRED percent sure you know what you are doing.")]]
   constexpr T &PublicCast(T &v) noexcept {

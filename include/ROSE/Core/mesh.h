@@ -22,6 +22,10 @@ namespace ROSE {
     Vec2d texCoord;
   };
 
+  struct Tri {
+    Vert verts[3];
+  };
+
   /*!
    *
    */
@@ -33,6 +37,20 @@ namespace ROSE {
    *
    */
   struct MeshInstance {
-    //todo
+    Mesh *mesh;
+  };
+
+  class MeshRegistry {
+  public:
+    static MeshRegistry &Get() noexcept;
+    void RegisterMesh (Mesh *mesh, const UUID &id, const String &name);
+    const Mesh *GetMesh(const UUID &id) noexcept;
+    const Mesh *GetMesh(const String &name) noexcept;
+
+  private:
+    MeshRegistry();
+    TypedHashMap<UUID, UniquePtr<Mesh>> m_meshes;
+    TypedHashMap<String, UUID> m_meshNameIDs;
+
   };
 }

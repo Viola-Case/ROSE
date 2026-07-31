@@ -61,6 +61,12 @@
     },
     {
       "name": "steam-audio"
+    },
+    {
+      "name": "assimp",
+      "features": [
+        "draco"
+      ]
     }
   ]
 }

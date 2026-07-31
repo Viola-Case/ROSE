@@ -39,7 +39,7 @@ namespace ROSE {
   };
 
   /*!
-   * This will eventually host all the abstraction of the graphics backend (including the software renderer)
+   * This hosts all the abstraction of the graphics backend.
    */
   class RenderBackend {
 

@@ -11,6 +11,7 @@
 #pragma once
 
 #include <ROSE/Core/behavior.h>
+#include <ROSE/Core/gfx.h>
 
 namespace ROSE {
   enum class RenderableType {
@@ -22,14 +23,75 @@ namespace ROSE {
   };
 
   /*!
-   * Todo maybe make this a pure virtual? Or an interface.
+   *
    */
   class Renderable : public Behavior {
+    friend class RenderBackend;
   public:
-    static constexpr UUID typeID = "0f01169dcb6855ae-daead65ffc659aec"_uuid;
-    static constexpr UUID TypeID() noexcept { return typeID; }
-    UUID GetTypeID() const noexcept override { return TypeID(); }
+    virtual RenderableType GetRenderableType() const noexcept = 0;
   private:
-
+    void *m_renderer = nullptr;
   };
+
+  /*!
+   *
+   */
+  class MeshRenderable : public Renderable {
+  public:
+    static constexpr RenderableType renderableType = RenderableType::Mesh;
+    static constexpr RenderableType Type() { return renderableType; }
+    RenderableType GetRenderableType() const noexcept override { return Type(); }
+  protected:
+    void Unpack(const ParamView &) override;
+    Mesh *m_mesh {};
+  };
+
+  /*!
+   *
+   */
+  class SpriteRenderable : public Renderable {
+  public:
+    static constexpr RenderableType renderableType = RenderableType::Sprite;
+    static constexpr RenderableType Type() { return renderableType; }
+    RenderableType GetRenderableType() const noexcept override { return Type(); }
+  protected:
+    void Unpack(const ParamView &) override;
+  };
+
+  class UIRenderable : public Renderable {
+  public:
+    static constexpr RenderableType renderableType = RenderableType::UI;
+    static constexpr RenderableType Type() { return renderableType; }
+    RenderableType GetRenderableType() const noexcept override { return Type(); }
+  protected:
+    void Unpack(const ParamView &) override;
+  };
+
+  class TextUI : public UIRenderable {
+  public:
+    static constexpr RenderableType renderableType = RenderableType::UI;
+    static constexpr RenderableType Type() { return renderableType; }
+    RenderableType GetRenderableType() const noexcept override { return Type(); }
+  protected:
+    void Unpack(const ParamView &) override;
+  };
+
+  class ImageUI : public UIRenderable {
+  public:
+    static constexpr RenderableType renderableType = RenderableType::UI;
+    static constexpr RenderableType Type() { return renderableType; }
+    RenderableType GetRenderableType() const noexcept override { return Type(); }
+  protected:
+    void Unpack(const ParamView &) override;
+  };
+
+  class ShapeRenderable : public Renderable {
+  public:
+    static constexpr RenderableType renderableType = RenderableType::UI;
+    static constexpr RenderableType Type() { return renderableType; }
+    RenderableType GetRenderableType() const noexcept override { return Type(); }
+  protected:
+    void Unpack(const ParamView &) override;
+  };
+
 }

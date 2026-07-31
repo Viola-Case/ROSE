@@ -12,7 +12,6 @@
 
 #include <ROSE/Core/uuid.h>
 #include <ROSE/Core/memory.h>
-#include <ROSE/Core/behavior.h>
 
 #include <concepts>
 
@@ -30,6 +29,8 @@ namespace ROSE {
    *
    * To summarize,
    * Phase one: touch only yourself. Phase two: reach across and touch your neighbors. (heh)
+   *
+   * @todo Add behavior name with registry
    */
   class Behavior {
     friend class Object;
@@ -84,11 +85,6 @@ namespace ROSE {
     virtual UUID GetTypeID() const noexcept = 0;
 
     virtual ~Behavior();
-    /*!
-     * @todo Vestigial second spelling of Unpack() - nothing calls this. Unpack() is the
-     * hook the scene loader actually uses. Pick one name and delete the other.
-     */
-    virtual void UnpackParameters(const ParamView &);
 
     // Scene &GetScene() noexcept;
     Object &GetObject() const noexcept;

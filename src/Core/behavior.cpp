@@ -19,7 +19,6 @@ namespace ROSE {
   void Behavior::Unpack(const ParamView &view) {}
   void Behavior::OnEnable() {}
   void Behavior::OnDisable() {}
-  void Behavior::UnpackParameters(const ParamView &) {}
   Behavior::~Behavior() {}
 
 }

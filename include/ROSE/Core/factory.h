@@ -16,6 +16,7 @@
 #include <ROSE/Core/memory.h>
 
 namespace ROSE {
+  class BehaviorFactory;
 
   enum class RegisterResult {
     Success,
@@ -39,7 +40,20 @@ namespace ROSE {
   template <RegistrableBehavior T>
   UniquePtr<Behavior> MakeBehavior() { return MakeUnique<T>(); }
 
+  class FactoryRegistrar {
+    FactoryRegistrar(BehaviorFactory &factory);
+  };
+
+  class CoreFactoryRegistrar : public FactoryRegistrar {
+  public:
+    void FinalizeModuleRegistration();
+  };
+
+  /*!
+   *  
+   */
   class BehaviorFactory {
+  friend class FactoryRegistrar;
     List<String> m_registeredModules {};
     TypedHashMap<UUID, FactoryFn> m_factoryFunctions{};
     TypedHashMap<UUID, String> m_behaviorLegend{};
