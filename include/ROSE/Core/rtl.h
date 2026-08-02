@@ -19,3 +19,4 @@
 #include <ROSE/Core/pair.h>
 #include <ROSE/Core/hashmap.h>
 #include <ROSE/Core/bigint.h>
+#include <ROSE/Core/tuple.h>
