@@ -45,4 +45,8 @@ namespace ROSE::math {
   constexpr float SUBNORMALSCALE32 = 0x1p50f;    //!< \f$2^{50}\f$
   constexpr float SUBNORMALUNSCALE32 = 0x1p-25f; //!< \f$2^{-25}\f$
 
+  #define π PI
+  #define φ PHI
+  #define τ TAU
+
 } // namespace ROSE::math

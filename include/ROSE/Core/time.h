@@ -18,4 +18,6 @@ namespace ROSE {
   public:
     const inline static double &deltaTime { dT };
   };
+
+  #define Δt Time.deltaTime
 } // namespace ROSE

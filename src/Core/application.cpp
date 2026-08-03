@@ -104,10 +104,10 @@ namespace ROSE {
     std::chrono::time_point<std::chrono::high_resolution_clock> start = std::chrono::high_resolution_clock::now();
 
 
-    Scene &curScene = *m_currentScene;
     m_isRunning = true;
 
     while (!m_shouldClose) {
+      Scene &curScene = *m_currentScene;
 
       MemCpy(InputSystem::GetInstance().m_keyStatePrevious, InputSystem::GetInstance().m_keyState, 256);
 
@@ -116,10 +116,7 @@ namespace ROSE {
 
       /* TODO this only tracks the previous scene, so switching back to one that already
        * ran replays OnCreate and OnStart over every behavior in it. Wants a per-scene
-       * "started" flag rather than a pointer compare. Only bites once there are 2+ scenes.
-       *
-       * TODO curScene is bound once before the loop, so it never follows m_currentScene -
-       * a scene switch would call OnStart on the new scene but keep updating the old one. */
+       * "started" flag rather than a pointer compare. Only bites once there are 2+ scenes.*/
       static Scene *lastScene { nullptr };
       if (lastScene != m_currentScene) {
         curScene.OnStart();
@@ -180,11 +177,15 @@ namespace ROSE {
     return m_flags & mask;
   }
 
+  // TODO: Make a SetInitialWindowSize function or something 
   void Application::SetWindowSize(const math::Vec2<int> size) noexcept {
     m_windowSize = size;
     if (m_window)
       SDL_SetWindowSize(static_cast<SDL_Window *>(m_window), m_windowSize.x, m_windowSize.y);
-    m_renderer->OnResize(size.x, size.y);
+    else
+      ROSE_LOG_WARN("No window to resize! Are you sure you've structured your application correctly?\n");
+    if (m_renderer)
+      m_renderer->OnResize(size.x, size.y);
   }
 
   void AddSceneFromJSON(void *jsonPtr) noexcept {}
