@@ -1,0 +1,30 @@
+{
+  "name": "orbits",
+  "objects": [
+    {
+      "name": "Cloud",
+      "uuid": "0a11c0de00000001-9f3b7c2d61aa0001",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "behaviors": [
+        {
+          "typeid": "f69e87e51985f92b-cd8aa43477659a22",
+          "comment": "count and seed are read with GetInt, which takes JSON integers. The rest go through GetDouble, which only accepts JSON floats - drop a decimal point and the value silently falls back to its default.",
+          "factoryParameters": {
+            "count": 4000,
+            "seed": 24601,
+            "gm": 5000000.0,
+            "softening": 4.0,
+            "radiusMin": 60.0,
+            "radiusMax": 320.0,
+            "speedJitter": 0.25,
+            "step": 0.01
+          }
+        }
+      ]
+    }
+  ]
+}

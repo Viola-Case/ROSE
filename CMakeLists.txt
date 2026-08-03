@@ -304,3 +304,25 @@ add_custom_command(TARGET Game1 POST_BUILD
         "${CMAKE_CURRENT_SOURCE_DIR}/examples/game1/assets"
         "$<TARGET_FILE_DIR:Game1>/assets"
 )
+
+# ----------------------------------------------------------------------- Orbits
+file(GLOB_RECURSE ORBITS_SOURCES "examples/orbits/*.cpp")
+
+add_executable(Orbits ${ORBITS_SOURCES})
+
+# SDL3 is linked explicitly rather than picked up through ROSE_Core: this example calls the render API directly to
+# batch its point cloud, so it is a first-party dependency of the target and not an implementation detail.
+target_link_libraries(Orbits PRIVATE
+        ROSE_Core
+        SDL3::SDL3
+)
+
+set_property(TARGET Orbits PROPERTY FOLDER "Examples")
+
+rose_deploy_crt(Orbits)
+
+add_custom_command(TARGET Orbits POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/examples/orbits/assets"
+        "$<TARGET_FILE_DIR:Orbits>/assets"
+)
