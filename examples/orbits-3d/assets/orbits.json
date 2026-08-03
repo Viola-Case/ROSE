@@ -1,0 +1,131 @@
+{
+  "name": "orbits",
+  "objects": [
+    {
+      "name": "Sim Control",
+      "uuid": "0a11c0de00000001-9f3b7c2d61aa0001",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "behaviors": [
+        {
+          "typeid": "e462fd3697152f62-febad57f6965988b",
+          "factoryParameters": {}
+        }
+      ]
+    },
+    {
+      "name": "Camera",
+      "uuid": "0a11c0de00000002-9f3b7c2d61aa0002",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "behaviors": [
+        {
+          "typeid": "afff5a43bcae9747-303b41fa30659b14",
+          "comment": "Every value here is read with ParamView::GetDouble, which only accepts JSON floats - drop the decimal point and it silently falls back to the default.",
+          "factoryParameters": {
+            "yaw": 0.7,
+            "pitch": 0.42,
+            "distance": 480.0,
+            "fov": 55.0,
+            "spin": true,
+            "spinRate": 0.08
+          }
+        }
+      ]
+    },
+    {
+      "name": "Central Body",
+      "uuid": "0a11c0de00000003-9f3b7c2d61aa0003",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "behaviors": [
+        {
+          "typeid": "4720cd2d415ed83e-e57239b840659bb0",
+          "factoryParameters": {
+            "gm": 400000.0,
+            "softening": 3.0,
+            "radius": 7.0,
+            "ringRadius": 180.0
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cloud",
+      "uuid": "0a11c0de00000004-9f3b7c2d61aa0004",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "behaviors": [
+        {
+          "typeid": "f69e87e51985f92b-cd8aa43477659a22",
+          "comment": "integrator: 0 forward Euler, 1 semi-implicit Euler, 2 velocity Verlet, 3 RK4.",
+          "factoryParameters": {
+            "count": 6000,
+            "seed": 24601,
+            "radiusMin": 45.0,
+            "radiusMax": 180.0,
+            "speedJitter": 0.22,
+            "inclinationSpread": 0.35,
+            "step": 0.004,
+            "timeScale": 1.0,
+            "integrator": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tracer",
+      "uuid": "0a11c0de00000005-9f3b7c2d61aa0005",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "behaviors": [
+        {
+          "typeid": "30131a27e9b7af29-9c7ef820796596b1",
+          "factoryParameters": {
+            "radius": 120.0,
+            "inclination": 0.4,
+            "trailLength": 900
+          }
+        },
+        {
+          "typeid": "ab0a57d02d8e9fde-462c4cdfe26597d3",
+          "comment": "Core Motion. Tracer overwrites drdt in OnStart, so these are only the pre-start values.",
+          "factoryParameters": {
+            "drdt": [0, 0, 0],
+            "dTdt": [0, 0, 0]
+          }
+        }
+      ]
+    },
+    {
+      "name": "HUD",
+      "uuid": "0a11c0de00000006-9f3b7c2d61aa0006",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "behaviors": [
+        {
+          "typeid": "0f0e523c6a83116f-9c02cc20ca65992a",
+          "factoryParameters": {}
+        }
+      ]
+    }
+  ]
+}
