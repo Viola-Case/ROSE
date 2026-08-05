@@ -36,6 +36,8 @@ namespace ROSE {
       Metal = 10,
       DirectX11 = 11,
       DirectX12 = 12,
+
+      Debug = 63
     } value;
     constexpr ApplicationFlag(Value v) : value(v <= 63 ? v : throw "invalid ApplicationFlag") {}
     // constexpr ApplicationFlag(uint8_t v) noexcept : value(static_cast<Value>(v)) {}
@@ -47,17 +49,32 @@ namespace ROSE {
    */
   using ApplicationFlags = uint64_t;
   constexpr ApplicationFlags APPLICATION_HEADLESS = static_cast<ApplicationFlags>(1)
-                                                              << static_cast<int>(ApplicationFlag::Headless);
+                                                    << static_cast<int>(ApplicationFlag::Headless);
   constexpr ApplicationFlags APPLICATION_NO_RENDERER = static_cast<ApplicationFlags>(1)
-                                                              << static_cast<int>(ApplicationFlag::NoRenderer);
+                                                       << static_cast<int>(ApplicationFlag::NoRenderer);
   constexpr ApplicationFlags APPLICATION_SERVER = static_cast<ApplicationFlags>(1)
-                                                              << static_cast<int>(ApplicationFlag::Server);
+                                                  << static_cast<int>(ApplicationFlag::Server);
   constexpr ApplicationFlags APPLICATION_LIGHTWEIGHT = static_cast<ApplicationFlags>(1)
-                                                              << static_cast<int>(ApplicationFlag::Light);
+                                                       << static_cast<int>(ApplicationFlag::Light);
   constexpr ApplicationFlags APPLICATION_SOFTWARE_RENDERER = static_cast<ApplicationFlags>(1)
-                                                              << static_cast<int>(ApplicationFlag::SoftwareRenderer);
+                                                             << static_cast<int>(ApplicationFlag::SoftwareRenderer);
   constexpr ApplicationFlags APPLICATION_CONTROLLER_SUPPORT = static_cast<ApplicationFlags>(1)
                                                               << static_cast<int>(ApplicationFlag::ControllerSupport);
+  constexpr ApplicationFlags APPLICATION_VULKAN = static_cast<ApplicationFlags>(1)
+                                                  << static_cast<int>(ApplicationFlag::Vulkan);
+  constexpr ApplicationFlags APPLICATION_DIRECTX9 = static_cast<ApplicationFlags>(1)
+                                                    << static_cast<int>(ApplicationFlag::DirectX9);
+  constexpr ApplicationFlags APPLICATION_METAL = static_cast<ApplicationFlags>(1)
+                                                 << static_cast<int>(ApplicationFlag::Metal);
+  constexpr ApplicationFlags APPLICATION_DIRECTX11 = static_cast<ApplicationFlags>(1)
+                                                     << static_cast<int>(ApplicationFlag::DirectX11);
+  constexpr ApplicationFlags APPLICATION_DIRECTX12 = static_cast<ApplicationFlags>(1)
+                                                     << static_cast<int>(ApplicationFlag::DirectX12);
+
+  constexpr ApplicationFlags APPLICATION_DEBUG = static_cast<ApplicationFlags>(1)
+                                                 << static_cast<int>(ApplicationFlag::Debug);
+
+
 
 
 

@@ -34,6 +34,9 @@ namespace ROSE {
 #if ROSE_PLATFORM_WINDOWS
     timeBeginPeriod(1);
 #endif
+#if defined(_DEBUG)
+    m_flags |= APPLICATION_DEBUG;
+#endif
   }
 
   Application::Application(const char *_title, ApplicationFlags flags) : Application(_title, flags, {}) {}

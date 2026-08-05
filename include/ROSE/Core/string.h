@@ -16,6 +16,7 @@
 
 namespace ROSE {
 
+  // TODO: SBO in BasicString — do before plugin ABI freezes.
   template <Character CharT>
   class BasicString {
   private:
