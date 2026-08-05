@@ -71,13 +71,16 @@ void PointCloud::Unpack(const ParamView &_view) {
 }
 
 void PointCloud::OnStart() {
-  auto *window = static_cast<SDL_Window *>(m_object->GetScene().GetApplication().GetWindow());
-  if (!window) {
+  Window *window = m_object->GetScene().GetApplication().GetWindow();
+  if (!window || !window->IsValid()) {
     ROSE_LOG_ERROR("PointCloud: no window; nothing will be drawn.");
     return;
   }
-  m_renderer = SDL_GetRenderer(window);
-  SDL_GetWindowSize(window, &m_width, &m_height);
+  m_renderer = SDL_GetRenderer(static_cast<SDL_Window *>(window->GetHandle()));
+
+  const auto size = window->GetSize();
+  m_width = size.x;
+  m_height = size.y;
 
   /* Everything is in window pixels, so the attractor goes at the middle of the screen. It lives in the object's
    * own Transform rather than in a member of this behavior, so moving the object moves the whole field. */

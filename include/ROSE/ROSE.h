@@ -30,6 +30,7 @@
 #include <ROSE/Core/behavior.h>
 #include <ROSE/Core/paramview.h>
 #include <ROSE/Core/input.h>
+#include <ROSE/Core/window.h>
 #include <ROSE/Core/application.h>
 #include <ROSE/Core/gfx.h>
 #include <ROSE/Core/log.h>

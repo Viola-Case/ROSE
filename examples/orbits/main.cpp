@@ -44,9 +44,8 @@ int main() {
   }
   scenes.push_back(Scene::FromJSONString(sceneJSON));
 
-  Application &sim = *new Application("ROSE - orbits", 0, Move(scenes));
+  Application &sim = *new Application("ROSE - orbits", 0, Move(scenes), { 1000, 750 });
   sim.SetFlag(ApplicationFlag::SoftwareRenderer, 1);
-  sim.SetWindowSize(1000, 750);
 
   sim.Init();
 

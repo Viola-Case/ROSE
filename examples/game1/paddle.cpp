@@ -38,9 +38,16 @@ void Paddle::OnCreate() {
 }
 
 void Paddle::OnStart() {
-  auto window = static_cast<SDL_Window *>(GetObject().GetScene().GetApplication().GetWindow());
-  SDL_GetWindowSize(window, &m_screenW, &m_screenH);
-  m_renderer = SDL_GetRenderer(window);
+  Window *window = GetObject().GetScene().GetApplication().GetWindow();
+  if (!window || !window->IsValid()) {
+    ROSE_LOG_ERROR("Paddle: no window; nothing will be drawn.");
+    return;
+  }
+  m_renderer = SDL_GetRenderer(static_cast<SDL_Window *>(window->GetHandle()));
+
+  const auto size = window->GetSize();
+  m_screenW = size.x;
+  m_screenH = size.y;
 
   auto &pos = m_object->transform.position;
   pos.x = m_screenW * 0.5;

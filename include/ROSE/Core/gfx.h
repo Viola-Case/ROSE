@@ -16,17 +16,20 @@
 
 namespace ROSE {
 
+  /*!
+   * Only ever populated from `Window::GetHandle()`.
+   */
   struct WindowHandle {
-    void *ptr;
+    void *ptr { nullptr };
   };
 
   struct RenderBackendContext {
-    WindowHandle window;
+    WindowHandle window {};
 
-    int width;
-    int height;
-    bool vsync;
-    ParamView *config;
+    int width { 0 };
+    int height { 0 };
+    bool vsync { false };
+    ParamView *config { nullptr };
   };
 
   enum class BackendStatus : uint32_t {

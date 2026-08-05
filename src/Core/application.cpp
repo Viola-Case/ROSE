@@ -29,8 +29,9 @@ namespace ROSE {
     APPLICATION_CONTROLLER_SUPPORT | APPLICATION_SOFTWARE_RENDERER
   };
 
-  Application::Application(const char *_title, ApplicationFlags flags, List<Scene> &&scenes)
-      : m_title(_title), m_scenes(Move(scenes)), m_flags(flags) {
+  Application::Application(const char *_title, ApplicationFlags flags, List<Scene> &&scenes,
+                           math::Vec2<int> _windowSize)
+      : m_title(_title), m_scenes(Move(scenes)), m_flags(flags), m_windowSize(_windowSize) {
 #if ROSE_PLATFORM_WINDOWS
     timeBeginPeriod(1);
 #endif
@@ -81,15 +82,25 @@ namespace ROSE {
     (void)io;
     ImGui::StyleColorsDark();
 
-    m_window = SDL_CreateWindow(m_title.c_str(), m_windowSize.x, m_windowSize.y, windowFlags);
+    if (!GetFlag(ApplicationFlag::Headless)) {
+      m_window = MakeUnique<Window>(Window::Create(m_title.c_str(), m_windowSize, windowFlags));
+      if (!m_window->IsValid()) {
+        ROSE_LOG_FATAL("Window creation failed!\n");
+        return -4;
+      }
+    }
 
-    RenderBackendContext ctx {
-      m_window,
-      m_windowSize.x,
-      m_windowSize.y
-    };
+    if (m_renderer && m_window) {
+      const math::Vec2<int> size = m_window->GetSize();
 
-    m_renderer->Init(ctx);
+      RenderBackendContext ctx {
+        { m_window->GetHandle() },
+        size.x,
+        size.y
+      };
+
+      m_renderer->Init(ctx);
+    }
 
     m_currentScene = m_scenes.begin();
     for (Scene &s : m_scenes)
@@ -102,7 +113,7 @@ namespace ROSE {
   void Application::Run() {
     if (m_isRunning) return;
 
-    SDL_ShowWindow(static_cast<SDL_Window *>(m_window));
+    if (m_window) m_window->Show();
 
     std::chrono::time_point<std::chrono::high_resolution_clock> start = std::chrono::high_resolution_clock::now();
 
@@ -114,7 +125,7 @@ namespace ROSE {
 
       MemCpy(InputSystem::GetInstance().m_keyStatePrevious, InputSystem::GetInstance().m_keyState, 256);
 
-      m_renderer->BeginFrame();
+      if (m_renderer) m_renderer->BeginFrame();
       ImGui::NewFrame();
 
       /* TODO this only tracks the previous scene, so switching back to one that already
@@ -128,7 +139,17 @@ namespace ROSE {
       {
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
-          if (e.type == SDL_EVENT_QUIT) m_shouldClose = true;
+          if (e.type == SDL_EVENT_QUIT) {
+            m_shouldClose = true;
+          } else if (e.type == SDL_EVENT_WINDOW_RESIZED) {
+            /* The window only ever learns its new size from here; pushing it back to SDL would
+             * just provoke another resize event. */
+            const math::Vec2<int> size { e.window.data1, e.window.data2 };
+            if (m_window) m_window->OnResized(size);
+            if (m_renderer) m_renderer->OnResize(size.x, size.y);
+          } else if (e.type == SDL_EVENT_WINDOW_MOVED) {
+            if (m_window) m_window->OnMoved({ e.window.data1, e.window.data2 });
+          }
           ImGui_ImplSDL3_ProcessEvent(&e);
         }
       }
@@ -140,31 +161,36 @@ namespace ROSE {
 
       ImGui::Render();
 
-      m_renderer->EndFrame();
+      if (m_renderer) m_renderer->EndFrame();
 
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     m_isRunning = false;
 
-    m_renderer->Shutdown();
-
-    SDL_DestroyWindow(static_cast<SDL_Window *>(m_window));
+    if (m_renderer) m_renderer->Shutdown();
   }
 
   void Application::Quit() noexcept { m_shouldClose = true; }
 
   Application::~Application() {
-    if (!SDL_WasInit(SDL_INIT_VIDEO)) {
-      return;
-    }
-    SDL_Quit();
-    timeEndPeriod(1);
+    /* Order matters: the renderer holds resources made from the window, and the window has to be
+     * gone before SDL_Quit. Resetting m_window here rather than leaving it to member destruction
+     * is deliberate - members die after this body, which would be after SDL_Quit. */
     delete m_renderer;
+    m_renderer = nullptr;
+
+    m_window.reset();
+
+    if (SDL_WasInit(SDL_INIT_VIDEO)) SDL_Quit();
+#if ROSE_PLATFORM_WINDOWS
+    timeEndPeriod(1);
+#endif
   }
 
   const char *Application::GetTitle() const noexcept { return m_title.c_str(); }
 
-  void *Application::GetWindow() const noexcept { return m_window; }
+  Window *Application::GetWindow() noexcept { return m_window.get(); }
+  const Window *Application::GetWindow() const noexcept { return m_window.get(); }
 
   const List<Scene> &Application::GetScenes() noexcept { return m_scenes; }
   Scene &Application::GetCurrentScene() noexcept { return *m_currentScene; }
@@ -184,7 +210,7 @@ namespace ROSE {
   void Application::SetWindowSize(const math::Vec2<int> size) noexcept {
     m_windowSize = size;
     if (m_window)
-      SDL_SetWindowSize(static_cast<SDL_Window *>(m_window), m_windowSize.x, m_windowSize.y);
+      m_window->SetSize(size);
     else
       ROSE_LOG_WARN("No window to resize! Are you sure you've structured your application correctly?\n");
     if (m_renderer)

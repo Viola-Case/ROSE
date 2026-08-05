@@ -49,9 +49,16 @@ void Ball::Reset() {
 }
 
 void Ball::OnStart() {
-  auto window = static_cast<SDL_Window *>(m_object->GetScene().GetApplication().GetWindow());
-  m_renderer = SDL_GetRenderer(window);
-  SDL_GetWindowSize(window, &w, &h);
+  Window *window = m_object->GetScene().GetApplication().GetWindow();
+  if (!window || !window->IsValid()) {
+    ROSE_LOG_ERROR("Ball: no window; nothing will be drawn.");
+    return;
+  }
+  m_renderer = SDL_GetRenderer(static_cast<SDL_Window *>(window->GetHandle()));
+
+  const auto size = window->GetSize();
+  w = size.x;
+  h = size.y;
 
   this->Reset();
 

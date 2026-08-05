@@ -21,9 +21,9 @@ SoftwareRenderer::~SoftwareRenderer() {
 
 BackendStatus SoftwareRenderer::Init(const RenderBackendContext &ctx) {
   SDL_Window *window = static_cast<SDL_Window *>(ctx.window.ptr);
-  SDL_SetWindowSize(window, ctx.width, ctx.height);
   if (!window)
     return BackendStatus::WindowUnavailable;
+  SDL_SetWindowSize(window, ctx.width, ctx.height);
   Log(LogLevel::Debug, "Available rendering drivers:\n");
   int n = SDL_GetNumRenderDrivers();
   if (n < 1) {

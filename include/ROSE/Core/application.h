@@ -14,6 +14,7 @@
 #include <ROSE/Core/rtl.h>
 #include <ROSE/Core/factory.h>
 #include <ROSE/Core/gfx.h>
+#include <ROSE/Core/window.h>
 
 namespace ROSE {
   // using AppID = size_t;
@@ -89,7 +90,7 @@ namespace ROSE {
     Application();
     Application(const char *_title);
     Application(const char *_title, ApplicationFlags);
-    Application(const char *_title, ApplicationFlags, List<Scene> &&);
+    Application(const char *_title, ApplicationFlags, List<Scene> &&, math::Vec2<int> _windowSize = { 800, 600 });
     ~Application();
     int Init();
     void Run(); //!< Should only be called once. Terminates if called again.
@@ -98,7 +99,12 @@ namespace ROSE {
 
     [[nodiscard]] const char *GetTitle() const noexcept;
 
-    [[nodiscard]] void *GetWindow() const noexcept;
+    /*!
+     * @retval the owned window, or `nullptr` when the application runs headless. Always check
+     *         before dereferencing - a headless run legitimately has no window.
+     */
+    [[nodiscard]] Window *GetWindow() noexcept;
+    [[nodiscard]] const Window *GetWindow() const noexcept;
 
     Scene &GetCurrentScene() noexcept;
 
@@ -121,7 +127,7 @@ namespace ROSE {
 
     // AppID m_id { 0 };
 
-    void *m_window { nullptr };
+    UniquePtr<Window> m_window {};
 
     ApplicationFlags m_flags { 0 };
 
@@ -129,6 +135,9 @@ namespace ROSE {
 
     UniquePtr<SceneManager> m_manager {};
 
+    /* The size the window is created at, taken from the constructor. Authoritative only until
+     * `Init` builds the window; after that the `Window` owns the real size and this is just the
+     * last value asked for. */
     math::Vec2<int32_t> m_windowSize { 800, 600 };
 
     bool m_shouldClose { false };
