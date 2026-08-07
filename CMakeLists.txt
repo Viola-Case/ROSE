@@ -121,6 +121,44 @@ function(rose_deploy_crt target)
     endif()
 endfunction()
 
+# Mirrors <src_dir> into <target>'s output directory as "assets/".
+#
+# This deliberately does not use a POST_BUILD command: those hang off the link
+# step, so touching an asset leaves the executable up to date and the generator
+# has no work to do -- the edit never reaches the build tree. Instead the copy is
+# a real build rule with the asset files as dependencies, driven by a stamp file
+# (the destination tree is not a single output the generator can check).
+#
+# CONFIGURE_DEPENDS re-runs the glob at build time, so newly added assets are
+# picked up without a manual re-configure. Assets *deleted* from the source tree
+# are left behind in the build tree; wipe the output directory to clear them.
+function(rose_deploy_assets target src_dir)
+    # Examples without an assets directory yet are not an error, but adding one
+    # later needs a re-configure for this check to see it.
+    if(NOT IS_DIRECTORY "${src_dir}")
+        message(STATUS "rose_deploy_assets: ${target} has no assets directory (${src_dir}), skipping")
+        return()
+    endif()
+
+    file(GLOB_RECURSE assets CONFIGURE_DEPENDS "${src_dir}/*")
+
+    set(stamp "${CMAKE_CURRENT_BINARY_DIR}/${target}_assets.stamp")
+
+    add_custom_command(OUTPUT "${stamp}"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+            "${src_dir}"
+            "$<TARGET_FILE_DIR:${target}>/assets"
+        COMMAND ${CMAKE_COMMAND} -E touch "${stamp}"
+        DEPENDS ${assets}
+        COMMENT "Deploying assets for ${target}"
+        VERBATIM
+    )
+
+    add_custom_target(${target}_assets DEPENDS "${stamp}")
+    set_property(TARGET ${target}_assets PROPERTY FOLDER "Assets")
+    add_dependencies(${target} ${target}_assets)
+endfunction()
+
 # ==============================================================================
 # Dependencies
 # ==============================================================================
@@ -299,11 +337,7 @@ set_property(TARGET Game1 PROPERTY FOLDER "Examples")
 
 rose_deploy_crt(Game1)
 
-add_custom_command(TARGET Game1 POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
-        "${CMAKE_CURRENT_SOURCE_DIR}/examples/game1/assets"
-        "$<TARGET_FILE_DIR:Game1>/assets"
-)
+rose_deploy_assets(Game1 "${CMAKE_CURRENT_SOURCE_DIR}/examples/game1/assets")
 
 # ----------------------------------------------------------------------- Orbits
 file(GLOB_RECURSE ORBITS_SOURCES "examples/orbits/*.cpp")
@@ -321,11 +355,7 @@ set_property(TARGET Orbits PROPERTY FOLDER "Examples")
 
 rose_deploy_crt(Orbits)
 
-add_custom_command(TARGET Orbits POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
-        "${CMAKE_CURRENT_SOURCE_DIR}/examples/orbits/assets"
-        "$<TARGET_FILE_DIR:Orbits>/assets"
-)
+rose_deploy_assets(Orbits "${CMAKE_CURRENT_SOURCE_DIR}/examples/orbits/assets")
 
 # ------------------------------------------------------------------------ Game2
 file(GLOB_RECURSE GAME2_SOURCES "examples/game2/*.cpp")
@@ -341,8 +371,4 @@ set_property(TARGET Game2 PROPERTY FOLDER "Examples")
 
 rose_deploy_crt(Game2)
 
-add_custom_command(TARGET Game2 POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
-        "${CMAKE_CURRENT_SOURCE_DIR}/examples/game2/assets"
-        "$<TARGET_FILE_DIR:Game2>/assets"
-)
+rose_deploy_assets(Game2 "${CMAKE_CURRENT_SOURCE_DIR}/examples/game2/assets")
