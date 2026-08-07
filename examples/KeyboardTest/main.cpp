@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
     float rx = -InputSystem::GetKey(KeyCode::LEFT) + InputSystem::GetKey(KeyCode::RIGHT);
     float ry = -InputSystem::GetKey(KeyCode::DOWN) + InputSystem::GetKey(KeyCode::UP);
 
-    ImGui::Begin("Gamepad Info", nullptr, 0);
+    ImGui::Begin("Keyboard Info", nullptr, 0);
     ImGui::Text("Left X: %f", lx);
     ImGui::Text("Left Y: %f", ly);
     ImGui::Text("Right X: %f", rx);
