@@ -32,13 +32,17 @@ namespace ROSE {
 
     void DestroyObject(const UUID &u) noexcept;
 
-    /// Visit every live object in the scene. `fn` is called as `fn(Object&)`.
-    /// Adds/destroys are deferred to the frame boundary, so mutating the scene
-    /// from inside the visitor is safe; nothing is allocated and no pointer
-    /// escapes the call.
-    template <class F>
-    void ForEachObject(F &&fn) {
-      for (auto &p : m_objects) fn(*p.second.get());
+    using OFun = void (*)(Object &);
+
+    /* Visit every live object in the scene. `fn` is called as `fn(Object&)`.
+     * Adds/destroys are deferred to the frame boundary, so mutating the scene
+     * from inside the visitor is safe; nothing is allocated and no pointer
+     * escapes the call. */
+    template <typename F>
+    requires std::invocable<F, Object &>
+    void ForEachObject(F fn) {
+      for (auto &o : m_objects)
+        fn(*o.second.get());
     }
 
     static Scene FromJSONString(const String&) noexcept;

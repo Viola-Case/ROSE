@@ -326,3 +326,23 @@ add_custom_command(TARGET Orbits POST_BUILD
         "${CMAKE_CURRENT_SOURCE_DIR}/examples/orbits/assets"
         "$<TARGET_FILE_DIR:Orbits>/assets"
 )
+
+# ------------------------------------------------------------------------ Game2
+file(GLOB_RECURSE GAME2_SOURCES "examples/game2/*.cpp")
+
+add_executable(Game2 ${GAME2_SOURCES})
+
+target_link_libraries(Game2 PRIVATE
+        ROSE_Core
+        SDL3_ttf::SDL3_ttf
+)
+
+set_property(TARGET Game2 PROPERTY FOLDER "Examples")
+
+rose_deploy_crt(Game2)
+
+add_custom_command(TARGET Game2 POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/examples/game2/assets"
+        "$<TARGET_FILE_DIR:Game2>/assets"
+)

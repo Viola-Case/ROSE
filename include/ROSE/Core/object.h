@@ -19,6 +19,8 @@
 #include <ROSE/Core/transform.h>
 #include <ROSE/Core/application.h>
 
+#include <concepts>
+
 namespace ROSE {
   class Object final {
     friend class Behavior;
@@ -76,8 +78,9 @@ namespace ROSE {
     /*!
      * Visit every behavior on this object. `fn` is called as `fn(Behavior&)`.
      */
-    template <class F>
-    void ForEachBehavior(F &&fn) {
+    template <typename F>
+    requires std::invocable<F, Behavior &>
+    void ForEachBehavior(F fn) {
       for (auto &b : m_behaviors)
         fn(*b.second.get());
     }
