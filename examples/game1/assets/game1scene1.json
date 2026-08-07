@@ -147,37 +147,6 @@
       ]
     },
     {
-      "name": "Ball2",
-      "uuid": "1234567890123456-7890123456789013",
-      "transform": {
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "behaviors": [
-        {
-          "typeid": "8dbf834ef011a57f-a9bf2a7d82659778",
-          "factoryParameters": {}
-        },
-        {
-          "typeid": "ab0a57d02d8e9fde-462c4cdfe26597d3",
-          "factoryParameters": {}
-        }
-      ]
-    },
-    {
       "name": "Reset controller",
       "uuid": "a4c08f9b23d1a46c-49ac4100bf659a9d",
       "transform": {
