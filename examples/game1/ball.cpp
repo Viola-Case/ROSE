@@ -19,6 +19,10 @@ using namespace ROSE;
 
 constexpr float size { 10 };
 constexpr double speed { 300. };
+/* Every paddle hit makes the ball a little faster, up to a ceiling so the
+ * rally stays playable (and the ball can't tunnel through a paddle). */
+constexpr double speedUpPerHit { 1.05 };
+constexpr double maxSpeed { 900. };
 
 
 namespace {
@@ -91,6 +95,14 @@ void Ball::FrameUpdate() {
        * when the ball is actually heading into the paddle so it can't stick. */
       if (pos.y < ppos.y && v.y > 0) v.y *= -1;
       else if (pos.y > ppos.y && v.y < 0) v.y *= -1;
+      else continue;
+
+      const double current = math::Sqrt(v.x * v.x + v.y * v.y);
+      if (current > 0 && current < maxSpeed) {
+        const double scale = math::Min(speedUpPerHit, maxSpeed / current);
+        v.x *= scale;
+        v.y *= scale;
+      }
     }
   }
 
