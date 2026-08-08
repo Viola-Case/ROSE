@@ -21,6 +21,12 @@
 namespace ROSE {
   using math::Compd;
   using math::Compf;
+  using math::Mat2d;
+  using math::Mat2f;
+  using math::Mat3d;
+  using math::Mat3f;
+  using math::Mat4d;
+  using math::Mat4f;
   using math::Quatd;
   using math::Quatf;
   using math::Vec2d;
@@ -29,6 +35,5 @@ namespace ROSE {
   using math::Vec3f;
   using math::Vec4d;
   using math::Vec4f;
-  // using math::Mat;
 
 } // namespace ROSE

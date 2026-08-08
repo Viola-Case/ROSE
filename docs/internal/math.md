@@ -11,18 +11,21 @@ Everything lives in **`ROSE::math`**, not `ROSE`.
 
 ## What is re-exported into `ROSE`
 
-`math.h` ends with exactly ten `using` declarations:
+`math.h` ends with sixteen `using` declarations:
 
 ```cpp
 Compd Compf  Quatd Quatf
 Vec2d Vec2f  Vec3d Vec3f  Vec4d Vec4f
+Mat2d Mat2f  Mat3d Mat3f  Mat4d Mat4f
 ```
 
-`using math::Mat;` is present but **commented out**. So:
+So:
 
-- ✅ `ROSE::Vec3d`, `ROSE::Quatf`, … work unqualified inside `namespace ROSE`.
-- ❌ `Mat`, the `Vec2`/`Vec3`/`Vec4` template aliases, `Sign`, `EulerOrder`,
-  `Sqrt`, `Clamp`, `PI`, `LeviCivita` all need a `math::` qualifier.
+- ✅ `ROSE::Vec3d`, `ROSE::Mat4d`, `ROSE::Quatf`, … work unqualified inside
+  `namespace ROSE`.
+- ❌ The `Vec2`/`Vec3`/`Vec4` and `Mat2`/`Mat3`/`Mat4` template aliases, the `Mat`
+  and `Vec` templates themselves, `Sign`, `EulerOrder`, `Sqrt`, `Clamp`, `PI` and
+  `LeviCivita` all need a `math::` qualifier.
 
 Where the engine actually uses these: `Transform` (`Vec3d position/scale`,
 `Quatd rotation`), `mesh.h` (`Vec3d position/normal`), `motion.h` (four `Vec3d`
@@ -124,39 +127,92 @@ operator is non-`const`, so a `const Vec3f` will not convert to `Vec3d`.
 
 ## `matrix.h` — `Mat<T, Rows, Cols>`
 
-The least finished file in the library. A primary template plus a square
-`Mat<T, Dimension, Dimension>` specialisation, both storing
-`FixedArray<T, Rows*Cols>` in **row-major** order.
-
 ```cpp
-static constexpr size_t size = Rows * Cols;
-constexpr Mat() noexcept = default;                  // IMPLICITLY DELETED (see below)
-constexpr Mat(const Mat&) noexcept = default;
-
-constexpr Vec<T, Rows> col(size_t idx) const noexcept;
-constexpr Vec<T, Cols> row(size_t idx) const noexcept;
-constexpr T&   operator()(size_t row, size_t col) noexcept;   // non-const only
-constexpr Mat& operator+=/-=(const Mat&) noexcept;
-constexpr Mat  operator*(const Mat&) const noexcept;          // EMPTY BODY, no return
+template <Scalar T, size_t Rows, size_t Cols> requires (Rows > 0 && Cols > 0) struct Mat;
 ```
 
-State of it:
+One template, no square specialisation — square-only operations carry
+`requires(Rows == Cols)` and simply do not exist on a non-square instantiation.
+Storage is a `FixedArray<T, Rows*Cols>` in **row-major** order: element (r, c) is
+`data[r * Cols + c]`.
 
-- **Not default-constructible** — `FixedArray` has no default constructor, so
-  `Mat<float,4,4> m;` fails to compile (`known-issues.md` #2). There is also no
-  constructor that takes elements, so a `Mat` is currently impossible to create
-  except by copy from another (unobtainable) `Mat`.
-- `operator*` has an empty double loop and **no return statement**.
-- The two specialisations are duplicated verbatim; only `Cols`/`Rows` constants
-  differ.
-- No identity, transpose, determinant, inverse, `Mat*Vec`, scalar multiply, or
-  translation/rotation/projection builders.
-- `col()`/`row()` return a `Vec`, which caps usable dimensions at 4 anyway (and
-  requires the returned `Vec` to be default-constructible, which for N > 4 it is
-  not).
+```cpp
+using ValueType = T;
+static constexpr size_t rowCount = Rows, colCount = Cols, size = Rows * Cols;
 
-Treat `Mat` as a placeholder. `Transform` deliberately stores position +
-quaternion + scale rather than a matrix.
+constexpr Mat() noexcept;                            // the ZERO matrix, not indeterminate
+constexpr Mat(Args... args) noexcept;                // one arg per element, row-major; requires sizeof...==size
+
+static constexpr Mat Zero()      noexcept;
+static constexpr Mat Filled(T)   noexcept;
+static constexpr Mat Identity()  noexcept requires (Rows == Cols);
+static constexpr Mat Diagonal(const Vec<T,Rows>&) noexcept requires (Rows == Cols && Rows > 1);
+
+constexpr T& operator()(size_t r, size_t c) noexcept;              // + const overload, both assert bounds
+template <size_t R, size_t C> constexpr T& at() noexcept;          // + const overload
+constexpr Vec<T,Cols> row(size_t) const noexcept requires (Cols > 1);
+constexpr Vec<T,Rows> col(size_t) const noexcept requires (Rows > 1);
+constexpr void SetRow/SetCol(size_t, const Vec<…>&) noexcept;
+
+constexpr Mat& operator+=/-=(const Mat&) noexcept;
+constexpr Mat& operator*=//=(T) noexcept;                          // /= asserts nonzero
+constexpr Mat  operator+/-(const Mat&) const noexcept;
+constexpr Mat  operator*//(T) const noexcept;                      // and a free T * Mat
+constexpr Mat  operator-() const noexcept;                         // unary negate
+constexpr bool operator==(const Mat&) const noexcept;              // exact; != is synthesised
+
+template <size_t K> constexpr Mat<T,Rows,K> operator*(const Mat<T,Cols,K>&) const noexcept;
+constexpr Vec<T,Rows> operator*(const Vec<T,Cols>&) const noexcept requires (Rows > 1 && Cols > 1);
+constexpr Mat& operator*=(const Mat&) noexcept requires (Rows == Cols);
+
+constexpr Mat<T,Cols,Rows> Transposed() const noexcept;
+constexpr Mat& Transpose()   noexcept requires (Rows == Cols);     // in place, square only
+constexpr T    Trace()       noexcept requires (Rows == Cols);
+constexpr T    Determinant() const noexcept requires (Rows == Cols);
+constexpr bool Invert()      noexcept requires (Rows == Cols && floating point);
+constexpr Mat  Inverted()    const noexcept requires (Rows == Cols && floating point);
+```
+
+The inner dimension of `operator*` is enforced by the parameter type, not an
+assert: `Mat<T,2,3> * Mat<T,3,4>` gives `Mat<T,2,4>`, and a mismatch is a
+deduction failure.
+
+`Determinant()` uses a closed form up to 3×3 and the **Bareiss** algorithm above
+that — fraction-free, so it stays exact for integral `T`. It pivots only to step
+over a zero pivot, not for magnitude, so a large ill-conditioned float matrix
+would be better served by LU with partial pivoting; at 4×4 it does not matter.
+`Invert()` is Gauss-Jordan **with** partial pivoting, floating-point only; it
+returns `false` and leaves the matrix **unchanged** when singular. `Inverted()`
+returns `Identity()` in that case and asserts, so use `Invert()` if you have to
+tell the two apart.
+
+### Aliases
+
+```cpp
+template <Scalar T> using Mat2 = Mat<T,2,2>;   // Mat3, Mat4 likewise
+using Mat2f/Mat2d/Mat3f/Mat3d/Mat4f/Mat4d;
+```
+
+All six concrete aliases are re-exported into `ROSE` by `math.h`.
+
+### Two things to know
+
+1. **Everything that touches only `data` is usable in a constant expression.**
+   The members that take or return a `Vec` — `row()`, `col()`, `SetRow()`,
+   `SetCol()`, `Diagonal()`, `operator*(Vec)` — are *not*, for `Vec<T, N ≤ 4>`:
+   those specialisations put their storage in an anonymous union, and touching
+   `Vec::data` while `x`/`y`/`z`/`w` is the active member is not a constant
+   expression. They are correct at runtime. This is a `vector.h` limitation, not
+   a matrix one.
+2. `matrix.h` ends with a block of `static_assert`s covering the indexing, the
+   algebra, both determinant paths and the inverse. They compile away to nothing;
+   define `ROSE_MATH_NO_SELFTEST` to drop them. Every value in there is exact in
+   binary floating point on purpose — don't add a case that isn't.
+
+Still missing: translation/rotation/scale/`LookAt`/projection builders, a
+quaternion→matrix conversion, and a `std::formatter`. `Transform` deliberately
+stores position + quaternion + scale rather than a matrix, so nothing in the
+engine consumes `Mat` yet.
 
 ---
 
@@ -393,7 +449,9 @@ and `hashmap.cpp` both reach into `math::` for them.
 | `Vec4` with four arguments | ❌ constructor only takes two |
 | `vec[i]` | ⚠️ fails to compile in `_DEBUG` — use `.x/.y/.z` |
 | `std::format` a `Vec` | ❌ formatter does not compile |
-| matrices | ⚠️ placeholder; not even constructible |
+| matrix add/sub/scale/multiply, `Mat*Vec`, transpose, trace | ✅ |
+| matrix identity / determinant / inverse | ✅ square only; inverse is floating-point only |
+| matrix transform builders (translate/rotate/project) | ❌ |
 | complex arithmetic + formatting | ✅ |
 | quaternion product, normalize, axis-angle, from-euler | ✅ |
 | quaternion inverse / slerp / rotate-a-vector / to-euler | ❌ |

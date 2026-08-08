@@ -106,25 +106,26 @@ size_t size_bytes() const noexcept;
 An aggregate-ish `T _data[N]` with `constexpr` accessors.
 
 ```cpp
+constexpr FixedArray() noexcept = default;                     // elements INDETERMINATE, like std::array
 template <size_t M> constexpr FixedArray(const T (&arr)[M]);   // static_asserts M == N
-constexpr FixedArray(std::initializer_list<T>);                // see below
+constexpr FixedArray(std::initializer_list<T>);                // ROSE_ASSERTs size, ignores extras
 
-constexpr T*       data() noexcept;         // non-const only
-constexpr size_t   size() noexcept;         // non-const only
+constexpr T*       data() noexcept;         // + const overload
+constexpr size_t   size() const noexcept;
 constexpr T&       operator[](size_t);      // + const overload
-constexpr const T* begin() const noexcept;  // const only
-constexpr const T* end()   const noexcept;
+constexpr T*       begin()/end() noexcept;  // + const overloads
 ```
 
-**No default constructor.** Declaring the two constructors above suppresses the
-implicit one, which is what makes `math::Mat` and generic `math::Vec<T, N>`
-non-default-constructible (`known-issues.md` #2).
+The default constructor **default-initializes**, so `FixedArray<int,3> a;` gives
+three indeterminate ints — assign before reading. It exists at all only since the
+`math::Mat` work; before that, declaring the two other constructors suppressed the
+implicit one and made `math::Mat` and generic `math::Vec<T, N>` impossible to
+construct (`known-issues.md` #2).
 
-The `initializer_list` constructor contains
-`static_assert(list.size() == N, …)`, which is not a constant expression —
-instantiating it is ill-formed. The array-reference constructor is the usable one.
-
-`data()` and `size()` are non-`const`, so neither works on a `const FixedArray`.
+Includes `<ROSE/Core/macros.h>` for `ROSE_ASSERT_MSG`, which replaced an
+ill-formed `static_assert(list.size() == N, …)` in the `initializer_list`
+constructor — `list.size()` is not a constant expression, so instantiating that
+constructor used to be a hard error. Both constructors work now.
 
 ---
 

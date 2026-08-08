@@ -2,8 +2,9 @@
 
 Defects and sharp edges found while surveying the headers on **2026-07-23**
 (`master` @ `8510b49`). Every item below was **verified by compiling and/or
-running it**, not inferred from reading. None of them are fixed yet — this file
-is a record of the trip hazards, not a changelog.
+running it**, not inferred from reading. This file is a record of the trip
+hazards, not a changelog — an item that gets fixed is struck through and kept
+only where the shape of the old problem still explains the code around it.
 
 Ordered roughly by how likely they are to bite.
 
@@ -51,37 +52,36 @@ null). Applies to all four copies.
 
 ---
 
-## 2. `FixedArray` has no default constructor, so `Mat` and `Vec<T,N≥5>` cannot be constructed
+## 2. ~~`FixedArray` has no default constructor, so `Mat` and `Vec<T,N≥5>` cannot be constructed~~ — FIXED
 
-`include/ROSE/Core/array.h`. Declaring the array-reference and
-`initializer_list` constructors suppresses the implicit default constructor,
-which propagates to every aggregate holding one.
+**Fixed in `include/ROSE/Core/array.h`.** Kept here because the shape of the
+problem explains a lot of the surrounding code.
 
-```
-ROSE::FixedArray<int,3> a;    -> error: no matching constructor
-Vec<float,5> v;               -> error: call to implicitly-deleted default constructor
-Mat<float,4,4> m;             -> error: call to implicitly-deleted default constructor
-Mat<float,4,4> m; m.col(0);   -> error: call to implicitly-deleted default constructor
-Vec4f v;  Vec3f v;  Vec2f v;  -> OK (their own constructors have defaulted params)
-```
+Declaring the array-reference and `initializer_list` constructors suppressed the
+implicit default constructor, which propagated to every aggregate holding one, so
+`FixedArray<int,3> a;`, `Vec<float,5> v;` and `Mat<float,4,4> m;` were all "call
+to implicitly-deleted default constructor". `Mat` had no other constructor, so no
+`Mat` could be created at all. (`Vec2f`/`Vec3f`/`Vec4f` escaped it — their own
+constructors have defaulted params.)
 
-`Mat` has no other constructor, so **no `Mat` can be created at all** — the type
-is unusable as written. `Mat::col()`/`row()` also need `Vec<T,Dim>` to be default
-constructible, which caps them at Dim ≤ 4 regardless.
-
-Separately, the `initializer_list` constructor is ill-formed if ever instantiated:
+Separately the `initializer_list` constructor was ill-formed if ever
+instantiated, because `list.size()` is not a constant expression:
 
 ```cpp
-constexpr FixedArray(std::initializer_list<T> list) {
-  static_assert(list.size() == N, "Size mismatch");   // list.size() is not a constant expression
+static_assert(list.size() == N, "Size mismatch");   // ill-formed
 ```
 
-Also: `data()` and `size()` are non-`const`, so neither works through a
-`const FixedArray&`.
+`array.h` now has `constexpr FixedArray() noexcept = default;`, `const` overloads
+of `data()`/`size()`, mutable `begin()`/`end()`, and a runtime `ROSE_ASSERT_MSG`
+in place of that `static_assert`. It includes `<ROSE/Core/macros.h>` for the
+assert. Elements are still left **default-initialized**, like `std::array` —
+`FixedArray<int,3> a;` gives you three indeterminate ints, so assign before
+reading. `Mat`'s own default constructor zeroes explicitly rather than relying on
+this.
 
-**Fix:** add `constexpr FixedArray() = default;` (and const overloads of
-`data()`/`size()`); replace the `initializer_list` static_assert with a runtime
-guard or drop that constructor.
+Still true: `Mat::col()`/`row()` return a `Vec`, and `Vec` is constrained to
+`N > 1`, so those two are constrained `requires(Rows > 1)` / `requires(Cols > 1)`
+rather than existing for every shape.
 
 ---
 
@@ -283,7 +283,6 @@ it is worth remembering before someone puts a `Vec` batch in a map.
 
 | Where | What |
 |---|---|
-| `matrix.h:47,104` | `Mat::operator*` has an empty body and no `return` — UB if it were ever callable |
 | `quaternion.h:84` | `Quat::ToEuler` is a stub; every branch returns `{}` |
 | `quaternion.h:47,58` | `AxisAngle`/`FromEuler` are `constexpr` but call `std::sin`/`std::cos`, so they can never be constant-evaluated before C++26 |
 | `utility.cpp:48,69` | `FNV1A64(const StringView&)` and `FNV1A128(const StringView&)` are defined but declared in no header — dead symbols |

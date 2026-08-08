@@ -11,6 +11,7 @@
 #pragma once
 
 #include <ROSE/Core/stdlib.h>
+#include <ROSE/Core/macros.h>
 
 namespace ROSE {
   template <typename T, size_t N>
@@ -18,6 +19,11 @@ namespace ROSE {
     T _data[N];
 
   public:
+    /* Declaring the constructors below suppresses the implicit default constructor, which used to propagate out to
+     * every aggregate holding a FixedArray - Mat and Vec<T, N >= 5> were both impossible to construct because of it.
+     * Elements are left default-initialized, like std::array; construct from a list or assign before reading. */
+    constexpr FixedArray() noexcept = default;
+
     template <size_t M>
     constexpr FixedArray(const T (&arr)[M]) {
       static_assert(M == N, "Size mismatch");
@@ -25,20 +31,26 @@ namespace ROSE {
         _data[i] = arr[i];
     }
 
+    /* A runtime check, not a static_assert: list.size() is not a constant expression, so the static_assert this
+     * replaces made the constructor ill-formed the moment it was instantiated. Extra elements are ignored. */
     constexpr FixedArray(std::initializer_list<T> list) {
-      static_assert(list.size() == N, "Size mismatch");
+      ROSE_ASSERT_MSG(list.size() == N, "Size mismatch");
       size_t i = 0;
-      for (const auto &v : list)
+      for (const auto &v : list) {
+        if (i >= N) break;
         _data[i++] = v;
+      }
     }
 
     constexpr T *data() noexcept { return _data; }
-    // constexpr const T *data() noexcept { return _data; }
-    constexpr size_t size() noexcept { return N; }
+    constexpr const T *data() const noexcept { return _data; }
+    constexpr size_t size() const noexcept { return N; }
 
     constexpr T &operator[](size_t i) noexcept { return _data[i]; }
     constexpr const T &operator[](size_t i) const noexcept { return _data[i]; }
 
+    constexpr T *begin() noexcept { return data(); }
+    constexpr T *end() noexcept { return data() + N; }
     constexpr const T *begin() const noexcept { return data(); }
     constexpr const T *end() const noexcept { return data() + N; }
   };
