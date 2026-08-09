@@ -279,7 +279,55 @@ it is worth remembering before someone puts a `Vec` batch in a map.
 
 ---
 
-## 10. Smaller things
+## 10. `MemCmp` cannot be constant-evaluated on two string literals
+
+`include/ROSE/Core/utility.h:120` — the early-out compares the two pointers:
+
+```cpp
+template <typename T>
+constexpr int MemCmp(const T *a, const T *b, size_t count) noexcept {
+  if (count == 0 || a == b) return 0;
+```
+
+Comparing the addresses of two *distinct* string literals is not a constant
+expression. The implementation is free to merge identical literals into one
+object or keep them separate, so `a == b` has no answer the compiler is willing
+to commit to, and the whole call stops being usable in a constant expression:
+
+```cpp
+constexpr const char *Directive() { return "#version 450 core"; }
+static_assert(MemCmp(Directive(), "#version 450 core", 17) == 0);
+```
+
+```
+error: static assertion expression is not an integral constant expression
+utility.h(120,25): note: comparison of addresses of potentially overlapping
+                         literals has unspecified value
+```
+
+Found **2026-08-09** writing the GLSL version table in `openglrenderer.cpp`,
+where the natural way to pin a table of string constants down is a `static_assert`
+over them — which is exactly the shape that fails.
+
+Runtime calls are unaffected, and so is constant evaluation whenever the compiler
+*can* decide the comparison: two pointers into the same array, or either operand
+null. It is only literal-vs-literal that breaks, and the `constexpr` on the
+signature advertises support for it.
+
+**Fix:** delete `a == b` from the condition, or keep it only where it is legal:
+
+```cpp
+if (count == 0) return 0;
+if (!std::is_constant_evaluated() && a == b) return 0;
+```
+
+The early-out saves one pass over a loop that is already O(count), so dropping it
+outright costs close to nothing. `<type_traits>` is already in scope — the same
+function uses `std::is_integral_v` two lines down.
+
+---
+
+## 11. Smaller things
 
 | Where | What |
 |---|---|

@@ -51,6 +51,35 @@ order. **That order matters** — `math/vector.h` uses `ROSE_ASSERT` without
 including `macros.h`, so it only compiles because `ROSE.h` got there first. See
 `known-issues.md` #1.
 
+## Building the tree
+
+`cmake --build --preset debug` (or `release`) **fails on `ROSE_Editor`, by design**:
+
+```
+include/ROSE/Editor/editor.h(3,2): error: ROSE EDITOR MUST BE BUILT WITH EDITOR CONFIG
+```
+
+`CMakeLists.txt` adds `ROSE_Editor` in every configuration, but `editor.h` guards on
+`ROSE_EDITOR`, which is only defined under `$<$<CONFIG:Editor>:...>`. The target
+therefore exists everywhere and compiles in exactly one place. This is intentional,
+not a regression — don't "fix" it by relaxing the guard.
+
+What follows from that:
+
+- The default all-target build is unusable outside the `editor` preset. Name the
+  targets you actually want:
+  ```sh
+  cmake --build --preset debug --target ROSE_Core
+  cmake --build --preset debug --target Game1 Game2 Orbits KeyboardTest ControllerTest
+  ```
+- `ENGINE_BUILD` depends on `ROSE_Editor`, so it dies the same way. It only
+  aggregates usefully under the `editor` preset.
+- `cmake --build --preset editor` builds the whole tree, editor included.
+
+Ninja reports the failure after the targets that already succeeded, so the
+`Linking CXX executable ...` lines printed above the error are real — only
+`ROSE_Editor` died.
+
 ## Compiling a throwaway test against the RTL
 
 Clang is at `/d/Program Files/LLVM/bin/clang++` and is on `PATH`.

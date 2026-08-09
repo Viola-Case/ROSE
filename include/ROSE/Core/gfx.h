@@ -69,7 +69,7 @@ namespace ROSE {
   class OpenGLRenderer : public RenderBackend {
   public:
     explicit OpenGLRenderer(int majorVersion = 4, int minorVersion = 5);
-    ~OpenGLRenderer();
+    ~OpenGLRenderer() override;
 
     OpenGLRenderer(const OpenGLRenderer &) = delete;
     OpenGLRenderer(OpenGLRenderer &&) = delete;
@@ -85,9 +85,10 @@ namespace ROSE {
     void *GetNativeHandle() const override;
     const char *GetName() const override;
 
-    void UpdateBuffers();
   protected:
-    void *m_context;
+    void *m_context { nullptr };
+    void *m_window { nullptr }; //!< `SDL_Window *`, kept for the buffer swap in `EndFrame`
+    String m_name { "OpenGL" }; //!< built by `Init` from the context the driver actually handed back
     int m_versionMajor;
     int m_versionMinor;
   };
@@ -114,6 +115,23 @@ namespace ROSE {
 
   private:
     void *m_renderer;
+  };
+
+  class NoopRenderer : public RenderBackend {
+  public:
+    NoopRenderer() = default;
+    ~NoopRenderer() override = default;
+    NoopRenderer(const NoopRenderer &) = delete;
+    NoopRenderer(NoopRenderer &&) = delete;
+    NoopRenderer &operator=(const NoopRenderer &) = delete;
+    NoopRenderer &operator=(NoopRenderer &&) = delete;
+    BackendStatus Init(const RenderBackendContext &) override { return BackendStatus::IHaveNoIdea; }
+    void Shutdown() override {}
+    void BeginFrame() override {}
+    void EndFrame() override {}
+    void OnResize(int width, int height) override {}
+    void *GetNativeHandle() const override { return nullptr; }
+    const char *GetName() const override { return ""; }
   };
 
 
