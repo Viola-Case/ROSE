@@ -231,9 +231,13 @@ add_executable(ROSE_Editor ${ROSE_EDITOR_SOURCES})
 
 target_include_directories(ROSE_Editor PUBLIC include/)
 
-target_link_libraries(ROSE_Editor
-    PUBLIC  ROSE_Core
-    PRIVATE SDL3::SDL3
+# Everything this target uses directly is listed here rather than inherited from
+# ROSE_Core, whose own dependencies are PRIVATE. It drives SDL and ImGui itself
+# and never constructs a ROSE::Application, so it owns its own ImGui context.
+target_link_libraries(ROSE_Editor PRIVATE
+        ROSE_Core
+        SDL3::SDL3
+        imgui::imgui
 )
 
 target_compile_definitions(ROSE_Editor
@@ -300,10 +304,14 @@ add_dependencies(ENGINE_BUILD ROSE_Core ROSE_Editor)
 # --------------------------------------------------------------- ControllerTest
 add_executable(ControllerTest "examples/ControllerTest/main.cpp")
 
+# Standalone SDL/ImGui program that borrows only ROSE's RTL. It creates its own
+# ImGui context, so the two copies of ImGui here are independent by design.
 target_link_libraries(ControllerTest PRIVATE
         ROSE_Core
+        SDL3::SDL3
         SDL3_image::SDL3_image
         SDL3_ttf::SDL3_ttf
+        imgui::imgui
 )
 
 set_property(TARGET ControllerTest PROPERTY FOLDER "Examples")
@@ -313,10 +321,13 @@ rose_deploy_crt(ControllerTest)
 # ----------------------------------------------------------------- KeyboardTest
 add_executable(KeyboardTest "examples/KeyboardTest/main.cpp")
 
+# Same shape as ControllerTest: its own SDL init, its own ImGui context.
 target_link_libraries(KeyboardTest PRIVATE
         ROSE_Core
+        SDL3::SDL3
         SDL3_image::SDL3_image
         SDL3_ttf::SDL3_ttf
+        imgui::imgui
 )
 
 set_property(TARGET KeyboardTest PROPERTY FOLDER "Examples")
@@ -328,9 +339,14 @@ file(GLOB_RECURSE GAME1_SOURCES "examples/game1/*.cpp")
 
 add_executable(Game1 ${GAME1_SOURCES})
 
+# Ball and Paddle render through SDL directly and FpsCounter draws with ImGui, so
+# both are first-party dependencies of this target rather than implementation
+# details of ROSE_Core.
 target_link_libraries(Game1 PRIVATE
         ROSE_Core
+        SDL3::SDL3
         SDL3_ttf::SDL3_ttf
+        imgui::imgui
 )
 
 set_property(TARGET Game1 PROPERTY FOLDER "Examples")
@@ -362,8 +378,10 @@ file(GLOB_RECURSE GAME2_SOURCES "examples/game2/*.cpp")
 
 add_executable(Game2 ${GAME2_SOURCES})
 
+# vnstuff.h includes SDL_ttf directly.
 target_link_libraries(Game2 PRIVATE
         ROSE_Core
+        SDL3::SDL3
         SDL3_ttf::SDL3_ttf
 )
 
