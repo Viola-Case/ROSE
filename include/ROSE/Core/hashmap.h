@@ -13,6 +13,7 @@
 #include <initializer_list>
 #include <type_traits>
 
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/stdlib.h>
 #include <ROSE/Core/buffer.h>
 #include <ROSE/Core/pair.h>
@@ -22,20 +23,9 @@
 
 namespace ROSE {
 
-  /*!
-   *
-   * @param data pointer to object
-   * @param len size of object
-   * @return FNV1a hash of object
-   */
-  uint64_t FNV1A64(const void *data, size_t len);
-
-  /**
-   *
-   * @param str null-terminated C-string to be hashed
-   * @return FNV1a hash of string
-   */
-  uint64_t FNV1A64(const char *str);
+  // FNV1A64 is declared in utility.h, which this header includes. The 128-bit
+  // pair lives here instead because it needs uint128_t, and bigint.h includes
+  // utility.h rather than the other way round.
 
   /**
    *
@@ -43,14 +33,14 @@ namespace ROSE {
    * @param len length of data to hash (in bytes)
    * @return
    */
-  uint128_t FNV1A128(const void *data, size_t len);
+  ROSE_API(Core) uint128_t FNV1A128(const void *data, size_t len);
 
   /**
    *
    * @param str null-terminated C-string
    * @return FNV1a hash of string
    */
-  uint128_t FNV1A128(const char *str);
+  ROSE_API(Core) uint128_t FNV1A128(const char *str);
 
   /**
 
@@ -65,7 +55,7 @@ namespace ROSE {
                range-for's begin()/end() lookup.
 
   **/
-  class HashMap {
+  class ROSE_API(Core) HashMap {
     friend class Iterator;
 
   public:
@@ -92,7 +82,7 @@ namespace ROSE {
       constexpr operator uint8_t() const noexcept { return static_cast<uint8_t>(value); }
     };
 
-    class Iterator {
+    class ROSE_API(Core) Iterator {
       friend class HashMap;
 
     public:

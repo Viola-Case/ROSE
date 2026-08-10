@@ -41,4 +41,19 @@ namespace ROSE {
     MIX_Quit();
   }
 
+  AudioSystem &AudioSystem::Get() {
+    static AudioSystem audioSystem;
+    return audioSystem;
+  }
+
+  /// @todo Look the track up in m_tracks and hand it to the mixer.
+  void AudioSystem::PlayAudio(UUID id) {
+    Log(LogLevel::Warn, "AudioSystem::PlayAudio is not implemented\n\ttrack = {}-{}", id.high, id.low);
+  }
+
+  /// @todo See PlayAudio.
+  void AudioSystem::StopAudio(UUID id) {
+    Log(LogLevel::Warn, "AudioSystem::StopAudio is not implemented\n\ttrack = {}-{}", id.high, id.low);
+  }
+
 }

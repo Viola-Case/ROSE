@@ -14,7 +14,10 @@
 
 namespace ROSE {
 
-  String LOG = R"(
+  // constexpr, not String: as a String this was an external-linkage global that ran
+  // a heap allocation during ROSE_Core.dll's static init for a banner nothing reads
+  // yet. This way it costs nothing until a sink actually prints it.
+  [[maybe_unused]] constexpr const char *LOG = R"(
                                                              ██▒▒▒▒▓██
                                                             █▓▒▒█▒▒▒▒█▒█
                                                            █▒▒█▓███████▓

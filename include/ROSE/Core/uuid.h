@@ -10,6 +10,7 @@
 **/
 #pragma once
 
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/stdlib.h>
 #include <ROSE/Core/utility.h>
 #include <ROSE/Core/bigint.h>
@@ -32,7 +33,7 @@ namespace ROSE {
       return value == _other.value;
     }
 
-    [[nodiscard]] static UUID Generate() noexcept;
+    [[nodiscard]] ROSE_API(Core) static UUID Generate() noexcept;
 
     constexpr static UUID Invalid() noexcept { return {}; }
   };

@@ -10,6 +10,7 @@
 **/
 #pragma once
 
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/uuid.h>
 #include <ROSE/Core/memory.h>
 
@@ -32,7 +33,7 @@ namespace ROSE {
    *
    * @todo Add behavior name with registry
    */
-  class Behavior {
+  class ROSE_API(Core) Behavior {
     friend class Object;
     friend class Scene;
 

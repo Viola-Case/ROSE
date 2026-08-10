@@ -51,6 +51,38 @@ order. **That order matters** — `math/vector.h` uses `ROSE_ASSERT` without
 including `macros.h`, so it only compiles because `ROSE.h` got there first. See
 `known-issues.md` #1.
 
+## Core is a DLL
+
+`ROSE_Core` is a **shared** library (`build/*/bin/ROSE_Core.dll` plus an import lib
+in `build/*/lib`). The point is single instances: `BehaviorFactory::get()`,
+`InputSystem::GetInstance()`, `MeshRegistry::Get()`, `AudioSystem::Get()` and
+`Time`'s storage exist exactly once in the process, however many modules link Core.
+
+Anything with an out-of-line definition in `src/Core` is annotated `ROSE_API(Core)`,
+which expands to `ROSE_Core_API` and resolves in `macros.h`:
+
+| Defined | Meaning |
+|---|---|
+| `ROSE_Core_BUILD` | `dllexport` — CMake sets this `PRIVATE` on the `ROSE_Core` target only |
+| nothing | `dllimport` — every consumer |
+| `ROSE_Core_API` (e.g. `-DROSE_Core_API=`) | neither; for standalone builds, see below |
+
+Header-only templates (`List`, `BasicString`, `TypedHashMap`, `UniquePtr`, `Vec`,
+`Mat`, …) are deliberately **not** exported — each module instantiates its own copy,
+which duplicates code but not state.
+
+Two consequences worth knowing:
+
+- **The dynamic CRT is now load-bearing.** `UniquePtr`/`MakeUnique` and
+  `BasicString::allocate` are header-inline, so an executable can `new` an object
+  that Core `delete`s and vice versa. That only works while both modules share one
+  heap. `x64-windows-static` is no longer a viable triplet.
+- **ImGui is a static lib**, so Core and any executable that calls ImGui directly
+  each get their own `GImGui`. Game code drawing into `Application`'s UI must call
+  `ROSE::AttachImGui()` (from `ROSE/Core/imgui.h`) once after `Application::Init()`
+  — see `examples/game1/main.cpp`. Programs that run their own ImGui context
+  (`ROSE_Editor`, `ControllerTest`, `KeyboardTest`) must not call it.
+
 ## Building the tree
 
 `cmake --build --preset debug` (or `release`) **fails on `ROSE_Editor`, by design**:
@@ -74,7 +106,14 @@ What follows from that:
   ```
 - `ENGINE_BUILD` depends on `ROSE_Editor`, so it dies the same way. It only
   aggregates usefully under the `editor` preset.
-- `cmake --build --preset editor` builds the whole tree, editor included.
+- `cmake --build --preset editor` builds everything except `ROSE_AssetMaker` and
+  `ROSE_UUID_Generator`, which fail there with
+  `lld-link: error: /failifmismatch: mismatch detected for '_ITERATOR_DEBUG_LEVEL'`.
+  vcpkg has no `Editor` configuration, so CMake falls back to its **debug** imported
+  libs (`_ITERATOR_DEBUG_LEVEL=2`) while the `Editor` config compiles with `NDEBUG`
+  and the release CRT (`=0`). Only these two targets notice, because `CLI11.lib` is
+  the one real static archive they link — every other dependency is an import lib
+  and carries no `/failifmismatch` directive. This predates the DLL conversion.
 
 Ninja reports the failure after the targets that already succeeded, so the
 `Linking CXX executable ...` lines printed above the error are real — only
@@ -86,8 +125,15 @@ Clang is at `/d/Program Files/LLVM/bin/clang++` and is on `PATH`.
 
 ```sh
 # headers + RawBuffer is enough for List / String / smart pointers / math
-clang++ -std=c++20 -w -I include test.cpp src/Core/rtl/buffer.cpp -o t.exe
+clang++ -std=c++20 -w -DROSE_Core_API= -I include test.cpp src/Core/rtl/buffer.cpp -o t.exe
 ```
+
+`-DROSE_Core_API=` is what makes this work now that Core is a DLL: without it the
+headers declare `RawBuffer` and friends `dllimport` while `buffer.cpp` defines them
+locally, and the link fills with `LNK4217 locally defined symbol imported`. (It
+still produces a working exe, just a noisy one.) Do **not** use
+`-DROSE_Core_BUILD` instead — `dllexport` forces every member of an exported class
+to be emitted, which drags in `HashMap` and fails to link.
 
 For anything touching `HashMap` you need two extra pieces, because
 `src/Core/rtl/hashmap.cpp` includes all of `<ROSE/ROSE.h>` (which drags in SDL,

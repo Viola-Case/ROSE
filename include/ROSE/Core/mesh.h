@@ -10,6 +10,7 @@
 **/
 #pragma once
 
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/math.h>
 
 namespace ROSE {
@@ -40,7 +41,7 @@ namespace ROSE {
     Mesh *mesh;
   };
 
-  class MeshRegistry {
+  class ROSE_API(Core) MeshRegistry {
   public:
     static MeshRegistry &Get() noexcept;
     void RegisterMesh (Mesh *mesh, const UUID &id, const String &name);
@@ -48,7 +49,7 @@ namespace ROSE {
     const Mesh *GetMesh(const String &name) noexcept;
 
   private:
-    MeshRegistry();
+    MeshRegistry() = default;
     TypedHashMap<UUID, UniquePtr<Mesh>> m_meshes;
     TypedHashMap<String, UUID> m_meshNameIDs;
 

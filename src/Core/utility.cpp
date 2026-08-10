@@ -45,8 +45,6 @@ namespace ROSE {
     return hash;
   }
 
-  uint64_t FNV1A64(const StringView &str) { return FNV1A64(str.c_str()); }
-
   uint128_t FNV1A128(const void *data, size_t len) {
     uint128_t hash = math::FNVOFFSET128;
     for (size_t i = 0; i < len; ++i) {
@@ -65,8 +63,6 @@ namespace ROSE {
     }
     return hash;
   }
-
-  uint128_t FNV1A128(const StringView &str) { return FNV1A128(str.c_str()); }
 
 
 #if !defined(ROSE_NO_FORWARD_DECLARING_INTRINSICS)

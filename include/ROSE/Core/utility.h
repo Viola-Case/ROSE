@@ -11,6 +11,7 @@
 #pragma once
 
 #include <utility>
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/typetraits.h>
 
 namespace ROSE {
@@ -100,7 +101,7 @@ namespace ROSE {
     return old;
   }
 
-  void MemCpy(void *_Dst, const void *_Src, size_t size);
+  ROSE_API(Core) void MemCpy(void *_Dst, const void *_Src, size_t size);
 
   template <typename T, typename U>
   constexpr void SmartMemCpy(T *_Dst, U *_Src, size_t count = 1) {
@@ -245,8 +246,20 @@ namespace ROSE {
     return value;
   }
 
-  uint64_t FNV1A64(const void *data, size_t len);
-  uint64_t FNV1A64(const char *str);
+  /*!
+   *
+   * @param data pointer to object
+   * @param len size of object
+   * @return FNV1a hash of object
+   */
+  ROSE_API(Core) uint64_t FNV1A64(const void *data, size_t len);
+
+  /**
+   *
+   * @param str null-terminated C-string to be hashed
+   * @return FNV1a hash of string
+   */
+  ROSE_API(Core) uint64_t FNV1A64(const char *str);
 
 
 } // namespace ROSE

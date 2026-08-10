@@ -10,12 +10,13 @@
 **/
 
 #pragma once
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/behavior.h>
 #include <ROSE/Core/math.h>
 
 
 namespace ROSE {
-  class Camera : public Behavior {
+  class ROSE_API(Core) Camera : public Behavior {
   public:
     static constexpr UUID typeID = "98b16c050e659798-2ba97b3cd1a9dd7c"_uuid;
     static constexpr UUID TypeID() { return typeID; }

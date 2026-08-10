@@ -10,6 +10,7 @@
 **/
 #pragma once
 
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/rtl.h>
 #include <ROSE/Core/uuid.h>
 
@@ -17,7 +18,7 @@ namespace ROSE {
   class Application;
   class Object;
 
-  class Scene final {
+  class ROSE_API(Core) Scene final {
     friend class Application;
     friend class Object;
 
@@ -78,7 +79,7 @@ namespace ROSE {
     Application *m_application { nullptr };
   };
 
-  class SceneManager final {
+  class ROSE_API(Core) SceneManager final {
     friend class Application;
     
   };

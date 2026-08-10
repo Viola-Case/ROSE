@@ -41,29 +41,19 @@ namespace ROSE {
     return RegisterResult::Success;
   }
 
+  void BehaviorFactory::RegisterModule(const char *moduleName) {
+    get().m_registeredModules.push_back(moduleName);
+  }
+
   bool BehaviorFactory::IsRegistered(const UUID &id) noexcept {
-    auto it = get().m_factoryFunctions.find(id);
-    if (it == get().m_factoryFunctions.end()) {
-      return false;
-    }
-    return true;
+    const auto it = get().m_factoryFunctions.find(id);
+    return it != get().m_factoryFunctions.end();
   }
 } // namespace ROSE
 
 
 using namespace ROSE;
 extern "C" void RoseRegisterCoreModule(BehaviorFactory &factory) {
-  /*!
-   * If I rearrange BehaviorFactory this part fucks up. Need to come up with a better way without making it accessible
-   * anywhere.
-   *
-   * PSA don't do this
-   *
-   * @todo This reinterpret_casts the factory to its first member to reach the module list.
-   * Reordering BehaviorFactory's members silently corrupts memory with no diagnostic.
-   * Give it a real RegisterModule(name) entry point instead.
-   */
-  List<String> &l = *reinterpret_cast<List<String> *>(&factory);
   List<Pair<FactoryFn, UUID>> fns {
     { MakeBehavior<Camera>, Camera::TypeID() },
     { MakeBehavior<AudioSource>, AudioSource::TypeID() },
@@ -78,5 +68,5 @@ extern "C" void RoseRegisterCoreModule(BehaviorFactory &factory) {
       break;
     }
   }
-  l.push_back("Core");
+  factory.RegisterModule("Core");
 }

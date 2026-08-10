@@ -285,9 +285,15 @@ class BehaviorFactory {
 public:
   static BehaviorFactory &get();                                    // singleton
   static RegisterResult Register(FactoryFn, const UUID &id, const char *moduleName = "");
+  static void RegisterModule(const char *moduleName);
   static UniquePtr<Behavior> Create(const UUID &id) noexcept;       // nullptr if unregistered
 };
 ```
+
+Core lives in `ROSE_Core.dll`, so there is exactly one `BehaviorFactory` in the
+process no matter how many modules register into it. `FactoryFn` is a raw function
+pointer, so a game's `MakeBehavior<T>` instantiated in the executable registers and
+runs fine across that boundary.
 
 `RegisterResult` is `Success | DuplicateID | Failure`. A duplicate ID logs a warning
 and keeps the **first** registration.
@@ -310,10 +316,11 @@ Pair<FactoryFn, UUID> fns[] {
 for (const auto &p : fns) factory.Register(p.first, p.second, "Game1");
 ```
 
-`RoseRegisterCoreModule` reaches the module-name list by `reinterpret_cast`ing the
-factory to its first member (`List<String>`). The source says so itself: *"If I
-rearrange BehaviorFactory this part fucks up… PSA don't do this."* Reordering
-`BehaviorFactory`'s members silently corrupts memory.
+Each module records its name with `factory.RegisterModule("Game1")` once the
+`Register` calls are done. This used to be a `reinterpret_cast` of the factory to
+its first member; with Core in a DLL, `BehaviorFactory`'s layout is part of the ABI
+and a member reorder would have corrupted memory across the boundary with no
+diagnostic, so the cast is gone.
 
 ## 7. Scene JSON and `ParamView`
 

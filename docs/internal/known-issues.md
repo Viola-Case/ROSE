@@ -333,7 +333,6 @@ function uses `std::is_integral_v` two lines down.
 |---|---|
 | `quaternion.h:84` | `Quat::ToEuler` is a stub; every branch returns `{}` |
 | `quaternion.h:47,58` | `AxisAngle`/`FromEuler` are `constexpr` but call `std::sin`/`std::cos`, so they can never be constant-evaluated before C++26 |
-| `utility.cpp:48,69` | `FNV1A64(const StringView&)` and `FNV1A128(const StringView&)` are defined but declared in no header — dead symbols |
 | `utility.h:59` | `SmartMemCpy(dst, src, count)` ignores `count` entirely; it copies `Min(sizeof(T), sizeof(U))` bytes once |
 | `string.h:173` | `at()`'s bounds check is commented out — it is `operator[]` with a different name |
 | `bigint.h:27` | The non-`__int128` fallback is a hard `#error`, so MSVC cannot compile the RTL at all |

@@ -11,6 +11,7 @@
 #pragma once
 
 #include <cstdint>
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/rtl.h>
 #include <ROSE/Core/factory.h>
 #include <ROSE/Core/gfx.h>
@@ -22,7 +23,7 @@ namespace ROSE {
   /*!
    * Not to be confused with `ApplicationFlags`
    */
-  struct ApplicationFlag {
+  struct ROSE_API(Core) ApplicationFlag {
     enum Value : uint8_t {
       Headless = 0,
       NoRenderer = 1,
@@ -84,7 +85,7 @@ namespace ROSE {
 
   class SceneManager;
 
-  class Application final {
+  class ROSE_API(Core) Application final {
 
   public:
     Application();

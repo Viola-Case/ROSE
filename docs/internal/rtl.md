@@ -272,14 +272,24 @@ Split deliberately in two so template bloat stays small: the type-erased
 `HashMap` holds all the logic and is precompiled; `TypedHashMap<K, V, Hash>` is a
 thin inline wrapper that hands it a static `TypeOps` vtable.
 
-### Hash functions (declared here, defined in `utility.cpp`)
+That `TypeOps` table is a function-local static inside a template, so each module
+gets its own copy. The tables are value-identical, so behaviour is the same
+everywhere — but the function pointers in a given map belong to whichever module
+constructed it. That matters the day `Application::LoadModule` can unload a module:
+a `TypedHashMap` outliving the module that built it would hold a dangling vtable.
+
+### Hash functions (defined in `utility.cpp`)
 
 ```cpp
-uint64_t  FNV1A64 (const void* data, size_t len);
-uint64_t  FNV1A64 (const char* str);
-uint128_t FNV1A128(const void* data, size_t len);
-uint128_t FNV1A128(const char* str);
+uint64_t  FNV1A64 (const void* data, size_t len);   // declared in utility.h
+uint64_t  FNV1A64 (const char* str);                // declared in utility.h
+uint128_t FNV1A128(const void* data, size_t len);   // declared here
+uint128_t FNV1A128(const char* str);                // declared here
 ```
+
+The 64-bit pair lives in `utility.h` (which this header includes); the 128-bit pair
+has to stay here because it needs `uint128_t`, and `bigint.h` includes `utility.h`
+rather than the other way round.
 
 ### `HashMap` (type-erased)
 

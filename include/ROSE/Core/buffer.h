@@ -10,10 +10,10 @@
 **/
 #pragma once
 
-
+#include <ROSE/Core/macros.h>
 
 namespace ROSE {
-  class RawBuffer {
+  class ROSE_API(Core) RawBuffer {
   public:
     RawBuffer() noexcept;
     explicit RawBuffer(size_t bytes);

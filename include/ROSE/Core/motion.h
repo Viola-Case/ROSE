@@ -9,10 +9,11 @@
 
 **/
 #pragma once
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/math/vector.h>
 #include <ROSE/Core/behavior.h>
 namespace ROSE {
-  class Motion : public Behavior {
+  class ROSE_API(Core) Motion : public Behavior {
   public:
     static constexpr UUID typeID = "ab0a57d02d8e9fde-462c4cdfe26597d3"_uuid;
     static constexpr UUID TypeID() noexcept { return typeID; }

@@ -51,10 +51,14 @@ endif()
 # requires AVX2. Set outside the block above because the presets supply
 # CMAKE_TOOLCHAIN_FILE themselves, which skips it.
 #
-# x64-windows-static builds a single self-contained exe with no redistributable,
-# but costs the mimalloc `override` feature and sdl3-image's `webp` feature --
-# neither is supported under static library linkage -- and produces a much larger
-# binary. Switching back also means restoring CMAKE_MSVC_RUNTIME_LIBRARY below.
+# x64-windows-static is no longer an option. ROSE_Core is a DLL, and the engine
+# allocates across that boundary in both directions -- UniquePtr/MakeUnique and
+# BasicString::allocate are header-inline, so an executable can new an object that
+# Core deletes and vice versa. That only works while both modules share one heap,
+# which is exactly what the dynamic CRT gives us. A static CRT would give the DLL
+# and each executable their own heap and turn every such pair into a crash.
+# (It also cost the mimalloc `override` feature and sdl3-image's `webp` feature,
+# and produced a much larger binary.)
 #
 # FORCE is deliberate: vcpkg's toolchain caches VCPKG_TARGET_TRIPLET on the first
 # configure, so a `NOT DEFINED` guard would never fire again and a stale triplet
@@ -178,7 +182,10 @@ find_package(CLI11 REQUIRED)
 
 file(GLOB_RECURSE ROSE_CORE_SOURCES "src/Core/*.cpp" "src/Core/*.c" "src/Core/*.h")
 
-add_library(ROSE_Core STATIC ${ROSE_CORE_SOURCES})
+# SHARED, not STATIC: a static Core gets copied into every module that links it,
+# which means BehaviorFactory, InputSystem, MeshRegistry and Time exist once per
+# module with no diagnostic. One DLL means one of each.
+add_library(ROSE_Core SHARED ${ROSE_CORE_SOURCES})
 
 target_include_directories(ROSE_Core PUBLIC include/)
 
@@ -194,6 +201,8 @@ target_link_libraries(ROSE_Core
 
 target_compile_definitions(ROSE_Core
     PUBLIC  $<$<CONFIG:Editor>:ROSE_EDITOR>
+    # Flips ROSE_API(Core) from dllimport to dllexport; see macros.h.
+    PRIVATE ROSE_Core_BUILD
     PRIVATE $<$<CONFIG:Debug>:_DEBUG>
     PRIVATE $<$<CONFIG:Release>:NDEBUG>
     PRIVATE $<$<CONFIG:Editor>:NDEBUG>
@@ -211,11 +220,19 @@ else()
     target_compile_options(ROSE_Core PRIVATE -mavx2 -mfma -Wno-unknown-attributes)
 endif()
 
+# The visibility properties are no-ops under clang-cl, where nothing is exported
+# unless it is marked; they are what makes the ELF branch of ROSE_API_EXPORT in
+# macros.h mean something once this builds outside Windows.
 set_target_properties(ROSE_Core PROPERTIES
-    DEBUG_POSTFIX  "d"
-    EDITOR_POSTFIX "e"
-    FOLDER         "src"
+    DEBUG_POSTFIX             "d"
+    EDITOR_POSTFIX            "e"
+    FOLDER                    "src"
+    CXX_VISIBILITY_PRESET     hidden
+    VISIBILITY_INLINES_HIDDEN ON
+    POSITION_INDEPENDENT_CODE ON
 )
+
+rose_deploy_crt(ROSE_Core)
 
 # ==============================================================================
 # Tools
@@ -231,9 +248,14 @@ add_executable(ROSE_Editor ${ROSE_EDITOR_SOURCES})
 
 target_include_directories(ROSE_Editor PUBLIC include/)
 
-target_link_libraries(ROSE_Editor
-    PUBLIC  ROSE_Core
-    PRIVATE SDL3::SDL3
+# ROSE_Core's own dependencies are PRIVATE and no longer propagate now that it is
+# a shared library, so anything this target uses directly is listed here. It drives
+# SDL and ImGui itself and never constructs a ROSE::Application, so it owns its own
+# ImGui context -- do not call ROSE::AttachImGui() from here.
+target_link_libraries(ROSE_Editor PRIVATE
+        ROSE_Core
+        SDL3::SDL3
+        imgui::imgui
 )
 
 target_compile_definitions(ROSE_Editor
@@ -300,10 +322,14 @@ add_dependencies(ENGINE_BUILD ROSE_Core ROSE_Editor)
 # --------------------------------------------------------------- ControllerTest
 add_executable(ControllerTest "examples/ControllerTest/main.cpp")
 
+# Standalone SDL/ImGui program that borrows only ROSE's RTL. It creates its own
+# ImGui context, so the two copies of ImGui here are independent by design.
 target_link_libraries(ControllerTest PRIVATE
         ROSE_Core
+        SDL3::SDL3
         SDL3_image::SDL3_image
         SDL3_ttf::SDL3_ttf
+        imgui::imgui
 )
 
 set_property(TARGET ControllerTest PROPERTY FOLDER "Examples")
@@ -313,10 +339,13 @@ rose_deploy_crt(ControllerTest)
 # ----------------------------------------------------------------- KeyboardTest
 add_executable(KeyboardTest "examples/KeyboardTest/main.cpp")
 
+# Same shape as ControllerTest: its own SDL init, its own ImGui context.
 target_link_libraries(KeyboardTest PRIVATE
         ROSE_Core
+        SDL3::SDL3
         SDL3_image::SDL3_image
         SDL3_ttf::SDL3_ttf
+        imgui::imgui
 )
 
 set_property(TARGET KeyboardTest PROPERTY FOLDER "Examples")
@@ -328,9 +357,15 @@ file(GLOB_RECURSE GAME1_SOURCES "examples/game1/*.cpp")
 
 add_executable(Game1 ${GAME1_SOURCES})
 
+# Ball and Paddle render through SDL directly, and FpsCounter draws with ImGui, so
+# both are first-party dependencies of this target rather than something inherited
+# from ROSE_Core. FpsCounter runs inside a ROSE::Application, which means it draws
+# into Core's ImGui context -- main.cpp calls ROSE::AttachImGui() to bind it.
 target_link_libraries(Game1 PRIVATE
         ROSE_Core
+        SDL3::SDL3
         SDL3_ttf::SDL3_ttf
+        imgui::imgui
 )
 
 set_property(TARGET Game1 PROPERTY FOLDER "Examples")
@@ -362,8 +397,10 @@ file(GLOB_RECURSE GAME2_SOURCES "examples/game2/*.cpp")
 
 add_executable(Game2 ${GAME2_SOURCES})
 
+# vnstuff.h includes SDL_ttf directly.
 target_link_libraries(Game2 PRIVATE
         ROSE_Core
+        SDL3::SDL3
         SDL3_ttf::SDL3_ttf
 )
 

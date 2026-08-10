@@ -10,9 +10,10 @@
 **/
 #pragma once
 
+#include <ROSE/Core/macros.h>
 namespace ROSE {
 
-  class AudioTrack {
+  class ROSE_API(Core) AudioTrack {
   public:
     AudioTrack();
     AudioTrack(const AudioTrack &);
@@ -25,7 +26,7 @@ namespace ROSE {
   /*!
    * This doesn't work yet.
    */
-  class AudioSystem {
+  class ROSE_API(Core) AudioSystem {
     void *m_mixer{nullptr};
     TypedHashMap<UUID, AudioTrack> m_tracks{};
     AudioSystem();

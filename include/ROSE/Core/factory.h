@@ -10,6 +10,7 @@
 **/
 #pragma once
 
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/behavior.h>
 #include <ROSE/Core/hashmap.h>
 #include <ROSE/Core/list.h>
@@ -40,20 +41,10 @@ namespace ROSE {
   template <RegistrableBehavior T>
   UniquePtr<Behavior> MakeBehavior() { return MakeUnique<T>(); }
 
-  class FactoryRegistrar {
-    FactoryRegistrar(BehaviorFactory &factory);
-  };
-
-  class CoreFactoryRegistrar : public FactoryRegistrar {
-  public:
-    void FinalizeModuleRegistration();
-  };
-
   /*!
-   *  
+   *
    */
-  class BehaviorFactory {
-  friend class FactoryRegistrar;
+  class ROSE_API(Core) BehaviorFactory {
     List<String> m_registeredModules {};
     TypedHashMap<UUID, FactoryFn> m_factoryFunctions{};
     TypedHashMap<UUID, String> m_behaviorLegend{};
@@ -65,9 +56,14 @@ namespace ROSE {
      * @param moduleName name of the module owning the function
      */
     static RegisterResult Register(FactoryFn fn, const UUID &id, const char *moduleName = "");
+    /*!
+     * Records that a module has finished registering its behaviors. Call it once
+     * per module, after the Register() calls.
+     */
+    static void RegisterModule(const char *moduleName);
     static UniquePtr<Behavior> Create(const UUID &id) noexcept;
     static bool IsRegistered(const UUID &id) noexcept;
   };
 }
 
-extern "C" void RoseRegisterCoreModule(ROSE::BehaviorFactory&);
+extern "C" ROSE_API(Core) void RoseRegisterCoreModule(ROSE::BehaviorFactory &);
