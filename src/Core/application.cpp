@@ -29,6 +29,11 @@ namespace ROSE {
     APPLICATION_CONTROLLER_SUPPORT | APPLICATION_SOFTWARE_RENDERER
   };
 
+  // Time's storage lives here rather than in the header so there is exactly one
+  // copy. Application::Run() is the only writer.
+  double        Time::dT {};
+  const double &Time::deltaTime { Time::dT };
+
   Application::Application(const char *_title, ApplicationFlags flags, List<Scene> &&scenes,
                            math::Vec2<int> _windowSize)
       : m_title(_title), m_scenes(Move(scenes)), m_flags(flags), m_windowSize(_windowSize) {

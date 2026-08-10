@@ -11,13 +11,15 @@
 #pragma once
 
 namespace ROSE {
+  // dT and deltaTime are deliberately not `inline`: inline statics have vague
+  // linkage, so a module linking Core would fold its own copy rather than share
+  // the one Application::Run() writes. They are defined out of line in
+  // application.cpp instead.
   class Time {
     friend class Application;
-    static inline double dT {};
+    static double dT;
 
   public:
-    const inline static double &deltaTime { dT };
+    static const double &deltaTime;
   };
-
-  #define Δt Time.deltaTime
 } // namespace ROSE
