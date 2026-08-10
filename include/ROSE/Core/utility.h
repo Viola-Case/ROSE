@@ -245,7 +245,19 @@ namespace ROSE {
     return value;
   }
 
+  /*!
+   *
+   * @param data pointer to object
+   * @param len size of object
+   * @return FNV1a hash of object
+   */
   uint64_t FNV1A64(const void *data, size_t len);
+
+  /**
+   *
+   * @param str null-terminated C-string to be hashed
+   * @return FNV1a hash of string
+   */
   uint64_t FNV1A64(const char *str);
 
 

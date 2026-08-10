@@ -22,20 +22,9 @@
 
 namespace ROSE {
 
-  /*!
-   *
-   * @param data pointer to object
-   * @param len size of object
-   * @return FNV1a hash of object
-   */
-  uint64_t FNV1A64(const void *data, size_t len);
-
-  /**
-   *
-   * @param str null-terminated C-string to be hashed
-   * @return FNV1a hash of string
-   */
-  uint64_t FNV1A64(const char *str);
+  // FNV1A64 is declared in utility.h, which this header includes. The 128-bit
+  // pair lives here instead because it needs uint128_t, and bigint.h includes
+  // utility.h rather than the other way round.
 
   /**
    *

@@ -48,7 +48,7 @@ namespace ROSE {
     const Mesh *GetMesh(const String &name) noexcept;
 
   private:
-    MeshRegistry();
+    MeshRegistry() = default;
     TypedHashMap<UUID, UniquePtr<Mesh>> m_meshes;
     TypedHashMap<String, UUID> m_meshNameIDs;
 
