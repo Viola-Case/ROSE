@@ -91,6 +91,7 @@ namespace ROSE {
     String m_name { "OpenGL" }; //!< built by `Init` from the context the driver actually handed back
     int m_versionMajor;
     int m_versionMinor;
+    Vec4f m_backgroundColor {0.f, 0.f, 0.f, 1.f};
   };
 
   class SoftwareRenderer : public RenderBackend {

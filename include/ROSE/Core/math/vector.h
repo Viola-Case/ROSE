@@ -26,25 +26,25 @@ namespace ROSE::math {
     Vec() = default;
     constexpr T dot(const Vec &rhs) const noexcept {
       T sum { 0 };
-      for (int i = 0; i < N; ++i)
+      for (size_t i = 0; i < N; ++i)
         sum += data[i] * rhs.data[i];
       return sum;
     }
 
     constexpr Vec &operator+=(const Vec &rhs) noexcept {
-      for (int i { 0 }; i < N; ++i) {
+      for (size_t i { 0 }; i < N; ++i) {
         data[i] += rhs.data[i];
       }
       return *this;
     }
     constexpr Vec &operator-=(const Vec &rhs) noexcept {
-      for (int i { 0 }; i < N; ++i) {
+      for (size_t i { 0 }; i < N; ++i) {
         data[i] -= rhs.data[i];
       }
       return *this;
     }
     constexpr Vec &operator*=(const T rhs) noexcept {
-      for (int i { 0 }; i < N; ++i) {
+      for (size_t i { 0 }; i < N; ++i) {
         data[i] *= rhs;
       }
       return *this;
@@ -104,25 +104,25 @@ namespace ROSE::math {
 
     constexpr T dot(const Vec &rhs) const noexcept {
       T sum { 0 };
-      for (int i = 0; i < N; ++i)
+      for (size_t i = 0; i < N; ++i)
         sum += data[i] * rhs.data[i];
       return sum;
     }
 
     constexpr Vec &operator+=(const Vec &rhs) noexcept {
-      for (int i { 0 }; i < N; ++i) {
+      for (size_t i { 0 }; i < N; ++i) {
         data[i] += rhs.data[i];
       }
       return *this;
     }
     constexpr Vec &operator-=(const Vec &rhs) noexcept {
-      for (int i { 0 }; i < N; ++i) {
+      for (size_t i { 0 }; i < N; ++i) {
         data[i] -= rhs.data[i];
       }
       return *this;
     }
     constexpr Vec &operator*=(const T rhs) noexcept {
-      for (int i { 0 }; i < N; ++i) {
+      for (size_t i { 0 }; i < N; ++i) {
         data[i] *= rhs;
       }
       return *this;
@@ -258,29 +258,29 @@ namespace ROSE::math {
 
     // constexpr Vec() = default;
 
-    constexpr Vec(T _x = T {}, T _y = T {}) : x(_x), y(_y) {}
+    constexpr Vec(T _x = T {}, T _y = T {}, T _z = {}, T _w = {}) : x(_x),  y(_y), z(_z), w(_w) {}
 
     constexpr T dot(const Vec &rhs) const noexcept {
       T sum { 0 };
-      for (int i = 0; i < N; ++i)
+      for (size_t i = 0; i < N; ++i)
         sum += data[i] * rhs.data[i];
       return sum;
     }
 
     constexpr Vec &operator+=(const Vec &rhs) noexcept {
-      for (int i { 0 }; i < N; ++i) {
+      for (size_t i { 0 }; i < N; ++i) {
         data[i] += rhs.data[i];
       }
       return *this;
     }
     constexpr Vec &operator-=(const Vec &rhs) noexcept {
-      for (int i { 0 }; i < N; ++i) {
+      for (size_t i { 0 }; i < N; ++i) {
         data[i] -= rhs.data[i];
       }
       return *this;
     }
     constexpr Vec &operator*=(const T rhs) noexcept {
-      for (int i { 0 }; i < N; ++i) {
+      for (size_t i { 0 }; i < N; ++i) {
         data[i] *= rhs;
       }
       return *this;
