@@ -10,6 +10,7 @@
 **/
 #pragma once
 
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/log.h>
 
 
@@ -22,7 +23,7 @@
 #include <concepts>
 
 namespace ROSE {
-  class Object final {
+  class ROSE_API(Core) Object final {
     friend class Behavior;
     friend class Scene;
 

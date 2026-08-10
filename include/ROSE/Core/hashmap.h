@@ -13,6 +13,7 @@
 #include <initializer_list>
 #include <type_traits>
 
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/stdlib.h>
 #include <ROSE/Core/buffer.h>
 #include <ROSE/Core/pair.h>
@@ -32,14 +33,14 @@ namespace ROSE {
    * @param len length of data to hash (in bytes)
    * @return
    */
-  uint128_t FNV1A128(const void *data, size_t len);
+  ROSE_API(Core) uint128_t FNV1A128(const void *data, size_t len);
 
   /**
    *
    * @param str null-terminated C-string
    * @return FNV1a hash of string
    */
-  uint128_t FNV1A128(const char *str);
+  ROSE_API(Core) uint128_t FNV1A128(const char *str);
 
   /**
 
@@ -54,7 +55,7 @@ namespace ROSE {
                range-for's begin()/end() lookup.
 
   **/
-  class HashMap {
+  class ROSE_API(Core) HashMap {
     friend class Iterator;
 
   public:
@@ -81,7 +82,7 @@ namespace ROSE {
       constexpr operator uint8_t() const noexcept { return static_cast<uint8_t>(value); }
     };
 
-    class Iterator {
+    class ROSE_API(Core) Iterator {
       friend class HashMap;
 
     public:

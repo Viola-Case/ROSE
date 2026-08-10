@@ -10,6 +10,7 @@
 **/
 #pragma once
 
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/string.h>
 #include <ROSE/Core/uuid.h>
 #include <ROSE/Core/math.h>
@@ -26,7 +27,7 @@ namespace ROSE {
    *
    * @todo Rename this to some sort of general JSON view or Node view or something
    */
-  class ParamView {
+  class ROSE_API(Core) ParamView {
   public:
     ParamView(const void *) noexcept;
     int GetInt(const String &key, int fallback = 0) const noexcept;

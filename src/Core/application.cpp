@@ -17,6 +17,7 @@
 
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
+#include <ROSE/Core/imgui.h>
 
 #if ROSE_PLATFORM_WINDOWS
   #include <Windows.h>
@@ -30,9 +31,20 @@ namespace ROSE {
   };
 
   // Time's storage lives here rather than in the header so there is exactly one
-  // copy. Application::Run() is the only writer.
+  // copy, inside ROSE_Core.dll. Application::Run() is the only writer.
   double        Time::dT {};
   const double &Time::deltaTime { Time::dT };
+
+  // Backing for ROSE::AttachImGui(); see ROSE/Core/imgui.h for why this exists.
+  void *GetImGuiContext() noexcept { return ImGui::GetCurrentContext(); }
+
+  void GetImGuiAllocatorFunctions(void **allocFn, void **freeFn, void **userData) noexcept {
+    ImGuiMemAllocFunc alloc {};
+    ImGuiMemFreeFunc  free {};
+    ImGui::GetAllocatorFunctions(&alloc, &free, userData);
+    *allocFn = reinterpret_cast<void *>(alloc);
+    *freeFn  = reinterpret_cast<void *>(free);
+  }
 
   Application::Application(const char *_title, ApplicationFlags flags, List<Scene> &&scenes,
                            math::Vec2<int> _windowSize)

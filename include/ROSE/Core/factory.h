@@ -10,6 +10,7 @@
 **/
 #pragma once
 
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/behavior.h>
 #include <ROSE/Core/hashmap.h>
 #include <ROSE/Core/list.h>
@@ -43,7 +44,7 @@ namespace ROSE {
   /*!
    *
    */
-  class BehaviorFactory {
+  class ROSE_API(Core) BehaviorFactory {
     List<String> m_registeredModules {};
     TypedHashMap<UUID, FactoryFn> m_factoryFunctions{};
     TypedHashMap<UUID, String> m_behaviorLegend{};
@@ -65,4 +66,4 @@ namespace ROSE {
   };
 }
 
-extern "C" void RoseRegisterCoreModule(ROSE::BehaviorFactory&);
+extern "C" ROSE_API(Core) void RoseRegisterCoreModule(ROSE::BehaviorFactory &);

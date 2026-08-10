@@ -10,14 +10,15 @@
 **/
 #pragma once
 
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/stdlib.h>
 #include <ROSE/Core/rtl.h>
 
 
 namespace ROSE {
 
-  void PrintF(const StringView &fmt_str, const std::format_args args);
-  void PrintF(const char *fmt_str, const std::format_args args);
+  ROSE_API(Core) void PrintF(const StringView &fmt_str, const std::format_args args);
+  ROSE_API(Core) void PrintF(const char *fmt_str, const std::format_args args);
 
   template <typename... Args>
   String Format(const StringView &fmt_str, Args &&...args) {

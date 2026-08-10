@@ -11,6 +11,7 @@
 #pragma once
 
 #include <cstdlib>
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/rtl.h>
 #include <ROSE/Core/math.h>
 
@@ -20,7 +21,7 @@ namespace ROSE {
       @brief Think I'll sync it with SDL's scancodes or smth
 
   **/
-  class KeyCode {
+  class ROSE_API(Core) KeyCode {
     unsigned int value;
     explicit constexpr KeyCode(unsigned int v) : value(v) {}
     friend class InputSystem;
@@ -214,7 +215,7 @@ namespace ROSE {
     constexpr bool operator!=(const KeyCode &other) const { return value != other.value; }
   };
 
-  class GamepadAxis {
+  class ROSE_API(Core) GamepadAxis {
     unsigned int value;
     explicit constexpr GamepadAxis(unsigned int v) : value(v) {}
     friend class InputSystem;
@@ -232,7 +233,7 @@ namespace ROSE {
 #pragma endregion
   };
 
-  class GamepadButton {
+  class ROSE_API(Core) GamepadButton {
     unsigned int value;
     explicit constexpr GamepadButton(unsigned int v) : value(v) {}
     friend class InputSystem;
@@ -264,7 +265,7 @@ namespace ROSE {
 
   };
 
-  class InputSystem final {
+  class ROSE_API(Core) InputSystem final {
     friend class Application;
     const bool *m_keyState;
     bool *m_keyStatePrevious;

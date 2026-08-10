@@ -9,11 +9,14 @@
   
 **/
 #pragma once
+#include <ROSE/Core/macros.h>
 #include <ROSE/Core/behavior.h>
 #include <ROSE/Core/audio.h>
 
 
 namespace ROSE {
+  // Not exported: every member is inline, so consumers instantiate their own copy
+  // rather than importing one.
   class AudioSource : public Behavior {
   public:
     static constexpr UUID typeID = "8448e5b94997ad4d-ccee5b44f06598a2"_uuid;

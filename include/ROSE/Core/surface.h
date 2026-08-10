@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <ROSE/Core/macros.h>
 #include <cstdint>
 
 namespace ROSE {
@@ -31,7 +32,7 @@ namespace ROSE {
     constexpr operator uint16_t() const noexcept { return value; }
   };
 
-  class Surface {
+  class ROSE_API(Core) Surface {
   private:
     Surface() noexcept = default;
   public:

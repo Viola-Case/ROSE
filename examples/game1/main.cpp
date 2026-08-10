@@ -1,4 +1,5 @@
 #include <ROSE/ROSE.h>
+#include <ROSE/Core/imgui.h>
 
 #include "applicationcloser.h"
 #include "fpscounter.h"
@@ -42,6 +43,10 @@ int main() {
   Game.SetFlag(ApplicationFlag::ControllerSupport, 1);
 
   Game.Init();
+
+  // FpsCounter draws with ImGui from this executable, which links its own copy of
+  // ImGui. Point it at the context Init() just created inside ROSE_Core.dll.
+  AttachImGui();
 
   Game.Run();
 
