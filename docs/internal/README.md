@@ -71,6 +71,15 @@ Header-only templates (`List`, `BasicString`, `TypedHashMap`, `UniquePtr`, `Vec`
 `Mat`, …) are deliberately **not** exported — each module instantiates its own copy,
 which duplicates code but not state.
 
+The same reasoning applies to non-template value types that carry no global state.
+`Transform` used to be exported; it is now header-inline, because the boundary was
+wrapping a single vector add in an import thunk to protect state it does not have.
+Its layout was already part of the ABI — `Object` embeds one by value — so consumers
+recompiled on any change regardless, and inlining additionally lets its methods be
+`constexpr`, which an exported out-of-line definition can never be. Use the same test
+for anything new: **export it if it owns process-wide state, inline it if it is just
+data with math attached.**
+
 Two consequences worth knowing:
 
 - **The dynamic CRT is now load-bearing.** `UniquePtr`/`MakeUnique` and

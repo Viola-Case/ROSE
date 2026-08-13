@@ -332,7 +332,7 @@ function uses `std::is_integral_v` two lines down.
 | Where | What |
 |---|---|
 | `quaternion.h:84` | `Quat::ToEuler` is a stub; every branch returns `{}` |
-| `quaternion.h:47,58` | `AxisAngle`/`FromEuler` are `constexpr` but call `std::sin`/`std::cos`, so they can never be constant-evaluated before C++26 |
+| `mathfunctions.h:95` | `SinCosConst`'s Taylor series is truncated at r¹³/r¹² — max absolute error ~3.8e-13 near the ends of the reduced range, not the "couple of ulps" the comment claims. Two more terms in each polynomial would reach double precision |
 | `utility.h:59` | `SmartMemCpy(dst, src, count)` ignores `count` entirely; it copies `Min(sizeof(T), sizeof(U))` bytes once |
 | `string.h:173` | `at()`'s bounds check is commented out — it is `operator[]` with a different name |
 | `bigint.h:27` | The non-`__int128` fallback is a hard `#error`, so MSVC cannot compile the RTL at all |

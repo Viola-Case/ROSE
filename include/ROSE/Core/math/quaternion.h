@@ -42,23 +42,42 @@ namespace ROSE::math {
     constexpr Quat(T _w, T _x = T {}, T _y = T {}, T _z = T {}) noexcept : w(_w), x(_x), y(_y), z(_z) {}
     constexpr Quat(Comp<T> _c, T _y = T {}, T _z = T {}) noexcept : w(_c.Re), x(_c.Im), y(_y), z(_z) {}
     constexpr Quat(const Quat &rhs) noexcept = default;
-    constexpr explicit Quat(Vec4<T> vec) : w(vec.w), x(vec.x), y(vec.y), z(vec.z) {}
+    constexpr explicit Quat(Vec4<T> vec) : w(vec[3]), x(vec[0]), y(vec[1]), z(vec[2]) {}
 
+    /*!
+     * @brief Quaternion from an axis and an angle in radians.
+     *
+     * Uses @ref ROSE::math::Sin / @ref ROSE::math::Cos rather than `std::sin`/`std::cos`, which are not `constexpr`
+     * before C++26 and so used to make this `constexpr` in name only. Those wrappers branch on
+     * `__builtin_is_constant_evaluated()`, so the runtime path is still the hardware intrinsic and only constant
+     * evaluation takes the Taylor fallback.
+     *
+     * The angle is promoted to a floating-point type first: `T` may be integral, and the `Sin` overloads take `float`
+     * or `double`, so an integral argument would otherwise be ambiguous.
+     *
+     * @warning The two paths need not agree in the last bit; see the note on @ref ROSE::math::Sin. Don't
+     *          `static_assert` a folded component against a decimal literal.
+     */
     static constexpr Quat AxisAngle(T angle, T ax, T ay, T az) {
-      T half = angle * T(0.5);
-      T s = std::sin(half);
+      using F = std::conditional_t<std::is_same_v<T, float>, float, double>;
+
+      const F half = static_cast<F>(angle) * F(0.5);
+      const F s = Sin(half);
+
       return {
-        std::cos(half),
-        ax * s,
-        ay * s,
-        az * s
+        static_cast<T>(Cos(half)),
+        static_cast<T>(ax * s),
+        static_cast<T>(ay * s),
+        static_cast<T>(az * s)
       };
     }
 
     static constexpr Quat FromEuler(Vec3<T> v, EulerOrder order = EulerOrder::XYZ) {
-      Quat<T> qx = AxisAngle(v.x, T(1), T(0), T(0));
-      Quat<T> qy = AxisAngle(v.y, T(0), T(1), T(0));
-      Quat<T> qz = AxisAngle(v.z, T(0), T(0), T(1));
+      /* Indexed rather than named reads: Vec's constructors activate the `data` member of its union, and constant
+       * evaluation will not read the inactive one. Same values, but this folds. */
+      Quat<T> qx = AxisAngle(v[0], T(1), T(0), T(0));
+      Quat<T> qy = AxisAngle(v[1], T(0), T(1), T(0));
+      Quat<T> qz = AxisAngle(v[2], T(0), T(0), T(1));
 
       switch (order) {
       case EulerOrder::XYZ:
