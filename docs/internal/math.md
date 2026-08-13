@@ -329,9 +329,16 @@ Notes:
 
 - `Norm()` is the **length**, not the squared length. `Normalize()` guards
   `!(n > 0)` (so NaN also falls through to identity).
-- `AxisAngle` and `FromEuler` are marked `constexpr` but call `std::sin`/`std::cos`,
-  which are not `constexpr` before C++26 — they only ever run at runtime. Verified
-  correct at runtime: `AxisAngle(π/2, 0,0,1)` → `(0.7071, 0, 0, 0.7071)`, norm 1.
+- `AxisAngle` and `FromEuler` are genuinely constant-evaluable: they go through
+  `math::Sin`/`Cos`, not `std::sin`/`std::cos`. The angle is promoted to `double`
+  (or stays `float` for `Quat<float>`) first, since `T` may be integral and the
+  `Sin` overloads would otherwise be ambiguous. Verified correct at runtime:
+  `AxisAngle(π/2, 0,0,1)` → `(0.7071, 0, 0, 0.7071)`, norm 1.
+- The folded and runtime results are **not** bit-identical — the constant-evaluated
+  path carries up to ~3.8e-13 absolute error (see `mathfunctions.h`), against a
+  runtime path that matches libm exactly. Fine for rotations, but don't
+  `static_assert` a folded component against a decimal literal, and don't cache a
+  folded quaternion expecting it to equal the same call made at runtime.
 - `FromEuler` default order is `XYZ`; `ToEuler` default order is `ZYX`. They do
   not round-trip — and `ToEuler` returns a zero vector regardless.
 - **Missing:** conjugate, inverse, dot, Slerp/Nlerp, vector rotation
