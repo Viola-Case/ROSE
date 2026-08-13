@@ -11,7 +11,7 @@
 #pragma once
 
 #include <cstdint>
-#include <ROSE/Core/macros.h>
+#include <ROSE/Core/api.h>
 #include <ROSE/Core/rtl.h>
 #include <ROSE/Core/factory.h>
 #include <ROSE/Core/gfx.h>

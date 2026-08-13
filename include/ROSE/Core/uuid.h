@@ -10,7 +10,7 @@
 **/
 #pragma once
 
-#include <ROSE/Core/macros.h>
+#include <ROSE/Core/api.h>
 #include <ROSE/Core/stdlib.h>
 #include <ROSE/Core/utility.h>
 #include <ROSE/Core/bigint.h>

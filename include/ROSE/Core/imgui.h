@@ -23,7 +23,7 @@
 #pragma once
 
 #include <imgui.h>
-#include <ROSE/Core/macros.h>
+#include <ROSE/Core/api.h>
 
 namespace ROSE {
   //! Core's ImGuiContext*, or nullptr before Application::Init() has run.

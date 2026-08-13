@@ -17,6 +17,7 @@
 #include <ROSE/Core/platform.h>
 #include <ROSE/Core/stdlib.h>
 #include <ROSE/Core/macros.h>
+#include <ROSE/Core/api.h>
 #include <ROSE/Core/rtl.h>
 #include <ROSE/Core/typetraits.h>
 #include <ROSE/Core/metadata.h>
@@ -47,3 +48,4 @@
 #include <ROSE/Core/surface.h>
 #include <ROSE/Core/factory.h>
 #include <ROSE/Core/time.h>
+#include <ROSE/Core/paths.h>

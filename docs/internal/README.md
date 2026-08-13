@@ -46,7 +46,7 @@ stdlib.h        (the only place <cstring>/<cstdint>/<cmath>/<format>/... are pul
               └── everything else
 ```
 
-`ROSE.h` includes `platform.h` → `macros.h` → `rtl.h` → … → `math.h`, in that
+`ROSE.h` includes `platform.h` → `macros.h` → `api.h` → `rtl.h` → … → `math.h`, in that
 order. **That order matters** — `math/vector.h` uses `ROSE_ASSERT` without
 including `macros.h`, so it only compiles because `ROSE.h` got there first. See
 `known-issues.md` #1.
@@ -59,7 +59,7 @@ in `build/*/lib`). The point is single instances: `BehaviorFactory::get()`,
 `Time`'s storage exist exactly once in the process, however many modules link Core.
 
 Anything with an out-of-line definition in `src/Core` is annotated `ROSE_API(Core)`,
-which expands to `ROSE_Core_API` and resolves in `macros.h`:
+which expands to `ROSE_Core_API` and resolves in `api.h`:
 
 | Defined | Meaning |
 |---|---|

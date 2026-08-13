@@ -13,7 +13,7 @@
 
 #include <cstdint>
 
-#include <ROSE/Core/macros.h>
+#include <ROSE/Core/api.h>
 #include <ROSE/Core/utility.h>
 
 #if (defined(__clang__) || defined(__GNUC__))

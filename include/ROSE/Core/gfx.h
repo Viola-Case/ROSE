@@ -12,7 +12,7 @@
 #pragma once
 
 #include <cstdint>
-#include <ROSE/Core/macros.h>
+#include <ROSE/Core/api.h>
 #include <ROSE/Core/paramview.h>
 
 namespace ROSE {

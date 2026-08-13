@@ -10,13 +10,12 @@
 **/
 #pragma once
 
-#include <ROSE/Core/macros.h>
+#include <ROSE/Core/api.h>
 
 namespace ROSE {
-  // dT and deltaTime are deliberately not `inline`: inline statics have vague
-  // linkage, so an executable linking ROSE_Core.dll would fold its own copy and
-  // read 0.0 forever while the DLL updated its own. They are defined out of line
-  // in application.cpp and reach consumers through the import table instead.
+  /* dT and deltaTime are deliberately not `inline`: inline statics have vague linkage, so an executable linking
+   * ROSE_Core.dll would fold its own copy and read 0.0 forever while the DLL updated its own. They are defined out of
+   * line in application.cpp and reach consumers through the import table instead. */
   class ROSE_API(Core) Time {
     friend class Application;
     static double dT;

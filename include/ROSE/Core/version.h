@@ -11,6 +11,7 @@
 #pragma once
 
 #include <ROSE/Core/macros.h>
+#include <ROSE/Core/api.h>
 #include <ROSE/Core/rtl.h>
 
 // so anyway I stole basically all of this from SDL

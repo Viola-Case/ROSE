@@ -169,7 +169,7 @@ bare and that's fine where it already is.
                 └── everything else
   ```
 
-  `ROSE.h` fixes the order `platform.h → macros.h → rtl.h → … → math.h`, and some
+  `ROSE.h` fixes the order `platform.h → macros.h → api.h → rtl.h → … → math.h`, and some
   headers rely on that (`math/vector.h` uses `ROSE_ASSERT` without including
   `macros.h`). See `known-issues.md` #1 before you reorder anything.
 - Third-party headers (`nlohmann/json.hpp`, `SDL3/SDL.h`, `imgui.h`) belong in `.cpp` files. Keep them out of public headers — `ParamView` wraps its JSON node in a `const void*` specifically to avoid leaking nlohmann into the API, and `paddle.h` forward-declares `struct SDL_Renderer` rather than including SDL.

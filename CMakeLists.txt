@@ -201,7 +201,7 @@ target_link_libraries(ROSE_Core
 
 target_compile_definitions(ROSE_Core
     PUBLIC  $<$<CONFIG:Editor>:ROSE_EDITOR>
-    # Flips ROSE_API(Core) from dllimport to dllexport; see macros.h.
+    # Flips ROSE_API(Core) from dllimport to dllexport; see api.h.
     PRIVATE ROSE_Core_BUILD
     PRIVATE $<$<CONFIG:Debug>:_DEBUG>
     PRIVATE $<$<CONFIG:Release>:NDEBUG>
@@ -222,7 +222,7 @@ endif()
 
 # The visibility properties are no-ops under clang-cl, where nothing is exported
 # unless it is marked; they are what makes the ELF branch of ROSE_API_EXPORT in
-# macros.h mean something once this builds outside Windows.
+# api.h mean something once this builds outside Windows.
 set_target_properties(ROSE_Core PROPERTIES
     DEBUG_POSTFIX             "d"
     EDITOR_POSTFIX            "e"

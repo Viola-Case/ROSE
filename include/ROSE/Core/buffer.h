@@ -10,7 +10,7 @@
 **/
 #pragma once
 
-#include <ROSE/Core/macros.h>
+#include <ROSE/Core/api.h>
 
 namespace ROSE {
   class ROSE_API(Core) RawBuffer {

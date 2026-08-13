@@ -13,7 +13,7 @@
 #include <initializer_list>
 #include <type_traits>
 
-#include <ROSE/Core/macros.h>
+#include <ROSE/Core/api.h>
 #include <ROSE/Core/stdlib.h>
 #include <ROSE/Core/buffer.h>
 #include <ROSE/Core/pair.h>
