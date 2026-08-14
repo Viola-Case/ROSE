@@ -16,6 +16,9 @@
 
 namespace ROSE {
 
+  template <Character CharT>
+  class BasicStringView;
+
   // TODO: SBO in BasicString — do before plugin ABI freezes.
   template <Character CharT>
   class BasicString {
@@ -76,6 +79,16 @@ namespace ROSE {
 
     BasicString(const std::basic_string<CharT> &other) : BasicString(other.c_str()) {}
     BasicString &operator=(const std::basic_string<CharT> &other) { return operator=(other.c_str()); }
+
+    /*!
+     * Copies the viewed characters. A view is not required to be null-terminated - it may name a
+     * slice of a larger buffer - so this copies by size rather than scanning for a terminator, and
+     * adds the terminator itself.
+     *
+     * Defined out of line because BasicStringView is not complete until below.
+     */
+    BasicString(BasicStringView<CharT> view);
+    BasicString &operator=(BasicStringView<CharT> view);
 
 
     BasicString &operator=(BasicString &&rvalue) noexcept {
@@ -192,6 +205,13 @@ namespace ROSE {
     }
 
     bool operator!=(const BasicString &rhs) const noexcept { return !(*this == rhs); }
+
+    /*!
+     * Comparing against a view is an exact match, which is the point of it existing: without this
+     * overload `string == view` is ambiguous, since the view converts to a string and the string
+     * converts to a view. This one needs neither, so it wins outright - and never allocates.
+     */
+    bool operator==(BasicStringView<CharT> rhs) const noexcept;
   };
 
   template <Character CharT>
@@ -222,6 +242,27 @@ namespace ROSE {
   //  return a.size() == b.size() && memcmp(a.data(), b.data(), a.size()) == 0;
   //}
 
+  template <Character CharT>
+  BasicString<CharT>::BasicString(const BasicStringView<CharT> view)
+      : m_data(allocate(view.size() + 1)), m_size(view.size()), m_capacity(view.size() + 1) {
+    if (view.data()) copy(m_data, view.data(), m_size);
+    m_data[m_size] = CharT { 0 };
+  }
+
+  template <Character CharT>
+  bool BasicString<CharT>::operator==(const BasicStringView<CharT> rhs) const noexcept {
+    return m_size == rhs.size() && MemCmp(m_data, rhs.data(), m_size) == 0;
+  }
+
+  template <Character CharT>
+  BasicString<CharT> &BasicString<CharT>::operator=(const BasicStringView<CharT> view) {
+    /* Copy-and-swap rather than assigning in place: the view may point into this string's own
+     * buffer, which a resize would free out from under it. */
+    BasicString tmp(view);
+    swap(tmp);
+    return *this;
+  }
+
   using String = BasicString<char>;
   // using WString = BasicString<char16_t>;
   // using UString = BasicString<char32_t>;
@@ -238,6 +279,14 @@ template <ROSE::Character CharT>
 struct std::formatter<ROSE::BasicString<CharT>, CharT> : std::formatter<std::basic_string<CharT>, CharT> {
   template <typename FormatContext>
   auto format(const ROSE::BasicString<CharT> &s, FormatContext &ctx) const {
+    return std::formatter<std::basic_string<CharT>, CharT>::format(std::basic_string<CharT>(s.data(), s.size()), ctx);
+  }
+};
+
+template <ROSE::Character CharT>
+struct std::formatter<ROSE::BasicStringView<CharT>, CharT> : std::formatter<std::basic_string<CharT>, CharT> {
+  template <typename FormatContext>
+  auto format(const ROSE::BasicStringView<CharT> &s, FormatContext &ctx) const {
     return std::formatter<std::basic_string<CharT>, CharT>::format(std::basic_string<CharT>(s.data(), s.size()), ctx);
   }
 };
