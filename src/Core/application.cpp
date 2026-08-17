@@ -9,10 +9,11 @@
 
 **/
 
+#include <fstream>
+#include <sstream>
 #include <thread>
 #include <ROSE/ROSE.h>
 #include <SDL3/SDL.h>
-#include <ROSE/Core/time.h>
 #include <nlohmann/json.hpp>
 
 #include <imgui.h>
@@ -25,10 +26,6 @@
 #endif
 
 namespace ROSE {
-
-  constexpr ApplicationFlags ROSE_APPLICATION_DEFAULT {
-    APPLICATION_CONTROLLER_SUPPORT | APPLICATION_SOFTWARE_RENDERER
-  };
 
   // Time's storage lives here rather than in the header so there is exactly one
   // copy, inside ROSE_Core.dll. Application::Run() is the only writer.
@@ -46,24 +43,110 @@ namespace ROSE {
     *freeFn  = reinterpret_cast<void *>(free);
   }
 
-  Application::Application(const char *_title, ApplicationFlags flags, List<Scene> &&scenes,
-                           math::Vec2<int> _windowSize)
-      : m_title(_title), m_scenes(Move(scenes)), m_flags(flags), m_windowSize(_windowSize) {
+#pragma region ApplicationInitSettings
+
+  ApplicationInitSettings::ApplicationInitSettings() noexcept = default;
+  ApplicationInitSettings::ApplicationInitSettings(const StringView _title) : m_title(_title) {}
+  ApplicationInitSettings::~ApplicationInitSettings() = default;
+
+  ApplicationInitSettings::ApplicationInitSettings(ApplicationInitSettings &&) noexcept = default;
+  ApplicationInitSettings &ApplicationInitSettings::operator=(ApplicationInitSettings &&) noexcept = default;
+
+  ApplicationInitSettings &ApplicationInitSettings::SetTitle(const StringView _title) noexcept {
+    m_title = _title;
+    return *this;
+  }
+
+  ApplicationInitSettings &ApplicationInitSettings::SetOrganization(const StringView _organization) noexcept {
+    m_organization = _organization;
+    return *this;
+  }
+
+  ApplicationInitSettings &ApplicationInitSettings::SetWindowSize(const math::Vec2<int> _size) noexcept {
+    m_windowSize = _size;
+    return *this;
+  }
+
+  ApplicationInitSettings &ApplicationInitSettings::SetFlags(const ApplicationFlags _flags) noexcept {
+    m_flags = _flags;
+    return *this;
+  }
+
+  ApplicationInitSettings &ApplicationInitSettings::SetFlag(const ApplicationFlag _flag, const bool _on) noexcept {
+    const ApplicationFlags mask = static_cast<ApplicationFlags>(1) << _flag;
+    if (_on) m_flags |= mask;
+    else m_flags &= ~mask;
+    return *this;
+  }
+
+  ApplicationInitSettings &ApplicationInitSettings::SetVSync(const bool _vsync) noexcept {
+    m_vsync = _vsync;
+    return *this;
+  }
+
+  ApplicationInitSettings &ApplicationInitSettings::SetTargetFrameRate(const uint32_t _fps) noexcept {
+    m_targetFrameRate = _fps;
+    return *this;
+  }
+
+  ApplicationInitSettings &ApplicationInitSettings::SetExistingWindow(void *_handle) noexcept {
+    m_windowHandle = _handle;
+    return *this;
+  }
+
+  ApplicationInitSettings &ApplicationInitSettings::AddScene(Scene &&_scene) noexcept {
+    m_scenes.push_back(Move(_scene));
+    return *this;
+  }
+
+  ApplicationInitSettings &ApplicationInitSettings::SetScenes(List<Scene> &&_scenes) noexcept {
+    m_scenes = Move(_scenes);
+    return *this;
+  }
+
+  ApplicationInitSettings &ApplicationInitSettings::AddSceneFromFile(const StringView _path) noexcept {
+    /* A view is not required to be NUL-terminated, so go through a String for the C-facing
+     * open() rather than handing it _path.c_str(). */
+    const String path { _path };
+
+    std::ifstream file(path.c_str());
+    if (!file) {
+      ROSE_LOG_ERROR("Scene file '{}' could not be opened.\n", path);
+      return *this;
+    }
+
+    std::stringstream contents;
+    contents << file.rdbuf();
+
+    m_scenes.push_back(Scene::FromJSONString(String(contents.str())));
+    return *this;
+  }
+
+#pragma endregion
+
+  Application::Application() noexcept {
 #if ROSE_PLATFORM_WINDOWS
     timeBeginPeriod(1);
 #endif
+  }
+
+  int Application::Init(ApplicationInitSettings &&settings) {
+    m_title = Move(settings.m_title);
+    m_organization = Move(settings.m_organization);
+    m_windowSize = settings.m_windowSize;
+    m_flags = settings.m_flags;
+    m_targetFrameRate = settings.m_targetFrameRate;
+    m_vsync = settings.m_vsync;
+    m_scenes = Move(settings.m_scenes);
+
 #if defined(_DEBUG)
     m_flags |= APPLICATION_DEBUG;
 #endif
-  }
 
-  Application::Application(const char *_title, ApplicationFlags flags) : Application(_title, flags, {}) {}
+    if (settings.m_windowHandle)
+      ROSE_LOG_WARN("An existing window handle was supplied, but adopting one is not implemented "
+                    "yet - creating our own instead.\n");
 
-  Application::Application(const char *_title) : Application(_title, APPLICATION_LIGHTWEIGHT) {}
-
-  Application::Application() : Application("Game Title") {}
-
-  int Application::Init() {
     if (SDL_VERSION != SDL_GetVersion()) {
       ROSE_LOG_FATAL("SDL API version and linked version mismatch!");
       return -2;
@@ -110,16 +193,14 @@ namespace ROSE {
     if (m_renderer && m_window) {
       const math::Vec2<int> size = m_window->GetSize();
 
-      RenderBackendContext ctx {
-        { m_window->GetHandle() },
-        size.x,
-        size.y
-      };
+      RenderBackendContext ctx { { m_window->GetHandle() }, size.x, size.y, m_vsync };
 
       m_renderer->Init(ctx);
     }
 
-    m_currentScene = m_scenes.begin();
+    /* An empty scene list is legal - a headless or server run may have nothing to update - so
+     * this stays null rather than pointing at an empty List's storage, and `Run` checks it. */
+    m_currentScene = m_scenes.empty() ? nullptr : m_scenes.begin();
     for (Scene &s : m_scenes)
       s.Bind(*this);
 
@@ -138,8 +219,6 @@ namespace ROSE {
     m_isRunning = true;
 
     while (!m_shouldClose) {
-      Scene &curScene = *m_currentScene;
-
       MemCpy(InputSystem::GetInstance().m_keyStatePrevious, InputSystem::GetInstance().m_keyState, 256);
 
       if (m_renderer) m_renderer->BeginFrame();
@@ -149,8 +228,8 @@ namespace ROSE {
        * ran replays OnCreate and OnStart over every behavior in it. Wants a per-scene
        * "started" flag rather than a pointer compare. Only bites once there are 2+ scenes.*/
       static Scene *lastScene { nullptr };
-      if (lastScene != m_currentScene) {
-        curScene.OnStart();
+      if (m_currentScene && lastScene != m_currentScene) {
+        m_currentScene->OnStart();
         lastScene = m_currentScene;
       }
       {
@@ -174,13 +253,21 @@ namespace ROSE {
       auto dur = std::chrono::duration_cast<std::chrono::duration<double, std::ratio<1, 1>>>(end - start);
       start = end;
       Time::dT = dur.count();
-      curScene.FrameUpdate();
+      if (m_currentScene) m_currentScene->FrameUpdate();
 
       ImGui::Render();
 
       if (m_renderer) m_renderer->EndFrame();
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      /* `start` is this frame's beginning, so the elapsed time below covers everything the frame
+       * did. Uncapped still gives up a millisecond rather than spinning a core flat. */
+      if (const uint32_t fps = m_targetFrameRate) {
+        const std::chrono::duration<double> budget { 1.0 / static_cast<double>(fps) };
+        const std::chrono::duration<double> elapsed { std::chrono::high_resolution_clock::now() - start };
+        if (elapsed < budget) std::this_thread::sleep_for(budget - elapsed);
+      } else {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      }
     }
     m_isRunning = false;
 
@@ -205,25 +292,22 @@ namespace ROSE {
   }
 
   const char *Application::GetTitle() const noexcept { return m_title.c_str(); }
+  const char *Application::GetOrganization() const noexcept { return m_organization.c_str(); }
 
   Window *Application::GetWindow() noexcept { return m_window.get(); }
   const Window *Application::GetWindow() const noexcept { return m_window.get(); }
 
   const List<Scene> &Application::GetScenes() noexcept { return m_scenes; }
-  Scene &Application::GetCurrentScene() noexcept { return *m_currentScene; }
-
-  void Application::SetFlag(ApplicationFlag m, bool b) noexcept {
-    const auto mask = 1 << m;
-    if (b) m_flags |= mask;
-    else m_flags &= ~mask;
-  }
+  Scene *Application::GetCurrentScene() noexcept { return m_currentScene; }
 
   bool Application::GetFlag(ApplicationFlag m) const noexcept {
-    const auto mask = 1 << m;
+    const ApplicationFlags mask = static_cast<ApplicationFlags>(1) << m;
     return m_flags & mask;
   }
 
-  // TODO: Make a SetInitialWindowSize function or something 
+  uint32_t Application::GetTargetFrameRate() const noexcept { return m_targetFrameRate; }
+  void Application::SetTargetFrameRate(const uint32_t fps) noexcept { m_targetFrameRate = fps; }
+
   void Application::SetWindowSize(const math::Vec2<int> size) noexcept {
     m_windowSize = size;
     if (m_window)
@@ -233,6 +317,4 @@ namespace ROSE {
     if (m_renderer)
       m_renderer->OnResize(size.x, size.y);
   }
-
-  void AddSceneFromJSON(void *jsonPtr) noexcept {}
 } // namespace ROSE

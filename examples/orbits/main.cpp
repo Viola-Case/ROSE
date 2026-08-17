@@ -9,38 +9,17 @@
 
 **/
 
-#include <fstream>
-#include <sstream>
 #include <ROSE/ROSE.h>
 using namespace ROSE;
 int main() {
 
+  ApplicationInitSettings settings { "Orbits" };
+  settings.SetFlags(APPLICATION_SOFTWARE_RENDERER).SetWindowSize(800, 800).AddSceneFromFile("assets/orbits.json");
 
-  List<Scene> scenes {};
-  {
-    std::ifstream ifs("assets/orbits.json");
-    auto sstream = std::stringstream();
-    sstream << ifs.rdbuf();
-    String sceneJson = sstream.str();
-    scenes.push_back({ Scene::FromJSONString(sceneJson) });
-  }
-
-  Application &app = *new Application(
-    "Orbits",
-    APPLICATION_SOFTWARE_RENDERER,
-    Move(scenes),
-    { 800, 800 }
-    );
-  {
-    auto i = app.Init();
-    if (i != 0) return i;
-  }
+  Application app;
+  if (const int err = app.Init(Move(settings))) return err;
 
   app.Run();
 
-  delete &app;
-
   return 0;
-
-
 }

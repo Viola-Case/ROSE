@@ -220,6 +220,7 @@ namespace ROSE {
       return a.size() == b.size() && MemCmp(a.data(), b.data(), a.size()) == 0;
     }
   public:
+    constexpr BasicStringView() = default;
     constexpr BasicStringView(const BasicString<CharT> &string) noexcept : m_data(string.m_data), m_size(string.m_size) {}
     constexpr BasicStringView(const CharT *str) noexcept : m_data(str), m_size(StrLen(str)) {}
     constexpr BasicStringView(const CharT *str, const size_t size) noexcept : m_data(str), m_size(size) {}

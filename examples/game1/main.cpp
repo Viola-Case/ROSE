@@ -7,9 +7,6 @@
 #include "ball.h"
 #include "scoreboard.h"
 
-#include <fstream>
-#include <sstream>
-
 using namespace ROSE;
 int main() {
 
@@ -25,32 +22,20 @@ int main() {
       factory.Register(p.first, p.second, "Game1");
   }
 
+  ApplicationInitSettings settings { "Game 1" };
+  settings.SetFlags(APPLICATION_SOFTWARE_RENDERER | APPLICATION_CONTROLLER_SUPPORT)
+    .SetWindowSize(800, 600)
+    .AddSceneFromFile("assets/game1scene1.json")
+    .SetVSync(true);
 
-
-  auto scenes = List<Scene>();
-
-  {
-    String sceneJSON;
-    std::ifstream sceneJSONStream("assets/game1scene1.json");
-    auto sstream = std::stringstream();
-    sstream << sceneJSONStream.rdbuf();
-    sceneJSON = sstream.str();
-    scenes.push_back(Scene::FromJSONString(sceneJSON));
-  }
-
-  Application &Game = *new Application("Game 1", 0, Move(scenes));
-  Game.SetFlag(ApplicationFlag::SoftwareRenderer, 1);
-  Game.SetFlag(ApplicationFlag::ControllerSupport, 1);
-
-  Game.Init();
+  Application Game;
+  if (const int err = Game.Init(Move(settings))) return err;
 
   // FpsCounter draws with ImGui from this executable, which links its own copy of
   // ImGui. Point it at the context Init() just created inside ROSE_Core.dll.
   AttachImGui();
 
   Game.Run();
-
-  delete &Game;
 
   return 0;
 }

@@ -58,6 +58,12 @@ and stores raw back-pointers, so **`Bind()` must be re-called after any move** �
 `Application::Init()` does this for every scene once the `List<Scene>` has settled
 at its final address.
 
+Scenes reach an application through `ApplicationInitSettings`, which owns them
+until `Init` moves the whole `List<Scene>` across (see
+[`application.md`](application.md) §2). `m_currentScene` points at the **first**
+scene added, or is `nullptr` when the list is empty — an application with no
+scenes is legal and every scene call in the frame loop is null-guarded.
+
 ## 2. Lifecycle
 
 Three phases, in order, per the contract in `behavior.h`:
@@ -78,17 +84,23 @@ is hash-map iteration order — unspecified, do not depend on it.
 ```
 Application::Run()                                       src/Core/application.cpp
   loop:
-    if (scene changed since last frame) curScene.OnStart()
-    SDL_PollEvent / InputSystem::Poll
+    snapshot previous keyboard state
+    if (m_currentScene && scene changed since last frame) m_currentScene->OnStart()
+    SDL_PollEvent
     Time::dT = <frame duration>
-    curScene.FrameUpdate()
+    m_currentScene->FrameUpdate()
       ├── for each object: Object::FrameUpdate()
       │     └── for each behavior: Behavior::FrameUpdate()
       ├── erase scene-level m_pendingDestroy
       ├── erase each object's behavior m_pendingDestroy
       ├── promote scene m_pendingAdd  (assigns a fresh UUID::Generate(), sets m_scene)
       └── InitializePendingBehaviors()
+    sleep out the rest of the frame budget
 ```
+
+Both scene calls are guarded on `m_currentScene` being non-null. The full loop,
+including render-backend and ImGui ordering and the frame pacing, is in
+[`application.md`](application.md) §5.
 
 `Scene::OnStart()` fires once per scene *activation*, guarded by a
 `static Scene *lastScene` in `Application::Run()`. It walks every behavior with
@@ -155,6 +167,9 @@ you may have set is ignored — the promotion step overwrites it with
 
 There is no public way to construct a `Scene` other than `FromJSONString`; the
 default constructor is private and `Application` is a friend.
+`ApplicationInitSettings::AddSceneFromFile(path)` is the convenience wrapper —
+it reads the file whole and calls `FromJSONString` for you, logging and skipping
+a file that will not open.
 
 `ToJSONString()` is a stub: it emits `{"name": ...}` and drops the objects on the
 floor. Round-tripping a scene does not work yet.
@@ -300,7 +315,10 @@ and keeps the **first** registration.
 
 Registration is manual and must happen **before any scene is loaded** — the loader
 resolves type IDs through the factory, and an unregistered type is unrecoverable at
-that point. Core registers its own behaviors via
+that point. Scenes are now parsed while the `ApplicationInitSettings` are being
+built (`AddSceneFromFile`), which is earlier than it used to be: register
+everything before you touch the settings object, not merely before `Init`. Core
+registers its own behaviors via
 `extern "C" void RoseRegisterCoreModule(BehaviorFactory&)`; a game does the same for
 its types:
 

@@ -10,8 +10,8 @@ Do not use Visual Studio's CMake integration. For the love of God do not use Vis
 ### Dependencies
 - SDL3
 - ImGui
-- SPIRV-Cross
-- Glslang
+<!--SPIRV-Cross-->
+<!--Glslang-->
 - nlohmann-json
 
 I don't currently have a way to make this work nicely without VCPKG, that's a later goal. 

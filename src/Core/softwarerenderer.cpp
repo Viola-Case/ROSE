@@ -44,6 +44,9 @@ BackendStatus SoftwareRenderer::Init(const RenderBackendContext &ctx) {
     return BackendStatus::Failure;
   }
 
+  if (!SDL_SetRenderVSync(renderer, ctx.vsync ? 1 : SDL_RENDERER_VSYNC_DISABLED))
+    ROSE_LOG_WARN("Could not set vsync on the renderer. SDL Error: {}\n", SDL_GetError());
+
   if (!ImGui_ImplSDL3_InitForSDLRenderer(window, renderer)) {
     ROSE_LOG_ERROR("ImGui SDL3 Impl failed!\n");
     return BackendStatus::Failure;

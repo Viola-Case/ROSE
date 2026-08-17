@@ -8,6 +8,7 @@ the headers don't need re-reading from scratch every session.
 | [`rtl.md`](rtl.md) | `ROSE/Core/rtl.h` — the ROSE Template Library (containers, string, smart pointers, hash map, 128-bit ints) plus its support headers |
 | [`math.md`](math.md) | `ROSE/Core/math.h` — vectors, matrices, complex, quaternions, constants, scalar helpers |
 | [`known-issues.md`](known-issues.md) | Verified defects and sharp edges in both layers, with the reproduction for each |
+| [`application.md`](application.md) | `Application` and `ApplicationInitSettings` — startup, flags, the frame loop, renderer selection |
 | [`scene-object-behavior.md`](scene-object-behavior.md) | The composition layer — `Scene`/`Object`/`Behavior` lifecycle, `BehaviorFactory`, scene JSON and `ParamView` |
 | [`behaviors.md`](behaviors.md) | Every concrete `Behavior` in the tree, its type ID, and what it does |
 | [`conventions.md`](conventions.md) | House style — comments, formatting, naming, header layering, language rules |
@@ -18,6 +19,9 @@ by compiling and running the code, not inferred from reading — see
 `known-issues.md` for the specific repros. The two composition-layer files were
 written against `master` @ `6870ee3` (**2026-07-24**) by reading the sources; the
 sharp edges they list are traced to specific lines but were not each run.
+`application.md` was written against `master` @ `9e2683c` plus the working-tree
+`ApplicationInitSettings` change (**2026-08-16**), and its startup claims were
+confirmed by building and running `Game1`.
 
 ## Ground rules for both layers
 
