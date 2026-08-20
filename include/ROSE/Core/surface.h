@@ -32,7 +32,7 @@ namespace ROSE {
     constexpr operator uint16_t() const noexcept { return value; }
   };
 
-  class ROSE_API(Core) Surface {
+  class ROSE_API(CORE) Surface {
   private:
     Surface() noexcept = default;
   public:

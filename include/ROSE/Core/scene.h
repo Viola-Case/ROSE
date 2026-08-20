@@ -18,7 +18,7 @@ namespace ROSE {
   class Application;
   class Object;
 
-  class ROSE_API(Core) Scene final {
+  class ROSE_API(CORE) Scene final {
     friend class Application;
     friend class Object;
 
@@ -79,7 +79,7 @@ namespace ROSE {
     Application *m_application { nullptr };
   };
 
-  class ROSE_API(Core) SceneManager final {
+  class ROSE_API(CORE) SceneManager final {
     friend class Application;
     
   };

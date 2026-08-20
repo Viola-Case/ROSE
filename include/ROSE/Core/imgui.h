@@ -27,10 +27,10 @@
 
 namespace ROSE {
   //! Core's ImGuiContext*, or nullptr before Application::Init() has run.
-  ROSE_API(Core) void *GetImGuiContext() noexcept;
+  ROSE_API(CORE) void *GetImGuiContext() noexcept;
 
   //! Core's ImGui allocator, so both copies allocate from the same place.
-  ROSE_API(Core) void GetImGuiAllocatorFunctions(void **allocFn, void **freeFn, void **userData) noexcept;
+  ROSE_API(CORE) void GetImGuiAllocatorFunctions(void **allocFn, void **freeFn, void **userData) noexcept;
 
   /*!
    * Points this module's ImGui at Core's context. Call once, after

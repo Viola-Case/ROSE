@@ -23,7 +23,7 @@
 #include <concepts>
 
 namespace ROSE {
-  class ROSE_API(Core) Object final {
+  class ROSE_API(CORE) Object final {
     friend class Behavior;
     friend class Scene;
 

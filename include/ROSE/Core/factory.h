@@ -44,7 +44,7 @@ namespace ROSE {
   /*!
    *
    */
-  class ROSE_API(Core) BehaviorFactory {
+  class ROSE_API(CORE) BehaviorFactory {
     List<String> m_registeredModules {};
     TypedHashMap<UUID, FactoryFn> m_factoryFunctions{};
     TypedHashMap<UUID, String> m_behaviorLegend{};
@@ -66,4 +66,4 @@ namespace ROSE {
   };
 }
 
-extern "C" ROSE_API(Core) void RoseRegisterCoreModule(ROSE::BehaviorFactory &);
+extern "C" ROSE_API(CORE) void RoseRegisterCoreModule(ROSE::BehaviorFactory &);

@@ -45,7 +45,7 @@ namespace ROSE {
   /*!
    * This hosts all the abstraction of the graphics backend.
    */
-  class ROSE_API(Core) RenderBackend {
+  class ROSE_API(CORE) RenderBackend {
 
   public:
     RenderBackend() = default;
@@ -67,7 +67,7 @@ namespace ROSE {
     virtual const char *GetName() const = 0; // for logs and humans
   };
 
-  class ROSE_API(Core) OpenGLRenderer : public RenderBackend {
+  class ROSE_API(CORE) OpenGLRenderer : public RenderBackend {
   public:
     explicit OpenGLRenderer(int majorVersion = 4, int minorVersion = 5);
     ~OpenGLRenderer() override;
@@ -95,7 +95,7 @@ namespace ROSE {
     Vec4f m_backgroundColor {0.f, 0.f, 0.f, 1.f};
   };
 
-  class ROSE_API(Core) SoftwareRenderer : public RenderBackend {
+  class ROSE_API(CORE) SoftwareRenderer : public RenderBackend {
   public:
     SoftwareRenderer();
     ~SoftwareRenderer() override;

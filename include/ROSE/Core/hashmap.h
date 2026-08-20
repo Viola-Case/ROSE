@@ -33,14 +33,14 @@ namespace ROSE {
    * @param len length of data to hash (in bytes)
    * @return
    */
-  ROSE_API(Core) uint128_t FNV1A128(const void *data, size_t len);
+  ROSE_API(CORE) uint128_t FNV1A128(const void *data, size_t len);
 
   /**
    *
    * @param str null-terminated C-string
    * @return FNV1a hash of string
    */
-  ROSE_API(Core) uint128_t FNV1A128(const char *str);
+  ROSE_API(CORE) uint128_t FNV1A128(const char *str);
 
   /**
 
@@ -55,7 +55,7 @@ namespace ROSE {
                range-for's begin()/end() lookup.
 
   **/
-  class ROSE_API(Core) HashMap {
+  class ROSE_API(CORE) HashMap {
     friend class Iterator;
 
   public:
@@ -82,7 +82,7 @@ namespace ROSE {
       constexpr operator uint8_t() const noexcept { return static_cast<uint8_t>(value); }
     };
 
-    class ROSE_API(Core) Iterator {
+    class ROSE_API(CORE) Iterator {
       friend class HashMap;
 
     public:

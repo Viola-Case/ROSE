@@ -27,7 +27,7 @@ namespace ROSE {
    *
    * @todo Rename this to some sort of general JSON view or Node view or something
    */
-  class ROSE_API(Core) ParamView {
+  class ROSE_API(CORE) ParamView {
   public:
     ParamView(const void *) noexcept;
     int GetInt(const String &key, int fallback = 0) const noexcept;

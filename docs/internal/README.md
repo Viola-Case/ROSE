@@ -62,14 +62,14 @@ in `build/*/lib`). The point is single instances: `BehaviorFactory::get()`,
 `InputSystem::GetInstance()`, `MeshRegistry::Get()`, `AudioSystem::Get()` and
 `Time`'s storage exist exactly once in the process, however many modules link Core.
 
-Anything with an out-of-line definition in `src/Core` is annotated `ROSE_API(Core)`,
-which expands to `ROSE_Core_API` and resolves in `api.h`:
+Anything with an out-of-line definition in `src/Core` is annotated `ROSE_API(CORE)`,
+which expands to `ROSE_CORE_API` and resolves in `api.h`:
 
 | Defined | Meaning |
 |---|---|
 | `ROSE_Core_BUILD` | `dllexport` — CMake sets this `PRIVATE` on the `ROSE_Core` target only |
 | nothing | `dllimport` — every consumer |
-| `ROSE_Core_API` (e.g. `-DROSE_Core_API=`) | neither; for standalone builds, see below |
+| `ROSE_CORE_API` (e.g. `-DROSE_CORE_API=`) | neither; for standalone builds, see below |
 
 Header-only templates (`List`, `BasicString`, `TypedHashMap`, `UniquePtr`, `Vec`,
 `Mat`, …) are deliberately **not** exported — each module instantiates its own copy,
@@ -138,10 +138,10 @@ Clang is at `/d/Program Files/LLVM/bin/clang++` and is on `PATH`.
 
 ```sh
 # headers + RawBuffer is enough for List / String / smart pointers / math
-clang++ -std=c++20 -w -DROSE_Core_API= -I include test.cpp src/Core/rtl/buffer.cpp -o t.exe
+clang++ -std=c++20 -w -DROSE_CORE_API= -I include test.cpp src/Core/rtl/buffer.cpp -o t.exe
 ```
 
-`-DROSE_Core_API=` is what makes this work now that Core is a DLL: without it the
+`-DROSE_CORE_API=` is what makes this work now that Core is a DLL: without it the
 headers declare `RawBuffer` and friends `dllimport` while `buffer.cpp` defines them
 locally, and the link fills with `LNK4217 locally defined symbol imported`. (It
 still produces a working exe, just a noisy one.) Do **not** use

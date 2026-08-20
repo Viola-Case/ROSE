@@ -201,8 +201,8 @@ target_link_libraries(ROSE_Core
 
 target_compile_definitions(ROSE_Core
     PUBLIC  $<$<CONFIG:Editor>:ROSE_EDITOR>
-    # Flips ROSE_API(Core) from dllimport to dllexport; see api.h.
-    PRIVATE ROSE_Core_BUILD
+    # Flips ROSE_API(CORE) from dllimport to dllexport; see api.h.
+    PRIVATE ROSE_CORE_BUILD
     PRIVATE $<$<CONFIG:Debug>:_DEBUG>
     PRIVATE $<$<CONFIG:Release>:NDEBUG>
     PRIVATE $<$<CONFIG:Editor>:NDEBUG>

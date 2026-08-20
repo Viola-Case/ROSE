@@ -35,11 +35,11 @@ namespace ROSE {
     int64_t high;
     uint64_t low;
 
-    ROSE_API(Core) int128_t() noexcept;
+    ROSE_API(CORE) int128_t() noexcept;
 
-    ROSE_API(Core) int128_t(const int128_t &) noexcept;
+    ROSE_API(CORE) int128_t(const int128_t &) noexcept;
 
-    ROSE_API(Core) int128_t(int64_t) noexcept;
+    ROSE_API(CORE) int128_t(int64_t) noexcept;
 
     int128_t(uint128_t) noexcept;
 
@@ -91,9 +91,9 @@ namespace ROSE {
   struct uint128_t {
     uint64_t high, low;
 
-    ROSE_API(Core) uint128_t() noexcept;
+    ROSE_API(CORE) uint128_t() noexcept;
 
-    ROSE_API(Core) uint128_t(const uint128_t &) noexcept;
+    ROSE_API(CORE) uint128_t(const uint128_t &) noexcept;
 
     constexpr uint128_t(uint64_t) noexcept;
 

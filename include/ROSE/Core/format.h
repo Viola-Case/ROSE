@@ -17,8 +17,8 @@
 
 namespace ROSE {
 
-  ROSE_API(Core) void PrintF(const StringView &fmt_str, const std::format_args args);
-  ROSE_API(Core) void PrintF(const char *fmt_str, const std::format_args args);
+  ROSE_API(CORE) void PrintF(const StringView &fmt_str, const std::format_args args);
+  ROSE_API(CORE) void PrintF(const char *fmt_str, const std::format_args args);
 
   template <typename... Args>
   String Format(const StringView &fmt_str, Args &&...args) {

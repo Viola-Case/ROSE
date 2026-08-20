@@ -33,7 +33,7 @@ namespace ROSE {
       return value == _other.value;
     }
 
-    [[nodiscard]] ROSE_API(Core) static UUID Generate() noexcept;
+    [[nodiscard]] ROSE_API(CORE) static UUID Generate() noexcept;
 
     constexpr static UUID Invalid() noexcept { return {}; }
   };

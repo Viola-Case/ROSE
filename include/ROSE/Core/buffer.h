@@ -13,7 +13,7 @@
 #include <ROSE/Core/api.h>
 
 namespace ROSE {
-  class ROSE_API(Core) RawBuffer {
+  class ROSE_API(CORE) RawBuffer {
   public:
     RawBuffer() noexcept;
     explicit RawBuffer(size_t bytes);

@@ -101,7 +101,7 @@ namespace ROSE {
     return old;
   }
 
-  ROSE_API(Core) void MemCpy(void *_Dst, const void *_Src, size_t size);
+  ROSE_API(CORE) void MemCpy(void *_Dst, const void *_Src, size_t size);
 
   template <typename T, typename U>
   constexpr void SmartMemCpy(T *_Dst, U *_Src, size_t count = 1) {
@@ -252,14 +252,14 @@ namespace ROSE {
    * @param len size of object
    * @return FNV1a hash of object
    */
-  ROSE_API(Core) uint64_t FNV1A64(const void *data, size_t len);
+  ROSE_API(CORE) uint64_t FNV1A64(const void *data, size_t len);
 
   /**
    *
    * @param str null-terminated C-string to be hashed
    * @return FNV1a hash of string
    */
-  ROSE_API(Core) uint64_t FNV1A64(const char *str);
+  ROSE_API(CORE) uint64_t FNV1A64(const char *str);
 
 
 } // namespace ROSE

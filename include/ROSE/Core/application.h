@@ -29,7 +29,7 @@ namespace ROSE {
   /*!
    * Not to be confused with `ApplicationFlags`
    */
-  struct ROSE_API(Core) ApplicationFlag {
+  struct ROSE_API(CORE) ApplicationFlag {
     enum Value : uint8_t {
       Headless = 0,
       NoRenderer = 1,
@@ -100,7 +100,7 @@ namespace ROSE {
    * Move-only, because it owns the scenes and `Scene` is move-only. `Init` takes it by rvalue
    * and moves the scenes out of it; the settings object is spent afterwards.
    */
-  class ROSE_API(Core) ApplicationInitSettings final {
+  class ROSE_API(CORE) ApplicationInitSettings final {
     friend class Application;
 
   public:
@@ -184,7 +184,7 @@ namespace ROSE {
   };
 
 
-  class ROSE_API(Core) Application final {
+  class ROSE_API(CORE) Application final {
 
   public:
     Application() noexcept;

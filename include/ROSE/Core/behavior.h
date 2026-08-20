@@ -33,7 +33,7 @@ namespace ROSE {
    *
    * @todo Add behavior name with registry
    */
-  class ROSE_API(Core) Behavior {
+  class ROSE_API(CORE) Behavior {
     friend class Object;
     friend class Scene;
 

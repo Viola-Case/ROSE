@@ -24,7 +24,7 @@ namespace ROSE {
       @brief Think I'll sync it with SDL's scancodes or smth
 
   **/
-  class ROSE_API(Core) KeyCode {
+  class ROSE_API(CORE) KeyCode {
     unsigned int value;
     explicit constexpr KeyCode(unsigned int v) : value(v) {}
     friend class InputSystem;
@@ -218,7 +218,7 @@ namespace ROSE {
     constexpr bool operator!=(const KeyCode &other) const { return value != other.value; }
   };
 
-  class ROSE_API(Core) GamepadAxis {
+  class ROSE_API(CORE) GamepadAxis {
     unsigned int value;
     explicit constexpr GamepadAxis(unsigned int v) : value(v) {}
     friend class InputSystem;
@@ -236,7 +236,7 @@ namespace ROSE {
 #pragma endregion
   };
 
-  class ROSE_API(Core) GamepadButton {
+  class ROSE_API(CORE) GamepadButton {
     unsigned int value;
     explicit constexpr GamepadButton(unsigned int v) : value(v) {}
     friend class InputSystem;
@@ -268,8 +268,8 @@ namespace ROSE {
 
   };
 
-  class ROSE_API(Core) InputSystem final {
-    friend ROSE_API(Core) InitStatus Init();
+  class ROSE_API(CORE) InputSystem final {
+    friend ROSE_API(CORE) InitStatus Init();
     friend class Application;
     const bool *m_keyState;
     bool *m_keyStatePrevious;

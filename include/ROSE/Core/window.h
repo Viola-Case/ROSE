@@ -27,7 +27,7 @@ namespace ROSE {
    * @todo The flags passed to `Create` are the raw backend bitmask. Define ROSE-side window
    *       flags and translate them in the implementation.
    */
-  class ROSE_API(Core) Window final {
+  class ROSE_API(CORE) Window final {
   private:
     Window() noexcept = default;
 

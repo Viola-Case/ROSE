@@ -24,5 +24,5 @@ namespace ROSE {
 
   };
 
-  ROSE_API(Core) InitStatus Init();
+  ROSE_API(CORE) InitStatus Init();
 } // namespace ROSE

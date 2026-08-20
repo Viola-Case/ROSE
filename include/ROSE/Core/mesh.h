@@ -41,7 +41,7 @@ namespace ROSE {
     Mesh *mesh;
   };
 
-  class ROSE_API(Core) MeshRegistry {
+  class ROSE_API(CORE) MeshRegistry {
   public:
     static MeshRegistry &Get() noexcept;
     void RegisterMesh (Mesh *mesh, const UUID &id, const String &name);

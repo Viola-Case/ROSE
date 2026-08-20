@@ -13,7 +13,7 @@
 #include <ROSE/Core/api.h>
 namespace ROSE {
 
-  class ROSE_API(Core) AudioTrack {
+  class ROSE_API(CORE) AudioTrack {
   public:
     AudioTrack();
     AudioTrack(const AudioTrack &);
@@ -26,7 +26,7 @@ namespace ROSE {
   /*!
    * This doesn't work yet.
    */
-  class ROSE_API(Core) AudioSystem {
+  class ROSE_API(CORE) AudioSystem {
     void *m_mixer{nullptr};
     TypedHashMap<UUID, AudioTrack> m_tracks{};
     AudioSystem();
