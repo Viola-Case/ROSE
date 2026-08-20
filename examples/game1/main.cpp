@@ -10,6 +10,10 @@
 using namespace ROSE;
 int main() {
 
+  if (auto i = Init(); i != InitStatus::Success) {
+    return static_cast<int>(i);
+  }
+
   {
     BehaviorFactory &factory = BehaviorFactory::get();
     RoseRegisterCoreModule(factory);
@@ -23,7 +27,7 @@ int main() {
   }
 
   ApplicationInitSettings settings { "Game 1" };
-  settings.SetFlags(APPLICATION_SOFTWARE_RENDERER | APPLICATION_CONTROLLER_SUPPORT)
+  settings.SetFlags(APPLICATION_SOFTWARE_RENDERER)
     .SetWindowSize(800, 600)
     .AddSceneFromFile("assets/game1scene1.json")
     .SetVSync(true);

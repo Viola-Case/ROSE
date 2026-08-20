@@ -36,8 +36,7 @@ namespace ROSE {
       Server = 2,
       Light = 3,
       SoftwareRenderer = 4,
-      ControllerSupport = 5,
-      NoSound = 6,
+      LowPerformance = 5,
       Vulkan = 7,
       OpenGL = 8,
       DirectX9 = 9,
@@ -62,10 +61,8 @@ namespace ROSE {
                                                        << static_cast<int>(ApplicationFlag::Light);
   constexpr ApplicationFlags APPLICATION_SOFTWARE_RENDERER = static_cast<ApplicationFlags>(1)
                                                              << static_cast<int>(ApplicationFlag::SoftwareRenderer);
-  constexpr ApplicationFlags APPLICATION_CONTROLLER_SUPPORT = static_cast<ApplicationFlags>(1)
-                                                              << static_cast<int>(ApplicationFlag::ControllerSupport);
-  constexpr ApplicationFlags APPLICATION_NO_SOUND = static_cast<ApplicationFlags>(1)
-                                                    << static_cast<int>(ApplicationFlag::NoSound);
+  constexpr ApplicationFlags APPLICATION_LOW_PERFORMANCE = static_cast<ApplicationFlags>(1)
+                                                           << static_cast<int>(ApplicationFlag::LowPerformance);
   constexpr ApplicationFlags APPLICATION_VULKAN = static_cast<ApplicationFlags>(1)
                                                   << static_cast<int>(ApplicationFlag::Vulkan);
   constexpr ApplicationFlags APPLICATION_OPENGL = static_cast<ApplicationFlags>(1)
@@ -84,7 +81,7 @@ namespace ROSE {
 
   //! What an application gets when it asks for nothing in particular: a windowed, gamepad-aware
   //! game on the SDL renderer.
-  constexpr ApplicationFlags APPLICATION_DEFAULT = APPLICATION_CONTROLLER_SUPPORT | APPLICATION_SOFTWARE_RENDERER;
+  constexpr ApplicationFlags APPLICATION_DEFAULT = APPLICATION_SOFTWARE_RENDERER;
 
 
   /*!

@@ -48,3 +48,4 @@
 #include <ROSE/Core/surface.h>
 #include <ROSE/Core/factory.h>
 #include <ROSE/Core/time.h>
+#include <ROSE/Core/init.h>

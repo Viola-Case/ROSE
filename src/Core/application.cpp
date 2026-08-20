@@ -27,21 +27,23 @@
 
 namespace ROSE {
 
-  // Time's storage lives here rather than in the header so there is exactly one
-  // copy, inside ROSE_Core.dll. Application::Run() is the only writer.
-  double        Time::dT {};
+  /* Time's storage lives here rather than in the header so there is exactly one
+  copy, inside ROSE_Core.dll. Application::Run() is the only writer. */
+  double Time::dT {};
   const double &Time::deltaTime { Time::dT };
 
-  // Backing for ROSE::AttachImGui(); see ROSE/Core/imgui.h for why this exists.
+  //=========================Backing for ROSE::AttachImGui()=========================//
+  //                    See ROSE/Core/imgui.h for why this exists
   void *GetImGuiContext() noexcept { return ImGui::GetCurrentContext(); }
 
   void GetImGuiAllocatorFunctions(void **allocFn, void **freeFn, void **userData) noexcept {
     ImGuiMemAllocFunc alloc {};
-    ImGuiMemFreeFunc  free {};
+    ImGuiMemFreeFunc free {};
     ImGui::GetAllocatorFunctions(&alloc, &free, userData);
     *allocFn = reinterpret_cast<void *>(alloc);
-    *freeFn  = reinterpret_cast<void *>(free);
+    *freeFn = reinterpret_cast<void *>(free);
   }
+  //=================================================================================//
 
 #pragma region ApplicationInitSettings
 
@@ -126,7 +128,7 @@ namespace ROSE {
 
   Application::Application() noexcept {
 #if ROSE_PLATFORM_WINDOWS
-    timeBeginPeriod(1);
+    if (!GetFlag(ApplicationFlag::LowPerformance)) timeBeginPeriod(1);
 #endif
   }
 
@@ -144,24 +146,8 @@ namespace ROSE {
 #endif
 
     if (settings.m_windowHandle)
-      ROSE_LOG_WARN("An existing window handle was supplied, but adopting one is not implemented "
-                    "yet - creating our own instead.\n");
-
-    if (SDL_VERSION != SDL_GetVersion()) {
-      ROSE_LOG_FATAL("SDL API version and linked version mismatch!");
-      return -2;
-    }
-
-    SDL_InitFlags initFlags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS;
-
-    if (GetFlag(ApplicationFlag::ControllerSupport)) initFlags |= SDL_INIT_GAMEPAD | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC;
-
-    if (!SDL_Init(initFlags)) {
-      ROSE_LOG_FATAL("SDL Init failed: ", SDL_GetError());
-      return -3;
-    }
-
-    InputSystem::GetInstance().Init();
+      ROSE_LOG_WARN("An existing window handle was supplied, but adopting one is not implemented yet - creating our "
+                    "own instead.\n");
 
     SDL_WindowFlags windowFlags = SDL_WINDOW_HIDDEN;
 
@@ -310,11 +296,8 @@ namespace ROSE {
 
   void Application::SetWindowSize(const math::Vec2<int> size) noexcept {
     m_windowSize = size;
-    if (m_window)
-      m_window->SetSize(size);
-    else
-      ROSE_LOG_WARN("No window to resize! Are you sure you've structured your application correctly?\n");
-    if (m_renderer)
-      m_renderer->OnResize(size.x, size.y);
+    if (m_window) m_window->SetSize(size);
+    else ROSE_LOG_WARN("No window to resize! Are you sure you've structured your application correctly?\n");
+    if (m_renderer) m_renderer->OnResize(size.x, size.y);
   }
 } // namespace ROSE

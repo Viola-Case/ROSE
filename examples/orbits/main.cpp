@@ -12,7 +12,9 @@
 #include <ROSE/ROSE.h>
 using namespace ROSE;
 int main() {
-
+  if (auto i = Init(); i != InitStatus::Success) {
+    return static_cast<int>(i);
+  }
   ApplicationInitSettings settings { "Orbits" };
   settings.SetFlags(APPLICATION_SOFTWARE_RENDERER).SetWindowSize(800, 800).AddSceneFromFile("assets/orbits.json");
 

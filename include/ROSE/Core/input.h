@@ -10,6 +10,9 @@
 **/
 #pragma once
 
+#include "init.h"
+
+
 #include <cstdlib>
 #include <ROSE/Core/api.h>
 #include <ROSE/Core/rtl.h>
@@ -266,6 +269,7 @@ namespace ROSE {
   };
 
   class ROSE_API(Core) InputSystem final {
+    friend ROSE_API(Core) InitStatus Init();
     friend class Application;
     const bool *m_keyState;
     bool *m_keyStatePrevious;
