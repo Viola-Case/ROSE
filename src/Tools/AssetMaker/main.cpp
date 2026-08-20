@@ -15,7 +15,7 @@
 #include "assetmaker_input.h"
 #include <ROSE/Editor/assetfile.h>
 
-#include <cli/CLI.hpp>
+#include <CLI/CLI.hpp>
 
 #include <string>
 #include <SDL3/SDL.h>

@@ -34,7 +34,11 @@ BackendStatus SoftwareRenderer::Init(const RenderBackendContext &ctx) {
   for (int i = 0; i < n; ++i) {
     Log(LogLevel::Debug, "\t{}\n", SDL_GetRenderDriver(i));
   }
-  SDL_Renderer *renderer = SDL_CreateRenderer(window, "vulkan, direct3d11, opengl, gpu, software");
+  // No spaces: SDL splits this on ',' and compares each entry against the driver names verbatim, so
+  // " opengl" never matches "opengl". With the spaces in, only the leading "vulkan" was reachable and
+  // every fallback was dead -- which is why this worked on Windows and died on a Wayland session whose
+  // Vulkan ICD has no VK_KHR_wayland_surface.
+  SDL_Renderer *renderer = SDL_CreateRenderer(window, "vulkan,direct3d11,opengl,gpu,software");
   m_renderer = renderer;
   BackendStatus status;
   if (renderer) {

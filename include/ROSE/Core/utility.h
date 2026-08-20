@@ -10,6 +10,7 @@
 **/
 #pragma once
 
+#include <atomic>
 #include <utility>
 #include <ROSE/Core/api.h>
 #include <ROSE/Core/typetraits.h>
