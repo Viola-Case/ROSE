@@ -20,9 +20,7 @@ namespace ROSE::math {
       @brief  it's a sign lol
   **/
   struct Sign {
-    enum Value : int8_t { Negative = -1,
-                          Zero = 0,
-                          Positive = 1 } value;
+    enum Value : int8_t { Negative = -1, Zero = 0, Positive = 1 } value;
     constexpr Sign(Value v) : value(v) {}
     constexpr Sign(float i) : value((i == 0 ? Value::Zero : (i > 0 ? Value::Positive : Value::Negative))) {}
     constexpr operator int8_t() const noexcept { return static_cast<int8_t>(value); }
@@ -47,7 +45,9 @@ namespace ROSE::math {
    *
    */
   template <typename T>
-  constexpr bool KDelta(T a, T b) { return (a == b); }
+  constexpr bool KDelta(T a, T b) {
+    return (a == b);
+  }
 
   /**
     @brief  Returns the sign of the permutation of arguments (aka "Levi-Civita symbol")
@@ -59,15 +59,18 @@ namespace ROSE::math {
 
   template <typename... Args>
   constexpr Sign LeviCivita(Args... args) {
-    static_assert((std::is_convertible_v<Args, size_t> && ...), "cse::math::LeviCivita only accepts size_t-convertible arguments");
+    static_assert((std::is_convertible_v<Args, size_t> && ...),
+                  "cse::math::LeviCivita only accepts size_t-convertible arguments");
     constexpr size_t N = sizeof...(Args);
     size_t arr[N] = { args... };
 
-    size_t maxval = 0;
+    /* A non-zero symbol needs a permutation of 0..N-1: every index in range, and no index repeated. */
     for (size_t i = 0; i < N; ++i) {
-      if (arr[i] > maxval) maxval = arr[i];
+      if (arr[i] >= N) return Sign::Zero;
+      for (size_t j = i + 1; j < N; ++j) {
+        if (arr[i] == arr[j]) return Sign::Zero;
+      }
     }
-    if (maxval != N - 1) return Sign::Zero;
 
     int sign = 1;
     for (size_t i = 0; i < N; ++i) {
@@ -77,6 +80,38 @@ namespace ROSE::math {
     }
 
     return (sign == 1 ? Sign::Positive : Sign::Negative);
+  }
+
+  /**
+    @brief  Returns the octonion structure constant phi_ijk (the "Fano plane" symbol)
+    @param  i,j,k - indices in [0, 7)
+    @retval       - sign of the triple: non-zero only on the 7 Fano lines and their permutations
+    @note The 7D counterpart of LeviCivita: same totally antisymmetric role, but supported on 7 index
+          triples instead of on every permutation of a full index set. The basis below is the one where
+          (0, 1, 2) is a line, so a 7D cross product reduces to the 3D one when components 3..6 vanish.
+  **/
+
+  constexpr Sign FanoSign(size_t i, size_t j, size_t k) {
+    constexpr size_t lines[7][3] = {
+      { 0, 1, 2 }, { 0, 3, 4 }, { 0, 6, 5 }, { 1, 3, 5 }, { 1, 4, 6 }, { 2, 3, 6 }, { 2, 5, 4 },
+    };
+
+    for (const auto &line : lines) {
+      /* Locate each index within the line; the parity of those positions is the sign, so LeviCivita does
+       * the counting. A missing index means this is not the line, and a repeated index cannot place twice
+       * because the entries of a line are distinct. */
+      size_t pos[3] = { 3, 3, 3 };
+      for (size_t p = 0; p < 3; ++p) {
+        if (line[p] == i) pos[0] = p;
+        if (line[p] == j) pos[1] = p;
+        if (line[p] == k) pos[2] = p;
+      }
+      if (pos[0] == 3 || pos[1] == 3 || pos[2] == 3) continue;
+
+      return LeviCivita(pos[0], pos[1], pos[2]);
+    }
+
+    return Sign::Zero;
   }
 
 } // namespace ROSE::math

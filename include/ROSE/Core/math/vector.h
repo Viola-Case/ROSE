@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <ROSE/Core/rtl.h>
 #include <ROSE/Core/typetraits.h>
+#include <ROSE/Core/math/mathenum.h>
 
 
 namespace ROSE::math {
@@ -87,6 +88,55 @@ namespace ROSE::math {
       explicit constexpr VecStorage(NoInit) noexcept {}
       constexpr VecStorage(T _x, T _y = T {}, T _z = T {}, T _w = T {}) noexcept : data { _x, _y, _z, _w } {}
     };
+
+    /* The cross product's symbol is mostly zeros: of the N*N (j, k) pairs feeding one output component,
+     * only two survive in 3D and six in 7D. Contracting over all of them costs real instructions -- a
+     * multiply by a zero coefficient is not removable under IEEE semantics, and in 7D the 343-iteration
+     * nest is past what the unroller will touch, so the symbol stops folding altogether. Sieving the
+     * non-zero terms once, at compile time, keeps the definition as the source of truth and leaves the
+     * hot loop with nothing but the terms that actually contribute. */
+    struct CrossTerm {
+      size_t j, k;
+      int8_t sign;
+    };
+
+    template <size_t N>
+    constexpr Sign CrossSymbol(size_t i, size_t j, size_t k) noexcept {
+      if constexpr (N == 3) {
+        return LeviCivita(i, j, k);
+      } else {
+        return FanoSign(i, j, k);
+      }
+    }
+
+    template <size_t N>
+    struct CrossTable {
+      static constexpr size_t PerRow = (N == 3 ? 2 : 6);
+      CrossTerm terms[N][PerRow] {};
+    };
+
+    /* Not noexcept: the throw is unreachable at run time, since consteval turns a wrong support count
+     * into a compile error -- it is the sieve asserting that the symbol it was handed has the support the
+     * table was sized for. */
+    template <size_t N>
+    consteval CrossTable<N> MakeCrossTable() {
+      CrossTable<N> table {};
+      for (size_t i = 0; i < N; ++i) {
+        size_t n = 0;
+        for (size_t j = 0; j < N; ++j) {
+          for (size_t k = 0; k < N; ++k) {
+            const int8_t s = static_cast<int8_t>(CrossSymbol<N>(i, j, k));
+            if (s != 0) table.terms[i][n++] = { j, k, s };
+          }
+        }
+        if (n != CrossTable<N>::PerRow) throw "cross product symbol has the wrong support";
+      }
+      return table;
+    }
+
+    template <size_t N>
+    inline constexpr CrossTable<N> crossTable = MakeCrossTable<N>();
+
   } // namespace detail
 
   template <Scalar T, size_t N>
@@ -167,11 +217,34 @@ namespace ROSE::math {
     }
 
     constexpr Vec cross(const Vec &rhs) const noexcept
-      requires(N == 3)
+      requires(N == 3 || N == 7)
     {
-      return { data[1] * rhs.data[2] - data[2] * rhs.data[1],
-               data[2] * rhs.data[0] - data[0] * rhs.data[2],
-               data[0] * rhs.data[1] - data[1] * rhs.data[0] };
+      /* (a x b)_i = phi_ijk a_j b_k, with the same contraction in both dimensions and only the symbol
+       * differing. In 3D phi is the Levi-Civita symbol, which zeroes every term but the two per row that
+       * survive. In 7D -- the only other dimension admitting a bilinear cross product -- it is the
+       * octonion structure constant, supported on the seven lines of the Fano plane. Both are sieved down
+       * to their surviving terms by detail::crossTable, so the sum below runs over those alone. */
+      Vec out;
+      for (size_t i = 0; i < N; ++i) {
+        T acc = T {};
+        for (const auto &term : detail::crossTable<N>.terms[i]) {
+          if (term.sign > 0) {
+            acc += data[term.j] * rhs.data[term.k];
+          } else {
+            acc -= data[term.j] * rhs.data[term.k];
+          }
+        }
+        out.data[i] = acc;
+      }
+      return out;
+    }
+
+    static constexpr T DotProduct(const Vec &lhs, const Vec &rhs) {
+      return lhs.dot(rhs);
+    }
+
+    static constexpr T CrossProduct(const Vec &lhs, const Vec &rhs) {
+      return lhs.cross(rhs);
     }
   };
 
@@ -181,6 +254,8 @@ namespace ROSE::math {
   using Vec3 = Vec<T, 3>;
   template <Scalar T>
   using Vec4 = Vec<T, 4>;
+  template <Scalar T>
+  using Vec7 = Vec<T, 7>;
 
   using Vec2f = Vec<float, 2>;
   using Vec2d = Vec<double, 2>;
@@ -188,6 +263,8 @@ namespace ROSE::math {
   using Vec3d = Vec<double, 3>;
   using Vec4f = Vec<float, 4>;
   using Vec4d = Vec<double, 4>;
+  using Vec7f = Vec<float, 7>;
+  using Vec7d = Vec<double, 7>;
 } // namespace ROSE::math
 
 
