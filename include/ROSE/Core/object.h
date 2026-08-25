@@ -116,6 +116,7 @@ namespace ROSE {
     /* TODO m_parent is never assigned by anything, so GetParent() always returns nullptr.
      * Either implement the hierarchy (parenting + transform composition) or drop the member. */
     Object *m_parent { nullptr };
+    List<UUID> m_children {};
 
   public:
     Transform transform { { 0, 0, 0 }, { 1, 0, 0, 0 } };
