@@ -14,6 +14,14 @@
 namespace ROSE {
   class Collider : public Behavior {
   public:
+    virtual bool IsActive() const noexcept;
+  protected:
+    bool m_active{true};
+
+  };
+
+  class MeshCollider : public Collider {
+    public:
     static constexpr UUID typeID = "7edb97ba340571cc-d568181d0c659920"_uuid;
     static constexpr UUID TypeID() noexcept { return typeID; }
     UUID GetTypeID() const noexcept override { return TypeID(); }
