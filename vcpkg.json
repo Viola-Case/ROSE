@@ -58,15 +58,6 @@
     {
       "name": "mimalloc",
       "features": ["override"]
-    },
-    {
-      "name": "steam-audio"
-    },
-    {
-      "name": "assimp",
-      "features": [
-        "draco"
-      ]
     }
   ]
 }

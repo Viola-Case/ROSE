@@ -125,6 +125,14 @@ function(rose_deploy_crt target)
     endif()
 endfunction()
 
+function(multiplatform_compile_options target msvc_options gnu_options)
+    if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+        target_compile_options(${target} PRIVATE ${msvc_options})
+    else()
+        target_compile_options(${target} PRIVATE ${gnu_options})
+    endif()
+endfunction()
+
 # Mirrors <src_dir> into <target>'s output directory as "assets/".
 #
 # This deliberately does not use a POST_BUILD command: those hang off the link
@@ -187,6 +195,8 @@ file(GLOB_RECURSE ROSE_CORE_SOURCES "src/Core/*.cpp" "src/Core/*.c" "src/Core/*.
 # module with no diagnostic. One DLL means one of each.
 add_library(ROSE_Core SHARED ${ROSE_CORE_SOURCES})
 
+set_target_properties(ROSE_Core PROPERTIES CXX_SCAN_FOR_MODULES OFF)
+
 target_include_directories(ROSE_Core PUBLIC include/)
 
 target_link_libraries(ROSE_Core
@@ -211,13 +221,13 @@ target_compile_definitions(ROSE_Core
 # The math code assumes AVX2 + FMA are available.
 if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     # cl.exe or clang-cl: MSVC-style flags. /arch:AVX2 also enables FMA.
-    target_compile_options(ROSE_Core PRIVATE /arch:AVX2)
+    target_compile_options(ROSE_Core PRIVATE /arch:AVX2 /O2)
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_compile_options(ROSE_Core PRIVATE -Wno-unknown-attributes)
     endif()
 else()
     # gcc or clang++ (GNU driver)
-    target_compile_options(ROSE_Core PRIVATE -mavx2 -mfma -Wno-unknown-attributes)
+    target_compile_options(ROSE_Core PRIVATE -mavx2 -mfma -Wno-unknown-attributes -Ofast)
 endif()
 
 # The visibility properties are no-ops under clang-cl, where nothing is exported

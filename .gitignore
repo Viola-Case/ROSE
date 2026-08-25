@@ -489,3 +489,5 @@ CMakeSettings.json
 *.local.md
 
 .claude
+
+.vendor/
