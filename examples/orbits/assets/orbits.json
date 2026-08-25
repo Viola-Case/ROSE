@@ -1,0 +1,29 @@
+{
+  "name": "Orbits",
+  "objects": [
+    {
+      "name": "sim control",
+      "uuid": "0a11c0de00000001-9f3b7c2d61aa0001",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "behaviors": [
+
+      ]
+    },
+    {
+      "name": "point cloud",
+      "uuid": "0a11c0de00000001-9f3b7c2d61aa0002",
+      "transform": {
+        "position": [0,0,0],
+        "rotation": [0,0,0],
+        "scale": [1,1,1]
+      },
+      "behaviors": [
+
+      ]
+    }
+  ]
+}
