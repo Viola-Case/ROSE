@@ -41,9 +41,7 @@ namespace ROSE {
     return RegisterResult::Success;
   }
 
-  void BehaviorFactory::RegisterModule(const char *moduleName) {
-    get().m_registeredModules.push_back(moduleName);
-  }
+  void BehaviorFactory::RegisterModule(const char *moduleName) { get().m_registeredModules.push_back(moduleName); }
 
   bool BehaviorFactory::IsRegistered(const UUID &id) noexcept {
     const auto it = get().m_factoryFunctions.find(id);
@@ -54,17 +52,23 @@ namespace ROSE {
 
 using namespace ROSE;
 extern "C" void RoseRegisterCoreModule(BehaviorFactory &factory) {
-  List<Pair<FactoryFn, UUID>> fns {
-    { MakeBehavior<Camera>, Camera::TypeID() },
-    { MakeBehavior<AudioSource>, AudioSource::TypeID() },
-    { MakeBehavior<Motion>, Motion::TypeID() },
+  List<Pair<FactoryFn, UUID>> fns { { MakeBehavior<Camera>, Camera::TypeID() },
+                                    { MakeBehavior<AudioSource>, AudioSource::TypeID() },
+                                    { MakeBehavior<Motion>, Motion::TypeID() },
+                                    { MakeBehavior<MeshRenderable>, MeshRenderable::TypeID() },
+                                    { MakeBehavior<SpriteRenderable>, SpriteRenderable::TypeID() },
+                                    { MakeBehavior<UIRenderable>, UIRenderable::TypeID() },
+                                    { MakeBehavior<ImageUI>, ImageUI::TypeID() },
+                                    { MakeBehavior<TextUI>, TextUI::TypeID() },
+                                    { MakeBehavior<ShapeRenderable>, ShapeRenderable::TypeID() }
   };
   for (const auto &p : fns) {
     switch (factory.Register(p.first, p.second, "Core")) {
-    case RegisterResult::Success: case RegisterResult::DuplicateID:
+    case RegisterResult::Success:
+    case RegisterResult::DuplicateID:
       break;
     case RegisterResult::Failure:
-      Log(LogLevel::Error, "Failed to register Core module behavior\n\ttypeid = {}-{}",p.second.high, p.second.low);
+      Log(LogLevel::Error, "Failed to register Core module behavior\n\ttypeid = {}-{}", p.second.high, p.second.low);
       break;
     }
   }
