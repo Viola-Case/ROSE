@@ -45,10 +45,10 @@ namespace ROSE {
 
   constexpr size_t ROSE_UUID_STR_LEN = ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR_LEN + ROSE_UUID_LOW_LEN;
 
-  class bad_uuid : public std::exception {};
-
+  class BadUUID : public std::exception {};
+  //! @warning Don't call this at runtime
   constexpr UUID operator ""_uuid(const char *str, size_t len) {
-    if (len < ROSE_UUID_STR_LEN) throw bad_uuid();
+    if (len < ROSE_UUID_STR_LEN) throw BadUUID();
 
     const uint128_t high = HexToULL(str);
     const uint64_t low  = HexToULL(str + ROSE_UUID_HIGH_LEN + ROSE_UUID_SEPARATOR_LEN);
