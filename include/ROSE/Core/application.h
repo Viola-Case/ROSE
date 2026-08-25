@@ -183,7 +183,9 @@ namespace ROSE {
     bool m_vsync { false };
   };
 
-
+  /*!
+   * The app/game
+   */
   class ROSE_API(CORE) Application final {
 
   public:

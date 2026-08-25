@@ -239,13 +239,9 @@ namespace ROSE::math {
       return out;
     }
 
-    static constexpr T DotProduct(const Vec &lhs, const Vec &rhs) {
-      return lhs.dot(rhs);
-    }
+    static constexpr T DotProduct(const Vec &lhs, const Vec &rhs) { return lhs.dot(rhs); }
 
-    static constexpr T CrossProduct(const Vec &lhs, const Vec &rhs) {
-      return lhs.cross(rhs);
-    }
+    static constexpr T CrossProduct(const Vec &lhs, const Vec &rhs) { return lhs.cross(rhs); }
   };
 
   template <Scalar T>
