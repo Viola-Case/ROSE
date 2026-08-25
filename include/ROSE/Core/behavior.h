@@ -50,15 +50,6 @@ namespace ROSE {
      * Called once every frame
      */
     virtual void FrameUpdate();
-    /*!
-     * @note Currently this doesn't get called but I'll get to that I promise
-     *
-     * @note ...or maybe not
-     *
-     * @todo No call site anywhere. Needs a fixed-timestep accumulator in
-     * Application::Run/Scene::FrameUpdate, or the hook should go.
-     */
-    virtual void FixedUpdate();
 
     /*!
      * How the object gets unpacked from scene JSON data
@@ -81,6 +72,11 @@ namespace ROSE {
      * @todo There is no OnDestroy hook. A behavior that cached neighbor pointers in
      * OnStart has no way to learn they went away.
      */
+    virtual void OnDestroy();
+
+    void Enable();
+    void Disable();
+    bool IsEnabled() const noexcept;
 
   public:
     virtual UUID GetTypeID() const noexcept = 0;

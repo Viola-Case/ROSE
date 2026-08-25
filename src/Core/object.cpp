@@ -40,7 +40,9 @@ namespace ROSE {
 
   void Object::FrameUpdate() noexcept {
     for (auto& b : m_behaviors) {
-      b.second->FrameUpdate();
+      Behavior *bb = b.second.get();
+      if (bb->m_enabled)
+        bb->FrameUpdate();
     }
   }
 
