@@ -18,29 +18,29 @@ cmake_minimum_required(VERSION 4.2)
 # not, the sibling-tool lookup that keys off the compiler's directory comes up
 # empty -- CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS ends up unset and the C++20 module
 # scan runs `""` as its command, failing with "/bin/sh: : command not found".
-if(NOT DEFINED CMAKE_CXX_COMPILER AND NOT DEFINED ENV{CXX})
-    if(CMAKE_HOST_WIN32)
-        set(_rose_c_compiler   clang-cl)
+if (NOT DEFINED CMAKE_CXX_COMPILER AND NOT DEFINED ENV{CXX})
+    if (CMAKE_HOST_WIN32)
+        set(_rose_c_compiler clang-cl)
         set(_rose_cxx_compiler clang-cl)
-    else()
-        set(_rose_c_compiler   clang)
+    else ()
+        set(_rose_c_compiler clang)
         set(_rose_cxx_compiler clang++)
-    endif()
+    endif ()
 
-    find_program(ROSE_C_COMPILER   NAMES ${_rose_c_compiler})
+    find_program(ROSE_C_COMPILER NAMES ${_rose_c_compiler})
     find_program(ROSE_CXX_COMPILER NAMES ${_rose_cxx_compiler})
 
-    if(NOT ROSE_C_COMPILER OR NOT ROSE_CXX_COMPILER)
+    if (NOT ROSE_C_COMPILER OR NOT ROSE_CXX_COMPILER)
         message(FATAL_ERROR
-            "ROSE builds with LLVM, but '${_rose_c_compiler}'/'${_rose_cxx_compiler}' "
-            "were not found on PATH.\n"
-            "Install LLVM, or point the build at another toolchain with "
-            "-DCMAKE_C_COMPILER=... -DCMAKE_CXX_COMPILER=...")
-    endif()
+                "ROSE builds with LLVM, but '${_rose_c_compiler}'/'${_rose_cxx_compiler}' "
+                "were not found on PATH.\n"
+                "Install LLVM, or point the build at another toolchain with "
+                "-DCMAKE_C_COMPILER=... -DCMAKE_CXX_COMPILER=...")
+    endif ()
 
-    set(CMAKE_C_COMPILER   "${ROSE_C_COMPILER}"   CACHE FILEPATH "C compiler")
+    set(CMAKE_C_COMPILER "${ROSE_C_COMPILER}" CACHE FILEPATH "C compiler")
     set(CMAKE_CXX_COMPILER "${ROSE_CXX_COMPILER}" CACHE FILEPATH "C++ compiler")
-endif()
+endif ()
 
 # ==============================================================================
 # Dependency source  (must run before project())
@@ -56,36 +56,36 @@ endif()
 
 option(ROSE_USE_VCPKG "Use vcpkg for dependency management instead of .vendor" OFF)
 
-if(ROSE_USE_VCPKG)
+if (ROSE_USE_VCPKG)
     # Skipped when a toolchain file was already supplied -- the vcpkg presets
     # pass one themselves.
-    if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-        if(NOT DEFINED ENV{VCPKG_ROOT})
+    if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+        if (NOT DEFINED ENV{VCPKG_ROOT})
             message(FATAL_ERROR "ROSE_USE_VCPKG=ON but VCPKG_ROOT environment variable is not set")
-        endif()
+        endif ()
 
         set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-            CACHE STRING "Vcpkg toolchain file")
+                CACHE STRING "Vcpkg toolchain file")
         set(VCPKG_MANIFEST_MODE ON)
 
         # Fail early (with a fix) if the local vcpkg checkout predates our baseline.
         file(READ "${CMAKE_SOURCE_DIR}/vcpkg.json" _vcpkg_json)
         string(JSON _vcpkg_baseline GET "${_vcpkg_json}" "builtin-baseline")
         execute_process(
-            COMMAND git -C "$ENV{VCPKG_ROOT}" merge-base --is-ancestor "${_vcpkg_baseline}" HEAD
-            RESULT_VARIABLE _vcpkg_baseline_missing
+                COMMAND git -C "$ENV{VCPKG_ROOT}" merge-base --is-ancestor "${_vcpkg_baseline}" HEAD
+                RESULT_VARIABLE _vcpkg_baseline_missing
         )
-        if(_vcpkg_baseline_missing)
+        if (_vcpkg_baseline_missing)
             message(FATAL_ERROR
-                "vcpkg HEAD is behind the required builtin-baseline '${_vcpkg_baseline}'.\n"
-                "Run: git -C \"$ENV{VCPKG_ROOT}\" pull")
-        endif()
-    endif()
-else()
+                    "vcpkg HEAD is behind the required builtin-baseline '${_vcpkg_baseline}'.\n"
+                    "Run: git -C \"$ENV{VCPKG_ROOT}\" pull")
+        endif ()
+    endif ()
+else ()
     # Included by path rather than by name: CMAKE_MODULE_PATH is not set up
     # until after project(), and CMAKE_PREFIX_PATH wants to be in place first.
     include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/ROSEVendor.cmake")
-endif()
+endif ()
 
 # Pin the vcpkg triplet on Windows. x64-windows means dynamic CRT and dynamic
 # dependency DLLs: the executable stays small and vcpkg deploys dependency DLLs
@@ -109,10 +109,10 @@ endif()
 #
 # The vendored path has no triplets; it makes the same choices directly (shared
 # libraries, dynamic CRT) in cmake/vendor.cmake.
-if(CMAKE_HOST_WIN32 AND ROSE_USE_VCPKG)
+if (CMAKE_HOST_WIN32 AND ROSE_USE_VCPKG)
     set(ROSE_VCPKG_TRIPLET "x64-windows" CACHE STRING "vcpkg triplet used on Windows")
     set(VCPKG_TARGET_TRIPLET "${ROSE_VCPKG_TRIPLET}" CACHE STRING "Vcpkg target triplet" FORCE)
-endif()
+endif ()
 
 # ==============================================================================
 # Project
@@ -135,11 +135,35 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # "Editor" is a custom configuration; see the matching preset in CMakePresets.json.
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Editor" CACHE STRING "" FORCE)
 
-if(MSVC)
+# ROSE_Editor is shelved pending a redesign. The target, the configuration check
+# that selected it, and the ENGINE_BUILD dependency are all commented out --
+# restore the three blocks together, since the other two key off the variable
+# this one sets.
+#[[
+# ROSE_Editor is added to the build tree only in the Editor configuration; see the
+# target further down. That is a configure-time decision, so it keys off
+# CMAKE_BUILD_TYPE -- which only a single-config generator sets. Under a
+# multi-config generator the target would silently not exist, so say so instead.
+get_property(_rose_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if (_rose_multi_config)
+    set(ROSE_BUILD_EDITOR OFF)
+    message(WARNING
+            "Multi-config generator '${CMAKE_GENERATOR}': ROSE_Editor is left out of this "
+            "build tree. It is added only when CMAKE_BUILD_TYPE is Editor, which a "
+            "multi-config generator does not set. Configure with the 'editor' preset "
+            "(single-config Ninja) to build it.")
+elseif (CMAKE_BUILD_TYPE STREQUAL "Editor")
+    set(ROSE_BUILD_EDITOR ON)
+else ()
+    set(ROSE_BUILD_EDITOR OFF)
+endif ()
+]]
+
+if (MSVC)
     add_compile_options(/utf-8)
-else()
+else ()
     add_compile_options(-include stddef.h)
-endif()
+endif ()
 
 # ------------------------------------------------------- VC++ runtime deployment
 # vcpkg's applocal deployment copies dependency DLLs (SDL3, libpng, ...) next to
@@ -152,25 +176,25 @@ endif()
 #
 # The UCRT (ucrtbase.dll) is intentionally not included: it ships as an OS
 # component on Windows 10 and later. Set CMAKE_INSTALL_UCRT_LIBRARIES to bundle it.
-if(MSVC)
+if (MSVC)
     set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
     include(InstallRequiredSystemLibraries)
-endif()
+endif ()
 
 # Copies the VC++ runtime DLLs next to <target>'s executable after it is built.
 # Note this deploys the *release* runtime; Debug builds link the debug CRT
 # (msvcp140d.dll etc.), which is not redistributable and is only present on
 # machines with Visual Studio installed.
 function(rose_deploy_crt target)
-    if(MSVC AND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+    if (MSVC AND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
         add_custom_command(TARGET ${target} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
                 "$<TARGET_FILE_DIR:${target}>"
-            COMMAND_EXPAND_LISTS
-            VERBATIM
+                COMMAND_EXPAND_LISTS
+                VERBATIM
         )
-    endif()
+    endif ()
 endfunction()
 
 # Copies the dependency DLLs <target> loads at runtime next to its binary.
@@ -184,31 +208,31 @@ endfunction()
 # hence the generator expression guard, since `copy_if_different` with no source
 # arguments is an error.
 function(rose_deploy_dlls target)
-    if(NOT WIN32)
+    if (NOT WIN32)
         return()
-    endif()
+    endif ()
 
     add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND "$<$<BOOL:$<TARGET_RUNTIME_DLLS:${target}>>:${CMAKE_COMMAND}>"
+            COMMAND "$<$<BOOL:$<TARGET_RUNTIME_DLLS:${target}>>:${CMAKE_COMMAND}>"
             -E copy_if_different
             "$<TARGET_RUNTIME_DLLS:${target}>"
             "$<TARGET_FILE_DIR:${target}>"
-        COMMAND_EXPAND_LISTS
-        VERBATIM
+            COMMAND_EXPAND_LISTS
+            VERBATIM
     )
 
     # DLLs that no link edge describes, so TARGET_RUNTIME_DLLS cannot see them.
     # Set by cmake/ROSEVendor.cmake; empty under vcpkg, whose applocal
     # deployment finds them by scanning PE imports instead.
-    if(ROSE_EXTRA_RUNTIME_DLLS)
+    if (ROSE_EXTRA_RUNTIME_DLLS)
         add_custom_command(TARGET ${target} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 ${ROSE_EXTRA_RUNTIME_DLLS}
                 "$<TARGET_FILE_DIR:${target}>"
-            COMMAND_EXPAND_LISTS
-            VERBATIM
+                COMMAND_EXPAND_LISTS
+                VERBATIM
         )
-    endif()
+    endif ()
 endfunction()
 
 # Copies the third-party license texts next to <target>'s binary, as licenses/.
@@ -227,24 +251,24 @@ endfunction()
 # ROSE's own LICENSE rides along, since a licenses/ directory holding only other
 # people's terms invites exactly the wrong conclusion about the rest.
 function(rose_deploy_licenses target)
-    if(NOT ROSE_VENDOR_DIR OR NOT IS_DIRECTORY "${ROSE_VENDOR_DIR}/share/licenses")
+    if (NOT ROSE_VENDOR_DIR OR NOT IS_DIRECTORY "${ROSE_VENDOR_DIR}/share/licenses")
         return()
-    endif()
+    endif ()
 
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.26)
+    if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.26)
         set(copy_dir copy_directory_if_different)
-    else()
+    else ()
         set(copy_dir copy_directory)
-    endif()
+    endif ()
 
     add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E ${copy_dir}
+            COMMAND ${CMAKE_COMMAND} -E ${copy_dir}
             "${ROSE_VENDOR_DIR}/share/licenses"
             "$<TARGET_FILE_DIR:${target}>/licenses"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${CMAKE_SOURCE_DIR}/LICENSE"
             "$<TARGET_FILE_DIR:${target}>/licenses/ROSE-LICENSE.txt"
-        VERBATIM
+            VERBATIM
     )
 endfunction()
 
@@ -259,9 +283,9 @@ endfunction()
 function(multiplatform_compile_options target msvc_options gnu_options)
     if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
         target_compile_options(${target} PRIVATE ${msvc_options})
-    else()
+    else ()
         target_compile_options(${target} PRIVATE ${gnu_options})
-    endif()
+    endif ()
 endfunction()
 
 # Mirrors <src_dir> into <target>'s output directory as "assets/".
@@ -278,23 +302,23 @@ endfunction()
 function(rose_deploy_assets target src_dir)
     # Examples without an assets directory yet are not an error, but adding one
     # later needs a re-configure for this check to see it.
-    if(NOT IS_DIRECTORY "${src_dir}")
+    if (NOT IS_DIRECTORY "${src_dir}")
         message(STATUS "rose_deploy_assets: ${target} has no assets directory (${src_dir}), skipping")
         return()
-    endif()
+    endif ()
 
     file(GLOB_RECURSE assets CONFIGURE_DEPENDS "${src_dir}/*")
 
     set(stamp "${CMAKE_CURRENT_BINARY_DIR}/${target}_assets.stamp")
 
     add_custom_command(OUTPUT "${stamp}"
-        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+            COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
             "${src_dir}"
             "$<TARGET_FILE_DIR:${target}>/assets"
-        COMMAND ${CMAKE_COMMAND} -E touch "${stamp}"
-        DEPENDS ${assets}
-        COMMENT "Deploying assets for ${target}"
-        VERBATIM
+            COMMAND ${CMAKE_COMMAND} -E touch "${stamp}"
+            DEPENDS ${assets}
+            COMMENT "Deploying assets for ${target}"
+            VERBATIM
     )
 
     add_custom_target(${target}_assets DEPENDS "${stamp}")
@@ -338,47 +362,49 @@ set_target_properties(ROSE_Core PROPERTIES CXX_SCAN_FOR_MODULES OFF)
 target_include_directories(ROSE_Core PUBLIC include/)
 
 target_link_libraries(ROSE_Core
-    PRIVATE SDL3::SDL3
-    PRIVATE SDL3_image::SDL3_image
-    PRIVATE SDL3_mixer::SDL3_mixer
-    PRIVATE SDL3_ttf::SDL3_ttf
-    PRIVATE imgui::imgui
-    PRIVATE glad::glad
-    PRIVATE nlohmann_json::nlohmann_json
-    PUBLIC  $<IF:$<TARGET_EXISTS:mimalloc-static>,mimalloc-static,mimalloc>
+        PRIVATE SDL3::SDL3
+        PRIVATE SDL3_image::SDL3_image
+        PRIVATE SDL3_mixer::SDL3_mixer
+        PRIVATE SDL3_ttf::SDL3_ttf
+        PRIVATE imgui::imgui
+        PRIVATE glad::glad
+        PRIVATE nlohmann_json::nlohmann_json
+        PUBLIC $<IF:$<TARGET_EXISTS:mimalloc-static>,mimalloc-static,mimalloc>
 )
 
 target_compile_definitions(ROSE_Core
-    PUBLIC  $<$<CONFIG:Editor>:ROSE_EDITOR>
-    # Flips ROSE_API(CORE) from dllimport to dllexport; see api.h.
-    PRIVATE ROSE_CORE_BUILD
-    PRIVATE $<$<CONFIG:Debug>:_DEBUG>
-    PRIVATE $<$<CONFIG:Release>:NDEBUG>
-    PRIVATE $<$<CONFIG:Editor>:NDEBUG>
+        PUBLIC $<$<CONFIG:Editor>:ROSE_EDITOR>
+        # Flips ROSE_API(CORE) from dllimport to dllexport; see api.h.
+        PRIVATE ROSE_CORE_BUILD
+        PRIVATE $<$<CONFIG:Debug>:_DEBUG>
+        PRIVATE $<$<CONFIG:Release>:NDEBUG>
+        PRIVATE $<$<CONFIG:Editor>:NDEBUG>
 )
 
+# TODO make avx an optional thing without breaking ABI
+
 # The math code assumes AVX2 + FMA are available.
-if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     # cl.exe or clang-cl: MSVC-style flags. /arch:AVX2 also enables FMA.
     target_compile_options(ROSE_Core PRIVATE /arch:AVX2 /O2)
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_compile_options(ROSE_Core PRIVATE -Wno-unknown-attributes)
-    endif()
-else()
+    endif ()
+else ()
     # gcc or clang++ (GNU driver)
     target_compile_options(ROSE_Core PRIVATE -mavx2 -mfma -Wno-unknown-attributes -Ofast)
-endif()
+endif ()
 
 # The visibility properties are no-ops under clang-cl, where nothing is exported
 # unless it is marked; they are what makes the ELF branch of ROSE_API_EXPORT in
 # api.h mean something once this builds outside Windows.
 set_target_properties(ROSE_Core PROPERTIES
-    DEBUG_POSTFIX             "d"
-    EDITOR_POSTFIX            "e"
-    FOLDER                    "src"
-    CXX_VISIBILITY_PRESET     hidden
-    VISIBILITY_INLINES_HIDDEN ON
-    POSITION_INDEPENDENT_CODE ON
+        DEBUG_POSTFIX "d"
+        EDITOR_POSTFIX "e"
+        FOLDER "src"
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON
+        POSITION_INDEPENDENT_CODE ON
 )
 
 rose_deploy_runtime(ROSE_Core)
@@ -388,33 +414,40 @@ rose_deploy_runtime(ROSE_Core)
 # ==============================================================================
 
 # ------------------------------------------------------------------ ROSE_Editor
-file(GLOB_RECURSE ROSE_EDITOR_SOURCES
-        "src/Tools/Editor/*.cpp"
-        "src/Tools/Editor/*.c"
-)
+#
+# Commented out pending a redesign; see the note by ROSE_BUILD_EDITOR further up.
+#[[
+# Added only in the Editor configuration: editor.h refuses to compile unless
+# ROSE_EDITOR is defined, and that happens in exactly that configuration. See the
+# ROSE_BUILD_EDITOR block near the top of this file.
+if (ROSE_BUILD_EDITOR)
+    file(GLOB_RECURSE ROSE_EDITOR_SOURCES
+            "src/Tools/Editor/*.cpp"
+            "src/Tools/Editor/*.c"
+    )
 
-add_executable(ROSE_Editor ${ROSE_EDITOR_SOURCES})
+    add_executable(ROSE_Editor ${ROSE_EDITOR_SOURCES})
 
-target_include_directories(ROSE_Editor PUBLIC include/)
+    target_include_directories(ROSE_Editor PUBLIC include/)
 
-# ROSE_Core's own dependencies are PRIVATE and no longer propagate now that it is
-# a shared library, so anything this target uses directly is listed here. It drives
-# SDL and ImGui itself and never constructs a ROSE::Application, so it owns its own
-# ImGui context -- do not call ROSE::AttachImGui() from here.
-target_link_libraries(ROSE_Editor PRIVATE
-        ROSE_Core
-        SDL3::SDL3
-        imgui::imgui
-)
+    # ROSE_Core's own dependencies are PRIVATE and no longer propagate now that it is
+    # a shared library, so anything this target uses directly is listed here. It drives
+    # SDL and ImGui itself and never constructs a ROSE::Application, so it owns its own
+    # ImGui context -- do not call ROSE::AttachImGui() from here.
+    target_link_libraries(ROSE_Editor PRIVATE
+            ROSE_Core
+            SDL3::SDL3
+            imgui::imgui
+    )
 
-target_compile_definitions(ROSE_Editor
-    PUBLIC  $<$<CONFIG:Editor>:ROSE_EDITOR>
-    PRIVATE $<$<CONFIG:Editor>:NDEBUG>
-)
+    # No $<CONFIG:Editor> guard needed: this block only runs in that configuration.
+    target_compile_definitions(ROSE_Editor PRIVATE ROSE_EDITOR NDEBUG)
 
-set_property(TARGET ROSE_Editor PROPERTY FOLDER "Tools")
+    set_property(TARGET ROSE_Editor PROPERTY FOLDER "Tools")
 
-rose_deploy_runtime(ROSE_Editor)
+    rose_deploy_runtime(ROSE_Editor)
+endif ()
+]]
 
 # --------------------------------------------------------------- ROSE_AssetMaker
 file(GLOB_RECURSE ROSE_ASSET_MAKER_SOURCES
@@ -435,8 +468,8 @@ target_link_libraries(ROSE_AssetMaker PRIVATE
 )
 
 set_target_properties(ROSE_AssetMaker PROPERTIES
-    OUTPUT_NAME "ROSE-masset"
-    FOLDER      "Tools"
+        OUTPUT_NAME "ROSE-masset"
+        FOLDER "Tools"
 )
 
 rose_deploy_runtime(ROSE_AssetMaker)
@@ -462,7 +495,13 @@ rose_deploy_runtime(ROSE_UUID_Generator)
 
 # --------------------------------------------------------- aggregate build target
 add_custom_target(ENGINE_BUILD)
-add_dependencies(ENGINE_BUILD ROSE_Core ROSE_Editor)
+add_dependencies(ENGINE_BUILD ROSE_Core)
+# Commented out with ROSE_Editor; see the note near the top of this file.
+#[[
+if (ROSE_BUILD_EDITOR)
+    add_dependencies(ENGINE_BUILD ROSE_Editor)
+endif ()
+]]
 
 # ==============================================================================
 # Examples
