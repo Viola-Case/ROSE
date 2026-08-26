@@ -17,6 +17,8 @@
 #include <concepts>
 
 namespace ROSE {
+  class Object;
+
   class ParamView;
   /*!
    * The Object-Behavior Model has three phases, Create, Start, and Update, in that order.

@@ -1,7 +1,11 @@
 ﻿#include <ROSE/ROSE.h>
 
 #include <chrono>
+#if ROSE_PLATFORM_WINDOWS
 #include <intrin.h>
+#else
+#include <x86intrin.h>
+#endif
 
 
 namespace ROSE {
@@ -9,8 +13,13 @@ namespace ROSE {
     auto *p = reinterpret_cast<unsigned char *>(_Dst);
     auto *q = reinterpret_cast<const unsigned char *>(_Src);
 
-    while (size-- && reinterpret_cast<uintptr_t>(p) & 0x7) {
+    // Byte-copy up to the first 8-byte boundary in the destination so the block loop below stays aligned.
+    // The decrement has to happen inside the body: `size--` in the condition also fires when the alignment
+    // test short-circuits it away, which loses a byte when p is already aligned -- and underflows size to
+    // SIZE_MAX on an empty copy, sending the block loop off the end of the buffer.
+    while (size && reinterpret_cast<uintptr_t>(p) & 0x7) {
       *p++ = *q++;
+      --size;
     }
 
     constexpr size_t s = sizeof(uint64_t);
@@ -65,11 +74,15 @@ namespace ROSE {
   }
 
 
-#if !defined(ROSE_NO_FORWARD_DECLARING_INTRINSICS)
+#if ROSE_PLATFORM_WINDOWS && !defined(ROSE_NO_FORWARD_DECLARING_INTRINSICS)
   /**
    * @note Forward declaration to builtin intrinsic function. Do not delete.
    *          Clangd's indexer yells at you without this.
-   *          May need to delete this in the linux version (frankly the difference in compiler is weird to me idk)
+   *
+   *          Windows only. <x86intrin.h> defines __rdtsc as a `static __inline__` function in the global
+   *          namespace, so redeclaring it here would hide that definition behind a namespace-scope name with C
+   *          linkage that nothing ever defines -- every executable linking Core then fails on an undefined
+   *          reference to __rdtsc.
    */
   extern "C" uint64_t __rdtsc();
 #endif

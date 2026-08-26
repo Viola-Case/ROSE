@@ -4,15 +4,42 @@ cmake_minimum_required(VERSION 4.2)
 # Compiler selection  (must run before project())
 # ==============================================================================
 
-# On Windows, default to clang-cl -- the MSVC-compatible clang driver -- so we
-# build with cl-style flags and the MSVC ABI. Off Windows (Linux/macOS) this is
-# skipped and the native clang++/gcc is used. An explicit -DCMAKE_CXX_COMPILER
-# or a CXX environment variable always wins.
-if(CMAKE_HOST_WIN32
-        AND NOT DEFINED CMAKE_CXX_COMPILER
-        AND NOT DEFINED ENV{CXX})
-    set(CMAKE_C_COMPILER   clang-cl CACHE STRING "C compiler")
-    set(CMAKE_CXX_COMPILER clang-cl CACHE STRING "C++ compiler")
+# ROSE builds with LLVM on every host. On Windows that means clang-cl -- the
+# MSVC-compatible clang driver -- so we build with cl-style flags and the MSVC
+# ABI. Off Windows it means the GNU-driver clang/clang++, picked explicitly
+# because the platform default (`cc`/`c++`) is gcc on most Linux distributions.
+# An explicit -DCMAKE_CXX_COMPILER or a CXX environment variable always wins.
+#
+# The C++ runtime is left alone: clang uses the system libstdc++ here, which is
+# what the vcpkg dependencies are built against.
+#
+# Both are resolved to absolute paths before they reach the cache. A bare name
+# there is not reliably resolved by CMake's compiler detection, and when it is
+# not, the sibling-tool lookup that keys off the compiler's directory comes up
+# empty -- CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS ends up unset and the C++20 module
+# scan runs `""` as its command, failing with "/bin/sh: : command not found".
+if(NOT DEFINED CMAKE_CXX_COMPILER AND NOT DEFINED ENV{CXX})
+    if(CMAKE_HOST_WIN32)
+        set(_rose_c_compiler   clang-cl)
+        set(_rose_cxx_compiler clang-cl)
+    else()
+        set(_rose_c_compiler   clang)
+        set(_rose_cxx_compiler clang++)
+    endif()
+
+    find_program(ROSE_C_COMPILER   NAMES ${_rose_c_compiler})
+    find_program(ROSE_CXX_COMPILER NAMES ${_rose_cxx_compiler})
+
+    if(NOT ROSE_C_COMPILER OR NOT ROSE_CXX_COMPILER)
+        message(FATAL_ERROR
+            "ROSE builds with LLVM, but '${_rose_c_compiler}'/'${_rose_cxx_compiler}' "
+            "were not found on PATH.\n"
+            "Install LLVM, or point the build at another toolchain with "
+            "-DCMAKE_C_COMPILER=... -DCMAKE_CXX_COMPILER=...")
+    endif()
+
+    set(CMAKE_C_COMPILER   "${ROSE_C_COMPILER}"   CACHE FILEPATH "C compiler")
+    set(CMAKE_CXX_COMPILER "${ROSE_CXX_COMPILER}" CACHE FILEPATH "C++ compiler")
 endif()
 
 # ==============================================================================
@@ -110,6 +137,8 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Editor" CACHE STRING "" FORCE)
 
 if(MSVC)
     add_compile_options(/utf-8)
+else()
+    add_compile_options(-include stddef.h)
 endif()
 
 # ------------------------------------------------------- VC++ runtime deployment

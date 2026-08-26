@@ -181,7 +181,13 @@ namespace ROSE {
 
       RenderBackendContext ctx { { m_window->GetHandle() }, size.x, size.y, m_vsync };
 
-      m_renderer->Init(ctx);
+      // Not ignorable: a backend that failed to initialise leaves ImGui's renderer impl unbound, and the
+      // first BeginFrame then trips an assert inside ImGui rather than reporting anything useful here.
+      if (const BackendStatus status = m_renderer->Init(ctx); status != BackendStatus::Success) {
+        ROSE_LOG_FATAL("Render backend initialisation failed (BackendStatus {}).\n",
+                       static_cast<uint32_t>(status));
+        return -5;
+      }
     }
 
     /* An empty scene list is legal - a headless or server run may have nothing to update - so

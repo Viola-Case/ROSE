@@ -34,8 +34,7 @@ namespace ROSE {
     static void deallocate(CharT *ptr) noexcept { ::operator delete(ptr); }
     // Copy `count` characters from `src` into `dst` (no null terminator added)
     static void copy(CharT *dst, const CharT *src, const size_t count) noexcept {
-      for (size_t i = 0; i < count; ++i)
-        dst[i] = src[i];
+      MemCpy(dst, src, count);
     }
 
   public:
