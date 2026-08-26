@@ -57,6 +57,7 @@ set(VENDOR_DEP_KEYS
     cmake_args_linux
     cmake_args_darwin
     platforms       # restrict to some of windows / linux / darwin
+    license_paths   # extra files/dirs of license text the name sweep misses
 )
 
 set(VENDOR_SETTINGS_KEYS

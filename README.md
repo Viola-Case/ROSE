@@ -44,6 +44,20 @@ Useful flags: `--list` shows what is pinned and what is stale without touching
 the network, `--only <name>` acts on one dependency, `--force` rebuilds
 regardless, `--purge` deletes `.vendor` entirely. `--help` lists them all.
 
+### Licenses
+
+ROSE is under [`LICENSE`](LICENSE). Everything above comes with terms of its
+own, summarised in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) — read
+that before shipping a build. All of it is permissively licensed — there is no
+copyleft in the tree and nothing to offer beyond the notices themselves — but
+FreeType additionally asks to be credited in your documentation, not just in
+`licenses/`.
+
+Attribution is collected automatically rather than assembled by hand: the vendor
+run copies every dependency's license text into `.vendor/install/share/licenses`,
+and the build drops that tree into `licenses/` beside the executables. A copied
+build directory therefore carries its own notices.
+
 ### vcpkg
 
 vcpkg still works and is kept as a fallback, driven by `ports/rose/vcpkg.json`:

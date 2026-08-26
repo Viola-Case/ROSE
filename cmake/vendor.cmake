@@ -742,6 +742,51 @@ function(vendor_update_submodules dep src log)
             vendor_die("${dep}: submodule update failed")
         endif()
     endif()
+
+    vendor_prune_submodules("${dep}" "${src}" "${log}" "${paths}")
+endfunction()
+
+# Deinitialises submodules that are checked out but no longer listed.
+#
+# Dropping a path from `submodules` has to actually remove it, not just stop
+# refreshing it. A stale checkout is invisible to the build -- the feature that
+# used it is off, so nothing compiles it -- but it is very visible to
+# vendor_collect_licenses(), which reads what is on disk precisely so that a
+# notice ships only for code that shipped. Left alone, removing mpg123 from the
+# manifest would keep crediting an LGPL library ROSE no longer contains, which
+# is worse than a merely stale checkout: it is a false statement about what is
+# in the binary. Pruning keeps "initialised" and "compiled" the same set.
+function(vendor_prune_submodules dep src log keep)
+    # `submodules = true` keeps everything by definition; nothing to prune.
+    if(keep STREQUAL "")
+        return()
+    endif()
+
+    vendor_submodule_paths("${src}" present TOP)
+
+    set(stale "")
+    foreach(p IN LISTS present)
+        if(NOT p IN_LIST keep)
+            list(APPEND stale "${p}")
+        endif()
+    endforeach()
+
+    if(stale STREQUAL "")
+        return()
+    endif()
+
+    string(REPLACE ";" ", " pretty "${stale}")
+    vendor_say("${dep}: dropping unlisted submodule(s): ${pretty}")
+
+    # --force because a build may have left objects inside the working tree;
+    # these are vendored checkouts, so there is nothing of ours to lose.
+    vendor_run(
+        COMMAND "${VENDOR_GIT}" submodule deinit --force -- ${stale}
+        WORKING_DIRECTORY "${src}" LOG "${log}" RESULT rc)
+
+    if(NOT rc EQUAL 0)
+        vendor_die("${dep}: could not deinitialise ${pretty}")
+    endif()
 endfunction()
 
 # Brings .vendor/src/<dep> to the pinned tag, doing nothing when it is already
@@ -848,6 +893,17 @@ function(vendor_build dep)
     if(NOT EXISTS "${src}/CMakeLists.txt")
         vendor_die("${dep}: no CMakeLists.txt in ${src}")
     endif()
+
+    # Start this dependency's notices from nothing. Two things write in here --
+    # the upstream's own install rules and vendor_collect_licenses() -- and
+    # neither removes anything, so a codec switched off in the manifest would
+    # otherwise leave its license behind forever. Turning mpg123 off is exactly
+    # that case: SDL_mixer stops installing LICENSE.mpg123.txt and the submodule
+    # gets deinitialised, but both had already been copied here. A stale .lib is
+    # merely wasted bytes; a stale license is a claim that code is in the binary
+    # when it is not. Only ever reached on a rebuild, which is the only thing
+    # that can change what a dependency contains.
+    file(REMOVE_RECURSE "${VENDOR_INSTALL_DIR}/share/licenses/${dep}")
 
     # Discard the build tree when the configuration changed, because a stale
     # CMakeCache.txt would otherwise keep options the manifest no longer asks
@@ -1019,6 +1075,241 @@ function(vendor_report_failure dep config phase log)
 endfunction()
 
 # ==============================================================================
+# Licenses
+# ==============================================================================
+#
+# Every dependency in the manifest is someone else's work under someone else's
+# terms, and all of those terms require the notice to travel with the binaries.
+# The checkouts under .vendor/src are build scratch and are not shipped, so the
+# notices are copied into the install prefix instead, beside the libraries they
+# cover:
+#
+#     <prefix>/share/licenses/<dep>/PACKAGE.txt     provenance: repo, tag, sha
+#     <prefix>/share/licenses/<dep>/LICENSE...      the dependency's own
+#     <prefix>/share/licenses/<dep>/<submodule>/    each vendored submodule's
+#
+# rose_deploy_licenses() in the root CMakeLists copies that tree next to every
+# executable, the same job rose_deploy_dlls() does for the DLLs.
+#
+# This runs for skipped dependencies too, not just rebuilt ones: file(COPY) is a
+# no-op when the destination is already current, and a prefix that was populated
+# before this existed would otherwise never grow the notices.
+
+# Files whose name marks them as license or attribution text. Prefix-matched,
+# case-insensitively, which is what catches LICENSE.txt, COPYING.LGPL and
+# LICENSE.MIT alike. AUTHORS is here because several of these licenses -- mpg123
+# and harfbuzz among them -- point at it for the attribution list.
+set(VENDOR_LICENSE_PATTERNS "LICEN[CS]E" "COPYING" "COPYRIGHT" "NOTICE" "AUTHORS")
+
+# Copies the license-looking entries at the top level of <dir> into <dest>, and
+# reports how many were found. Deliberately not recursive: every project in the
+# manifest keeps its terms at the root of its tree, and a recursive sweep of, say,
+# freetype would collect a few hundred per-file headers instead.
+function(vendor_copy_license_files dir dest out_count)
+    set(count 0)
+
+    if(NOT IS_DIRECTORY "${dir}")
+        set(${out_count} 0 PARENT_SCOPE)
+        return()
+    endif()
+
+    file(GLOB entries RELATIVE "${dir}" "${dir}/*")
+    foreach(entry IN LISTS entries)
+        string(TOUPPER "${entry}" upper)
+
+        set(matched FALSE)
+        foreach(pattern IN LISTS VENDOR_LICENSE_PATTERNS)
+            if(upper MATCHES "^${pattern}")
+                set(matched TRUE)
+                break()
+            endif()
+        endforeach()
+
+        if(matched)
+            # Handles nlohmann_json's LICENSES/ directory as well as plain
+            # files; file(COPY) takes either.
+            file(COPY "${dir}/${entry}" DESTINATION "${dest}")
+            math(EXPR count "${count} + 1")
+        endif()
+    endforeach()
+
+    set(${out_count} "${count}" PARENT_SCOPE)
+endfunction()
+
+# Every initialised submodule path of a checkout. Recursive unless a third
+# argument of TOP asks for only the top-level ones.
+#
+# The manifest's `submodules` list is not used for this: it may be `true`, it
+# says nothing about nested submodules, and it describes what was asked for
+# rather than what is on disk. `git submodule status` prefixes an uninitialised
+# submodule with '-', which is exactly the set to skip -- dependencies.toml
+# leaves most of the SDL satellites' codecs uninitialised on purpose, and their
+# licenses have no business in a build that never compiled them.
+function(vendor_submodule_paths src out)
+    set(paths "")
+
+    set(depth --recursive)
+    if("TOP" IN_LIST ARGN)
+        set(depth "")
+    endif()
+
+    if(EXISTS "${src}/.git")
+        execute_process(
+            COMMAND "${VENDOR_GIT}" submodule status ${depth}
+            WORKING_DIRECTORY "${src}"
+            OUTPUT_VARIABLE status_text
+            ERROR_QUIET
+            RESULT_VARIABLE rc
+        )
+        if(rc EQUAL 0)
+            vendor_split_lines("${status_text}" lines)
+            foreach(line IN LISTS lines)
+                # " <sha> <path> (<describe>)" -- present.  '+' is a checkout
+                # that differs from the recorded sha, 'U' a merge conflict;
+                # both still have files worth reading. '-' is not initialised.
+                if(line MATCHES "^[ +U][0-9a-f]+ ([^ ]+)")
+                    list(APPEND paths "${CMAKE_MATCH_1}")
+                endif()
+            endforeach()
+        endif()
+    endif()
+
+    set(${out} "${paths}" PARENT_SCOPE)
+endfunction()
+
+# Removes bundle directories this pass no longer produces.
+#
+# vendor_build() clears a dependency's whole license directory, but only when it
+# rebuilds, and `license_paths` is deliberately not part of the build key -- it
+# describes what to attribute, not what to compile, and no one should pay a
+# two-minute rebuild for editing a comment about copyright. So dropping a path
+# from the manifest has to be cleaned up here instead.
+#
+# The previous run's PACKAGE.txt is the record of what was written: its
+# `bundled:` line is this same list, and anything on it that is missing now is a
+# directory this pass did not write and no longer stands behind.
+function(vendor_drop_stale_bundles dest keep)
+    vendor_read_file("${dest}/PACKAGE.txt" previous)
+
+    if(NOT previous MATCHES "bundled:  ([^\n]+)")
+        return()
+    endif()
+
+    string(REPLACE ", " ";" was "${CMAKE_MATCH_1}")
+
+    foreach(leaf IN LISTS was)
+        if(NOT leaf IN_LIST keep AND IS_DIRECTORY "${dest}/${leaf}")
+            file(REMOVE_RECURSE "${dest}/${leaf}")
+        endif()
+    endforeach()
+endfunction()
+
+function(vendor_collect_licenses dep)
+    set(src "${VENDOR_DEP_${dep}_SRC}")
+    set(dest "${VENDOR_INSTALL_DIR}/share/licenses/${dep}")
+    set(total 0)
+    set(bundled "")
+
+    if(NOT IS_DIRECTORY "${src}")
+        return()
+    endif()
+
+    vendor_copy_license_files("${src}" "${dest}" found)
+    math(EXPR total "${total} + ${found}")
+
+    # A vendored submodule is compiled into the dependency's binaries, so its
+    # notice ships with them. Flattened to the submodule's own name: the
+    # external/ prefix every SDL satellite uses says nothing a reader needs.
+    vendor_submodule_paths("${src}" submodules)
+    foreach(rel IN LISTS submodules)
+        get_filename_component(leaf "${rel}" NAME)
+        vendor_copy_license_files("${src}/${rel}" "${dest}/${leaf}" found)
+        if(found GREATER 0)
+            list(APPEND bundled "${leaf}")
+            math(EXPR total "${total} + ${found}")
+        else()
+            vendor_say("${dep}: warning: no license file in submodule ${rel}")
+        endif()
+    endforeach()
+
+    # The escape hatch, for third-party code a dependency carries in its own
+    # tree rather than as a submodule -- SDL's copy of hidapi, SDL_mixer's
+    # dr_libs. The sweep above cannot find those, because it deliberately does
+    # not recurse, and a recursive one would drown in per-file headers.
+    #
+    # A directory entry contributes the license files at its top level; a file
+    # entry is taken as named. Either way the result lands in a subdirectory
+    # named after the code it covers, since half of these files are called
+    # LICENSE.txt and a flat copy would have them overwrite each other -- and
+    # the dependency's own.
+    foreach(rel IN LISTS VENDOR_DEP_${dep}_LICENSE_PATHS)
+        if(NOT EXISTS "${src}/${rel}")
+            vendor_die("${dep}: license_paths entry '${rel}' is not in ${src}")
+        endif()
+
+        if(IS_DIRECTORY "${src}/${rel}")
+            get_filename_component(leaf "${rel}" NAME)
+            vendor_copy_license_files("${src}/${rel}" "${dest}/${leaf}" found)
+            if(found EQUAL 0)
+                vendor_die("${dep}: license_paths entry '${rel}' holds no license file")
+            endif()
+        else()
+            get_filename_component(parent "${rel}" DIRECTORY)
+            get_filename_component(leaf "${parent}" NAME)
+            file(COPY "${src}/${rel}" DESTINATION "${dest}/${leaf}")
+            set(found 1)
+        endif()
+
+        list(APPEND bundled "${leaf}")
+        math(EXPR total "${total} + ${found}")
+    endforeach()
+
+    # plutovg is a submodule of SDL_ttf and of plutosvg both, and --recursive
+    # reports it once for each.
+    list(REMOVE_DUPLICATES bundled)
+
+    vendor_drop_stale_bundles("${dest}" "${bundled}")
+
+    if(total EQUAL 0)
+        vendor_say("${dep}: warning: no license file found in ${src}")
+        vendor_say("${dep}: name one in `license_paths` in the manifest -- "
+                   "nothing should ship unattributed")
+        return()
+    endif()
+
+    # Provenance beside the text, so the notice says which version it covers.
+    set(package "${dep}\n")
+    if(VENDOR_DEP_${dep}_DESCRIPTION)
+        string(APPEND package "${VENDOR_DEP_${dep}_DESCRIPTION}\n")
+    endif()
+    string(APPEND package "\n")
+    if(VENDOR_DEP_${dep}_REPO)
+        string(APPEND package "source:   ${VENDOR_DEP_${dep}_REPO}\n")
+        string(APPEND package "tag:      ${VENDOR_DEP_${dep}_TAG}\n")
+        vendor_read_file("${VENDOR_STAMP_DIR}/${dep}.sha" sha)
+        if(sha)
+            string(APPEND package "commit:   ${sha}\n")
+        endif()
+    else()
+        string(APPEND package "source:   in-tree, ${VENDOR_DEP_${dep}_PATH}\n")
+    endif()
+    if(bundled)
+        string(REPLACE ";" ", " bundled_text "${bundled}")
+        string(APPEND package "bundled:  ${bundled_text}\n")
+    endif()
+    string(APPEND package
+        "\nThe files beside this one are ${dep}'s own license and attribution "
+        "text,\ncopied verbatim from the source above.\n")
+    if(bundled)
+        string(APPEND package
+            "Each subdirectory holds the same for third-party code ${dep} carries,\n"
+            "as a submodule or in its own tree.\n")
+    endif()
+
+    file(WRITE "${dest}/PACKAGE.txt" "${package}")
+endfunction()
+
+# ==============================================================================
 # Main
 # ==============================================================================
 
@@ -1064,6 +1355,27 @@ foreach(dep IN LISTS ordered)
     math(EXPR built "${built} + 1")
     vendor_say("")
 endforeach()
+
+# Attribution for everything that was just built, and for everything that was
+# already up to date. A separate pass rather than a step inside the loop, so that
+# there is one call site and no way for the skip path to miss it.
+foreach(dep IN LISTS ordered)
+    vendor_collect_licenses("${dep}")
+endforeach()
+
+file(WRITE "${VENDOR_INSTALL_DIR}/share/licenses/README.txt"
+"Third-party licenses
+====================
+
+One directory per dependency, holding that project's own license and
+attribution text copied verbatim from the source it was built from, plus a
+PACKAGE.txt naming the repository and the exact commit. A nested directory is a
+library that dependency vendors and compiles into its own binaries.
+
+Collected by cmake/vendor.cmake from the manifest in dependencies.toml. See
+THIRD_PARTY_NOTICES.md in the ROSE repository for the summary, and LICENSE
+there for ROSE's own terms.
+")
 
 string(TIMESTAMP finished "%s")
 math(EXPR elapsed "${finished} - ${started}")

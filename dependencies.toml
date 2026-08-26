@@ -18,8 +18,8 @@
 #   1. Upstream vendors them. The SDL satellites carry every codec as a git
 #      submodule under external/, so listing those paths in `submodules` plus
 #      SDL*_VENDORED=ON builds the whole closure (FLAC, ogg, vorbis, opus,
-#      mpg123, wavpack, libpng, libjpeg, libtiff, zlib, freetype, harfbuzz,
-#      plutosvg, plutovg) without a [[dependency]] block for any of them.
+#      wavpack, libpng, libjpeg, libtiff, zlib, freetype, harfbuzz, plutosvg,
+#      plutovg) without a [[dependency]] block for any of them.
 #      `submodules = true` would take every submodule the upstream has, which
 #      for SDL_image means gigabytes of formats that are switched off; naming
 #      the paths keeps a checkout small and documents the real closure.
@@ -38,7 +38,20 @@
 #
 # Dependency keys: name, description, repo, tag, path, find, shim, subdir,
 # needs, submodules, configs, cmake_args, cmake_args_windows,
-# cmake_args_linux, cmake_args_darwin, platforms.
+# cmake_args_linux, cmake_args_darwin, platforms, license_paths.
+#
+# ------------------------------------------------------------------ licenses
+#
+# The engine copies each dependency's license and attribution files -- and those
+# of every submodule it actually initialised -- into <prefix>/share/licenses/,
+# from where the root CMakeLists deploys them next to each executable. Detection
+# is by filename (LICENSE*, COPYING*, NOTICE*, COPYRIGHT*, AUTHORS*) at the top
+# of the checkout, plus the same sweep over every submodule it actually
+# initialised. Third-party code a dependency carries in its own tree instead of a
+# submodule is invisible to that, and is named in `license_paths`. A dependency
+# that yields no license file at all is reported at
+# the end of the run: adding one here without attribution is a bug, not a style
+# question. THIRD_PARTY_NOTICES.md summarises what the current manifest pulls in.
 
 [settings]
 
@@ -92,6 +105,13 @@ cmake_args_linux = [
   "-DSDL_X11=ON",
   "-DSDL_WAYLAND=ON",
 ]
+# Third-party code SDL keeps in its own src/ rather than as a submodule, so the
+# license sweep cannot find it: hidapi (used under its BSD option, not the GPL
+# one it is also offered under) and the yuv2rgb colour conversion tables.
+license_paths = [
+  "src/hidapi",
+  "src/video/yuv2rgb",
+]
 
 
 # ==============================================================================
@@ -142,15 +162,14 @@ repo        = "https://github.com/libsdl-org/SDL_mixer.git"
 tag         = "release-3.2.4"
 find        = "SDL3_mixer"
 needs       = ["SDL3"]
-# ogg underpins flac, vorbis and opusfile; opusfile needs opus. libxmp, tremor
-# and game-music-emu are left out along with the features that use them.
+# ogg underpins flac, vorbis and opusfile; opusfile needs opus. libxmp, tremor,
+# game-music-emu and mpg123 are left out along with the features that use them.
 submodules  = [
   "external/ogg",
   "external/flac",
   "external/vorbis",
   "external/opus",
   "external/opusfile",
-  "external/mpg123",
   "external/wavpack",
 ]
 cmake_args  = [
@@ -164,8 +183,24 @@ cmake_args  = [
   "-DSDLMIXER_FLAC=ON",
   "-DSDLMIXER_FLAC_LIBFLAC=ON",
   "-DSDLMIXER_VORBIS_VORBISFILE=ON",
-  "-DSDLMIXER_MP3_MPG123=ON",
   "-DSDLMIXER_OPUS=ON",
+  # MP3 decodes through dr_mp3 (SDLMIXER_MP3_DRMP3, on by default), not mpg123.
+  #
+  # mpg123 is LGPL-2.1, and SDLMIXER_DEPS_SHARED=OFF would link it statically
+  # into SDL3_mixer.dll -- which makes that DLL a combined work and drags in
+  # LGPL section 6, obliging us to let recipients relink it against their own
+  # mpg123. Every other dependency ROSE builds is permissive, so this one
+  # library would have been the only thing standing between "keep the notices"
+  # and a real distribution obligation, inherited by anyone shipping a game
+  # built on ROSE. dr_mp3 (Unlicense/MIT-0) is already compiled in as the
+  # fallback backend, so dropping mpg123 removes code rather than adding it.
+  #
+  # The tradeoff is real but small here: dr_mp3 is less forgiving of malformed
+  # streams and weaker on Xing/LAME gapless metadata. Game audio is authored,
+  # not scavenged, and Ogg Vorbis, Opus and FLAC are all present and all better
+  # choices than MP3 anyway. If ROSE ever needs to play MP3s it did not produce,
+  # revisit this -- and prefer SDLMIXER_MP3_MPG123_SHARED=ON over a static link.
+  "-DSDLMIXER_MP3_MPG123=OFF",
   # opus keeps its SSE4.1 and SSSE3 kernels in separate source files and only
   # passes the enabling -m flags to GNU-style drivers. Under clang-cl the
   # intrinsics then fail outright:
@@ -191,6 +226,18 @@ cmake_args  = [
   "-DSDLMIXER_GME=OFF",
   "-DSDLMIXER_MOD=OFF",
   "-DSDLMIXER_MIDI=OFF",
+]
+# In src/, not external/, so the submodule sweep misses it. dr_libs is now the
+# only MP3 decoder and the fallback WAV/FLAC one (Unlicense / MIT-0, so nothing
+# is actually required -- collected anyway, because "no obligation" is a
+# conclusion a reader should be able to reach from the text rather than take on
+# trust).
+#
+# src/timidity is deliberately not listed: SDLMIXER_MIDI is off, so none of it
+# is compiled, and a notice for absent code says the binary contains something
+# it does not. Add it back the moment MIDI is switched on.
+license_paths = [
+  "src/dr_libs",
 ]
 
 

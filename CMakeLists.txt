@@ -211,11 +211,49 @@ function(rose_deploy_dlls target)
     endif()
 endfunction()
 
+# Copies the third-party license texts next to <target>'s binary, as licenses/.
+#
+# Every dependency ROSE links is under terms that require its notice to be
+# distributed with the binaries -- MIT, BSD, Zlib and Apache-2.0 all say so, and
+# mpg123's LGPL says more (see THIRD_PARTY_NOTICES.md). Those binaries are copied
+# out of the vendor prefix by rose_deploy_dlls() above, so the notices follow the
+# same route: cmake/vendor.cmake collects them into <prefix>/share/licenses and
+# this drops that tree beside the executable.
+#
+# copy_directory_if_different needs CMake 3.26; below that the plain copy runs
+# every build, which costs a few dozen small files and is not worth a branch
+# anyone has to maintain.
+#
+# ROSE's own LICENSE rides along, since a licenses/ directory holding only other
+# people's terms invites exactly the wrong conclusion about the rest.
+function(rose_deploy_licenses target)
+    if(NOT ROSE_VENDOR_DIR OR NOT IS_DIRECTORY "${ROSE_VENDOR_DIR}/share/licenses")
+        return()
+    endif()
+
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.26)
+        set(copy_dir copy_directory_if_different)
+    else()
+        set(copy_dir copy_directory)
+    endif()
+
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E ${copy_dir}
+            "${ROSE_VENDOR_DIR}/share/licenses"
+            "$<TARGET_FILE_DIR:${target}>/licenses"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_SOURCE_DIR}/LICENSE"
+            "$<TARGET_FILE_DIR:${target}>/licenses/ROSE-LICENSE.txt"
+        VERBATIM
+    )
+endfunction()
+
 # Everything a built target needs sitting next to it to actually run: the VC++
-# runtime and the dependency DLLs.
+# runtime, the dependency DLLs, and the notices those DLLs are distributed under.
 function(rose_deploy_runtime target)
     rose_deploy_crt(${target})
     rose_deploy_dlls(${target})
+    rose_deploy_licenses(${target})
 endfunction()
 
 function(multiplatform_compile_options target msvc_options gnu_options)

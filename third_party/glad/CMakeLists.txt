@@ -17,6 +17,25 @@
 #
 # The vendor engine (cmake/vendor.cmake) builds this like any other dependency;
 # it is declared with `path =` instead of `repo`/`tag` in dependencies.toml.
+#
+# ------------------------------------------------------------------- licensing
+#
+# These are someone else's files and they carry someone else's terms. LICENSE
+# beside this file is glad's own, copied verbatim from the 0.1.36 tag, and it
+# covers three separate things that all ended up in this directory:
+#
+#   * src/glad.c and include/glad/glad.h -- output of the glad generator,
+#     MIT, Copyright (c) 2013-2021 David Herberth.
+#   * the enum values and command signatures in that output, which come from
+#     the Khronos OpenGL registry (gl.xml) -- Apache-2.0, Copyright (c)
+#     2013-2020 The Khronos Group Inc.
+#   * include/KHR/khrplatform.h -- Khronos' MIT-style license, whose text is
+#     also in the header itself and must stay there.
+#
+# The generated sources carry no license header of their own, which is exactly
+# why LICENSE has to travel with them. install() below puts it in the vendor
+# prefix's share/licenses/glad so it reaches anything ROSE ships; see
+# THIRD_PARTY_NOTICES.md.
 
 cmake_minimum_required(VERSION 3.21)
 
@@ -57,6 +76,11 @@ install(TARGETS glad EXPORT gladTargets
 )
 
 install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
+# Attribution travels with the binary. cmake/vendor.cmake collects the license
+# files of every fetched dependency into this same directory; glad has no
+# checkout to collect from, so it installs its own.
+install(FILES LICENSE DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/licenses/glad")
 
 install(EXPORT gladTargets
     FILE gladTargets.cmake
