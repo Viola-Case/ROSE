@@ -1,6 +1,6 @@
 {
   "version": 6,
-  "cmakeMinimumRequired":{
+  "cmakeMinimumRequired": {
     "major": 4,
     "minor": 2,
     "patch": 0
@@ -9,12 +9,23 @@
     {
       "name": "base",
       "hidden": true,
+      "description": "Dependencies from .vendor/install; run ./vendor.ps1 or ./vendor.sh first",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "ROSE_USE_VCPKG": "OFF"
+      }
+    },
+    {
+      "name": "base-vcpkg",
+      "hidden": true,
+      "description": "Dependencies from vcpkg, driven by vcpkg.json",
       "generator": "Ninja",
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "ROSE_USE_VCPKG": "ON"
       }
     },
+
     {
       "name": "release",
       "displayName": "Release",
@@ -41,11 +52,43 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Editor"
       }
+    },
+
+    {
+      "name": "release-vcpkg",
+      "displayName": "Release (vcpkg)",
+      "inherits": "base-vcpkg",
+      "binaryDir": "${sourceDir}/build/release-vcpkg",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "debug-vcpkg",
+      "displayName": "Debug (vcpkg)",
+      "inherits": "base-vcpkg",
+      "binaryDir": "${sourceDir}/build/debug-vcpkg",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "editor-vcpkg",
+      "displayName": "Editor (vcpkg)",
+      "inherits": "base-vcpkg",
+      "binaryDir": "${sourceDir}/build/editor-vcpkg",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Editor"
+      }
     }
   ],
   "buildPresets": [
     { "name": "debug",   "configurePreset": "debug"   },
     { "name": "release", "configurePreset": "release" },
-    { "name": "editor",  "configurePreset": "editor"  }
+    { "name": "editor",  "configurePreset": "editor"  },
+
+    { "name": "debug-vcpkg",   "configurePreset": "debug-vcpkg"   },
+    { "name": "release-vcpkg", "configurePreset": "release-vcpkg" },
+    { "name": "editor-vcpkg",  "configurePreset": "editor-vcpkg"  }
   ]
 }

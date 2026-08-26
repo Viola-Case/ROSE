@@ -1,0 +1,13 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# The sdl3 and sdlrenderer3 backends link SDL3::SDL3 PUBLIC, so consumers need
+# the target to exist before imguiTargets.cmake references it.
+if(@imgui_needs_sdl@)
+    find_dependency(SDL3 CONFIG)
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/imguiTargets.cmake")
+
+check_required_components(imgui)

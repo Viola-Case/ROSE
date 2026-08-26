@@ -491,3 +491,9 @@ CMakeSettings.json
 .claude
 
 .vendor/
+# ------------------------------------------------------------------ vendoring
+# third_party/ holds generated-but-committed sources (the glad loader). The
+# blanket C++ rules above would otherwise swallow parts of it, so re-include it
+# explicitly. Build output still goes to .vendor/, which stays ignored.
+!third_party/
+!third_party/**

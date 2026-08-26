@@ -96,6 +96,33 @@ Two consequences worth knowing:
   — see `examples/game1/main.cpp`. Programs that run their own ImGui context
   (`ROSE_Editor`, `ControllerTest`, `KeyboardTest`) must not call it.
 
+## Where dependencies come from
+
+`.vendor/install`, built from the tags pinned in `dependencies.toml` by
+`./vendor.ps1` (or `./vendor.sh`). The root `CMakeLists.txt` puts that prefix on
+`CMAKE_PREFIX_PATH` via `cmake/ROSEVendor.cmake` and every `find_package` resolves
+there. vcpkg remains available behind `-DROSE_USE_VCPKG=ON` and the `*-vcpkg`
+presets.
+
+Three things about that tree are load-bearing rather than incidental:
+
+- **Release and Debug install into one prefix.** `install(EXPORT)` writes one
+  `…Targets-<config>.cmake` per configuration, so installing twice yields a
+  single set of imported targets carrying both. Debug artifacts get a `d`
+  suffix (`CMAKE_DEBUG_POSTFIX`) so they can coexist.
+- **Shared libraries, dynamic CRT, always.** `cmake/vendor.cmake` forces
+  `BUILD_SHARED_LIBS=ON` and `CMAKE_MSVC_RUNTIME_LIBRARY=…DLL` (with
+  `CMP0091=NEW`, without which the latter is silently ignored) for the same
+  reason the `x64-windows-static` triplet was ruled out: `ROSE_Core` is a DLL and
+  the engine allocates across that boundary, so every module must share one heap.
+- **imgui is the deliberate exception and is STATIC**, built by the shim in
+  `cmake/vendor/imgui/`. Each linking module gets its own `GImGui`, which is what
+  `ROSE::AttachImGui()` exists to rebind.
+
+Dependency DLLs are copied next to each binary by `rose_deploy_dlls()`, which
+uses `$<TARGET_RUNTIME_DLLS:…>` — the replacement for vcpkg's applocal
+deployment. `rose_deploy_runtime()` calls it alongside `rose_deploy_crt()`.
+
 ## Building the tree
 
 `cmake --build --preset debug` (or `release`) **fails on `ROSE_Editor`, by design**:
@@ -119,14 +146,24 @@ What follows from that:
   ```
 - `ENGINE_BUILD` depends on `ROSE_Editor`, so it dies the same way. It only
   aggregates usefully under the `editor` preset.
-- `cmake --build --preset editor` builds everything except `ROSE_AssetMaker` and
-  `ROSE_UUID_Generator`, which fail there with
+- `cmake --build --preset editor` used to build everything except
+  `ROSE_AssetMaker` and `ROSE_UUID_Generator`, which failed with
   `lld-link: error: /failifmismatch: mismatch detected for '_ITERATOR_DEBUG_LEVEL'`.
-  vcpkg has no `Editor` configuration, so CMake falls back to its **debug** imported
+  vcpkg has no `Editor` configuration, so CMake fell back to its **debug** imported
   libs (`_ITERATOR_DEBUG_LEVEL=2`) while the `Editor` config compiles with `NDEBUG`
-  and the release CRT (`=0`). Only these two targets notice, because `CLI11.lib` is
+  and the release CRT (`=0`). Only these two targets noticed, because `CLI11.lib` was
   the one real static archive they link — every other dependency is an import lib
-  and carries no `/failifmismatch` directive. This predates the DLL conversion.
+  and carries no `/failifmismatch` directive.
+
+  **Fixed** by `cmake/ROSEVendor.cmake`, which sets
+
+  ```cmake
+  set(CMAKE_MAP_IMPORTED_CONFIG_EDITOR Release "")
+  ```
+
+  so `Editor` imports the release artifacts it is ABI-compatible with. The
+  mapping only applies on the vendored path; the `editor-vcpkg` preset still has
+  the original failure, since the toolchain file governs imported configs there.
 
 Ninja reports the failure after the targets that already succeeded, so the
 `Linking CXX executable ...` lines printed above the error are real — only

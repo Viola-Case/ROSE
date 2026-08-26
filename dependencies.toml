@@ -1,0 +1,333 @@
+# ==============================================================================
+# ROSE dependency manifest
+# ==============================================================================
+#
+# Every third-party library ROSE links, pinned to an explicit upstream git tag.
+# `./vendor.ps1` (or `./vendor.sh`) reads this file, checks each dependency out
+# into .vendor/src, builds it, and installs it into one shared prefix that the
+# root CMakeLists puts on CMAKE_PREFIX_PATH.
+#
+# TO BUMP A DEPENDENCY: change its `tag` and re-run ./vendor.ps1. Only that
+# dependency refetches and rebuilds; everything else is skipped by its stamp.
+#
+# ------------------------------------------------------------------- subdeps
+#
+# There is no solver here, on purpose. Transitive dependencies are handled three
+# ways, in order of preference:
+#
+#   1. Upstream vendors them. The SDL satellites carry every codec as a git
+#      submodule under external/, so listing those paths in `submodules` plus
+#      SDL*_VENDORED=ON builds the whole closure (FLAC, ogg, vorbis, opus,
+#      mpg123, wavpack, libpng, libjpeg, libtiff, zlib, freetype, harfbuzz,
+#      plutosvg, plutovg) without a [[dependency]] block for any of them.
+#      `submodules = true` would take every submodule the upstream has, which
+#      for SDL_image means gigabytes of formats that are switched off; naming
+#      the paths keeps a checkout small and documents the real closure.
+#   2. A sibling entry satisfies it. Everything installs into the same prefix,
+#      and that prefix is on CMAKE_PREFIX_PATH for every later dependency, so
+#      `needs = ["SDL3"]` is enough for SDL3_image to find SDL3.
+#   3. Failing both, it gets its own [[dependency]] block. Explicit beats
+#      resolved: that is the whole reason this exists instead of vcpkg.
+#
+# ------------------------------------------------------------------- grammar
+#
+# A restricted TOML subset (see cmake/vendor/toml.cmake). Supported: `# comment`,
+# [settings], [[dependency]], key = "string", key = true/false, and
+# key = ["a", "b"] arrays which may span lines. `name` must come first in a
+# [[dependency]] block, and semicolons are rejected anywhere in the file.
+#
+# Dependency keys: name, description, repo, tag, path, find, shim, subdir,
+# needs, submodules, configs, cmake_args, cmake_args_windows,
+# cmake_args_linux, cmake_args_darwin, platforms.
+
+[settings]
+
+install_dir = ".vendor/install"
+
+# Both configurations go into the same prefix. install(EXPORT) writes one
+# <pkg>Targets-<config>.cmake per configuration, so installing twice produces a
+# single set of imported targets carrying both. Skipping Debug here would make a
+# Debug ROSE build link release static libs and reproduce the
+# _ITERATOR_DEBUG_LEVEL /failifmismatch error in docs/internal/README.md.
+configs = ["Release", "Debug"]
+
+# Prepended to every dependency's own cmake_args, so a dependency can still
+# override any of it by repeating the option.
+#
+# Nothing global here yet, and resist adding compiler flags in particular.
+# `-DCMAKE_CXX_FLAGS=...` *replaces* the value CMake's platform module computed
+# rather than adding to it, which silently drops the defaults -- setting it to
+# "/arch:AVX2" removed /EHsc and broke mimalloc, which compiles its C sources as
+# C++ and uses try/catch:
+#
+#   error: cannot use 'try' with exceptions disabled
+#
+# If a project-wide flag really is needed, append to CMAKE_<LANG>_FLAGS_INIT
+# from a toolchain file instead; that composes with the platform defaults.
+# Per-dependency fixes belong in that dependency's cmake_args.
+cmake_args = []
+
+
+# ==============================================================================
+# SDL3 -- window, input, audio, GPU. Linked by every target.
+# ==============================================================================
+
+[[dependency]]
+name        = "SDL3"
+description = "Simple DirectMedia Layer"
+repo        = "https://github.com/libsdl-org/SDL.git"
+tag         = "release-3.4.14"
+find        = "SDL3"
+cmake_args  = [
+  "-DSDL_SHARED=ON",
+  "-DSDL_STATIC=OFF",
+  "-DSDL_TEST_LIBRARY=OFF",
+  "-DSDL_TESTS=OFF",
+  "-DSDL_EXAMPLES=OFF",
+  "-DSDL_INSTALL_TESTS=OFF",
+]
+# SDL loads Vulkan at runtime and vendors the headers it needs, so the `vulkan`
+# feature costs nothing and needs no Vulkan-Headers entry here.
+cmake_args_linux = [
+  "-DSDL_X11=ON",
+  "-DSDL_WAYLAND=ON",
+]
+
+
+# ==============================================================================
+# SDL3_image -- jpeg / png / tiff decoding, via external/ submodules.
+# ==============================================================================
+
+[[dependency]]
+name        = "SDL3_image"
+description = "Image loading for SDL3"
+repo        = "https://github.com/libsdl-org/SDL_image.git"
+tag         = "release-3.4.4"
+find        = "SDL3_image"
+needs       = ["SDL3"]
+# Exactly the codecs the enabled features need. `submodules = true` would also
+# drag in libjxl, libavif, dav1d and aom -- gigabytes for formats switched off
+# below. zlib is here because libpng and libtiff both need it.
+submodules  = [
+  "external/jpeg",
+  "external/libpng",
+  "external/libtiff",
+  "external/zlib",
+]
+cmake_args  = [
+  "-DSDLIMAGE_VENDORED=ON",
+  "-DSDLIMAGE_DEPS_SHARED=OFF",
+  "-DSDLIMAGE_SAMPLES=OFF",
+  "-DSDLIMAGE_TESTS=OFF",
+  "-DSDLIMAGE_INSTALL_CPACK=OFF",
+  "-DSDLIMAGE_JPG=ON",
+  "-DSDLIMAGE_PNG=ON",
+  "-DSDLIMAGE_TIF=ON",
+  # Off deliberately: not used by ROSE, and each drags in a heavy codec tree
+  # (avif alone pulls dav1d + aom).
+  "-DSDLIMAGE_AVIF=OFF",
+  "-DSDLIMAGE_JXL=OFF",
+  "-DSDLIMAGE_WEBP=OFF",
+]
+
+
+# ==============================================================================
+# SDL3_mixer -- audio decoding. Used only by src/Core/audio.cpp.
+# ==============================================================================
+
+[[dependency]]
+name        = "SDL3_mixer"
+description = "Audio mixing and decoding for SDL3"
+repo        = "https://github.com/libsdl-org/SDL_mixer.git"
+tag         = "release-3.2.4"
+find        = "SDL3_mixer"
+needs       = ["SDL3"]
+# ogg underpins flac, vorbis and opusfile; opusfile needs opus. libxmp, tremor
+# and game-music-emu are left out along with the features that use them.
+submodules  = [
+  "external/ogg",
+  "external/flac",
+  "external/vorbis",
+  "external/opus",
+  "external/opusfile",
+  "external/mpg123",
+  "external/wavpack",
+]
+cmake_args  = [
+  "-DSDLMIXER_VENDORED=ON",
+  "-DSDLMIXER_DEPS_SHARED=OFF",
+  "-DSDLMIXER_SAMPLES=OFF",
+  "-DSDLMIXER_TESTS=OFF",
+  "-DSDLMIXER_EXAMPLES=OFF",
+  "-DSDLMIXER_INSTALL_CPACK=OFF",
+  # The five codecs the old vcpkg manifest asked for.
+  "-DSDLMIXER_FLAC=ON",
+  "-DSDLMIXER_FLAC_LIBFLAC=ON",
+  "-DSDLMIXER_VORBIS_VORBISFILE=ON",
+  "-DSDLMIXER_MP3_MPG123=ON",
+  "-DSDLMIXER_OPUS=ON",
+  # opus keeps its SSE4.1 and SSSE3 kernels in separate source files and only
+  # passes the enabling -m flags to GNU-style drivers. Under clang-cl the
+  # intrinsics then fail outright:
+  #
+  #   error: always_inline function '_mm_shuffle_epi8' requires target feature
+  #   'ssse3', but would be inlined into a function compiled without support
+  #
+  # vcpkg never hit this because it builds with cl.exe, which accepts any
+  # intrinsic regardless of the target baseline. Dropping to the C kernels
+  # costs nothing here -- ROSE only decodes, and only for game audio.
+  "-DOPUS_DISABLE_INTRINSICS=ON",
+  "-DSDLMIXER_WAVPACK=ON",
+  # wavpack's hand-written x64 assembly is built with MASM (ml64.exe), which
+  # only resolves inside a Visual Studio developer environment -- outside one,
+  # CMake detects the assembler but the build cannot invoke it:
+  #
+  #   CreateProcess failed: The system cannot find the file specified.
+  #
+  # The assembly only accelerates *encoding*, and ROSE only decodes, so the C
+  # path costs nothing here.
+  "-DWAVPACK_ENABLE_ASM=OFF",
+  # Off deliberately: unused, and libxmp/game-music-emu are large.
+  "-DSDLMIXER_GME=OFF",
+  "-DSDLMIXER_MOD=OFF",
+  "-DSDLMIXER_MIDI=OFF",
+]
+
+
+# ==============================================================================
+# SDL3_ttf -- font rendering. `svg` in the old manifest means plutosvg.
+# ==============================================================================
+
+[[dependency]]
+name        = "SDL3_ttf"
+description = "TrueType font rendering for SDL3"
+repo        = "https://github.com/libsdl-org/SDL_ttf.git"
+tag         = "release-3.2.2"
+find        = "SDL3_ttf"
+needs       = ["SDL3"]
+# plutosvg is the `svg` feature and draws on plutovg.
+submodules  = [
+  "external/freetype",
+  "external/harfbuzz",
+  "external/plutosvg",
+  "external/plutovg",
+]
+cmake_args  = [
+  "-DSDLTTF_VENDORED=ON",
+  "-DSDLTTF_SAMPLES=OFF",
+  "-DSDLTTF_INSTALL_CPACK=OFF",
+  "-DSDLTTF_HARFBUZZ=ON",
+  "-DSDLTTF_PLUTOSVG=ON",
+]
+
+
+# ==============================================================================
+# Dear ImGui -- no upstream build system, so cmake/vendor/imgui supplies one.
+# ==============================================================================
+#
+# STATIC on purpose. Each module that links imgui gets its own GImGui, which is
+# exactly what ROSE::AttachImGui() exists to rebind. See the comments around
+# ROSE_Editor in the root CMakeLists.
+#
+# `vulkan-binding` from the old vcpkg manifest is dropped: no ROSE source
+# includes imgui_impl_vulkan.h, and dropping it avoids vendoring Vulkan-Headers.
+# SDL_WINDOW_VULKAN in application.cpp is SDL's own flag and needs nothing here.
+
+[[dependency]]
+name        = "imgui"
+description = "Dear ImGui, immediate-mode GUI"
+repo        = "https://github.com/ocornut/imgui.git"
+tag         = "v1.92.9b"
+find        = "imgui"
+needs       = ["SDL3"]
+shim        = "cmake/vendor/imgui"
+cmake_args  = [
+  "-DIMGUI_BACKENDS=sdl3,sdlrenderer3,opengl3",
+]
+
+
+# ==============================================================================
+# glad -- OpenGL 4.5 loader. Generated, not fetched; see third_party/glad.
+# ==============================================================================
+
+[[dependency]]
+name        = "glad"
+description = "OpenGL 4.5 compatibility loader (pre-generated, in-tree)"
+path        = "third_party/glad"
+find        = "glad"
+
+
+# ==============================================================================
+# mimalloc -- the allocator ROSE_Core exports PUBLIC.
+# ==============================================================================
+#
+# MI_OVERRIDE replaces malloc/free process-wide, which is only sound while every
+# module shares one heap -- the same dynamic-CRT requirement that rules out
+# static triplets for this project.
+
+[[dependency]]
+name        = "mimalloc"
+description = "Microsoft's general-purpose allocator"
+repo        = "https://github.com/microsoft/mimalloc.git"
+tag         = "v3.5.0"
+find        = "mimalloc"
+cmake_args  = [
+  "-DMI_OVERRIDE=ON",
+  # By default mimalloc installs into version-stamped directories
+  # (lib/cmake/mimalloc-3.5, include/mimalloc-3.5) for side-by-side use. In a
+  # single shared prefix that is a trap: bumping the tag would leave the old
+  # package config behind for find_package to pick up. Flat layout, one version.
+  "-DMI_INSTALL_TOPLEVEL=ON",
+  # mimalloc already distinguishes its debug build by name (mimalloc-debug.dll)
+  # and its install rules hardcode that name, so the vendor-wide `d` postfix
+  # produces mimalloc-debugd.dll and then an install that cannot find what it
+  # just built:
+  #
+  #   file INSTALL cannot find ".../mimalloc-debug.dll.lib"
+  #
+  # Later -D wins, so this overrides the engine default for this dependency.
+  "-DCMAKE_DEBUG_POSTFIX=",
+  "-DMI_BUILD_SHARED=ON",
+  "-DMI_BUILD_STATIC=OFF",
+  "-DMI_BUILD_OBJECT=OFF",
+  "-DMI_BUILD_TESTS=OFF",
+]
+
+
+# ==============================================================================
+# nlohmann_json -- header only.
+# ==============================================================================
+
+[[dependency]]
+name        = "nlohmann_json"
+description = "JSON for Modern C++"
+repo        = "https://github.com/nlohmann/json.git"
+tag         = "v3.12.0"
+find        = "nlohmann_json"
+configs     = ["Release"]
+cmake_args  = [
+  "-DJSON_BuildTests=OFF",
+  "-DJSON_Install=ON",
+]
+
+
+# ==============================================================================
+# CLI11 -- header only upstream; used by the asset and UUID tools.
+# ==============================================================================
+
+[[dependency]]
+name        = "CLI11"
+description = "Command line parser for C++11"
+repo        = "https://github.com/CLIUtils/CLI11.git"
+tag         = "v2.7.2"
+find        = "CLI11"
+configs     = ["Release"]
+cmake_args  = [
+  "-DCLI11_BUILD_TESTS=OFF",
+  "-DCLI11_BUILD_EXAMPLES=OFF",
+  "-DCLI11_BUILD_DOCS=OFF",
+  "-DCLI11_INSTALL=ON",
+  # Header-only, so there is no archive to mismatch a CRT with -- which is what
+  # made vcpkg's compiled CLI11.lib break the Editor config.
+  "-DCLI11_PRECOMPILED=OFF",
+]

@@ -16,32 +16,48 @@ if(CMAKE_HOST_WIN32
 endif()
 
 # ==============================================================================
-# vcpkg bootstrap  (must run before project())
+# Dependency source  (must run before project())
 # ==============================================================================
+#
+# Two ways to get dependencies, and they are mutually exclusive:
+#
+#   OFF (default)  .vendor/install, built from the pinned tags in
+#                  dependencies.toml by ./vendor.ps1 or ./vendor.sh. A re-run
+#                  with nothing changed is a no-op.
+#   ON             vcpkg in manifest mode, driven by vcpkg.json. Kept as a
+#                  fallback; the *-vcpkg presets select it.
 
-option(ROSE_USE_VCPKG "Use vcpkg for dependency management" OFF)
+option(ROSE_USE_VCPKG "Use vcpkg for dependency management instead of .vendor" OFF)
 
-if(ROSE_USE_VCPKG AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    if(NOT DEFINED ENV{VCPKG_ROOT})
-        message(FATAL_ERROR "ROSE_USE_VCPKG=ON but VCPKG_ROOT environment variable is not set")
+if(ROSE_USE_VCPKG)
+    # Skipped when a toolchain file was already supplied -- the vcpkg presets
+    # pass one themselves.
+    if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+        if(NOT DEFINED ENV{VCPKG_ROOT})
+            message(FATAL_ERROR "ROSE_USE_VCPKG=ON but VCPKG_ROOT environment variable is not set")
+        endif()
+
+        set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            CACHE STRING "Vcpkg toolchain file")
+        set(VCPKG_MANIFEST_MODE ON)
+
+        # Fail early (with a fix) if the local vcpkg checkout predates our baseline.
+        file(READ "${CMAKE_SOURCE_DIR}/vcpkg.json" _vcpkg_json)
+        string(JSON _vcpkg_baseline GET "${_vcpkg_json}" "builtin-baseline")
+        execute_process(
+            COMMAND git -C "$ENV{VCPKG_ROOT}" merge-base --is-ancestor "${_vcpkg_baseline}" HEAD
+            RESULT_VARIABLE _vcpkg_baseline_missing
+        )
+        if(_vcpkg_baseline_missing)
+            message(FATAL_ERROR
+                "vcpkg HEAD is behind the required builtin-baseline '${_vcpkg_baseline}'.\n"
+                "Run: git -C \"$ENV{VCPKG_ROOT}\" pull")
+        endif()
     endif()
-
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-        CACHE STRING "Vcpkg toolchain file")
-    set(VCPKG_MANIFEST_MODE ON)
-
-    # Fail early (with a fix) if the local vcpkg checkout predates our baseline.
-    file(READ "${CMAKE_SOURCE_DIR}/vcpkg.json" _vcpkg_json)
-    string(JSON _vcpkg_baseline GET "${_vcpkg_json}" "builtin-baseline")
-    execute_process(
-        COMMAND git -C "$ENV{VCPKG_ROOT}" merge-base --is-ancestor "${_vcpkg_baseline}" HEAD
-        RESULT_VARIABLE _vcpkg_baseline_missing
-    )
-    if(_vcpkg_baseline_missing)
-        message(FATAL_ERROR
-            "vcpkg HEAD is behind the required builtin-baseline '${_vcpkg_baseline}'.\n"
-            "Run: git -C \"$ENV{VCPKG_ROOT}\" pull")
-    endif()
+else()
+    # Included by path rather than by name: CMAKE_MODULE_PATH is not set up
+    # until after project(), and CMAKE_PREFIX_PATH wants to be in place first.
+    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/ROSEVendor.cmake")
 endif()
 
 # Pin the vcpkg triplet on Windows. x64-windows means dynamic CRT and dynamic
@@ -63,7 +79,10 @@ endif()
 # FORCE is deliberate: vcpkg's toolchain caches VCPKG_TARGET_TRIPLET on the first
 # configure, so a `NOT DEFINED` guard would never fire again and a stale triplet
 # would stick across a change. Override the choice with -DROSE_VCPKG_TRIPLET=...
-if(CMAKE_HOST_WIN32)
+#
+# The vendored path has no triplets; it makes the same choices directly (shared
+# libraries, dynamic CRT) in cmake/vendor.cmake.
+if(CMAKE_HOST_WIN32 AND ROSE_USE_VCPKG)
     set(ROSE_VCPKG_TRIPLET "x64-windows" CACHE STRING "vcpkg triplet used on Windows")
     set(VCPKG_TARGET_TRIPLET "${ROSE_VCPKG_TRIPLET}" CACHE STRING "Vcpkg target triplet" FORCE)
 endif()
@@ -125,6 +144,51 @@ function(rose_deploy_crt target)
     endif()
 endfunction()
 
+# Copies the dependency DLLs <target> loads at runtime next to its binary.
+#
+# vcpkg used to do this itself through applocal deployment, which is one of the
+# things that disappears with ROSE_USE_VCPKG=OFF. TARGET_RUNTIME_DLLS walks the
+# target's imported shared libraries transitively, so SDL3 and its satellites
+# land beside every executable without naming any of them here.
+#
+# Empty for a target with no DLL dependencies, and the copy is a no-op then --
+# hence the generator expression guard, since `copy_if_different` with no source
+# arguments is an error.
+function(rose_deploy_dlls target)
+    if(NOT WIN32)
+        return()
+    endif()
+
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND "$<$<BOOL:$<TARGET_RUNTIME_DLLS:${target}>>:${CMAKE_COMMAND}>"
+            -E copy_if_different
+            "$<TARGET_RUNTIME_DLLS:${target}>"
+            "$<TARGET_FILE_DIR:${target}>"
+        COMMAND_EXPAND_LISTS
+        VERBATIM
+    )
+
+    # DLLs that no link edge describes, so TARGET_RUNTIME_DLLS cannot see them.
+    # Set by cmake/ROSEVendor.cmake; empty under vcpkg, whose applocal
+    # deployment finds them by scanning PE imports instead.
+    if(ROSE_EXTRA_RUNTIME_DLLS)
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${ROSE_EXTRA_RUNTIME_DLLS}
+                "$<TARGET_FILE_DIR:${target}>"
+            COMMAND_EXPAND_LISTS
+            VERBATIM
+        )
+    endif()
+endfunction()
+
+# Everything a built target needs sitting next to it to actually run: the VC++
+# runtime and the dependency DLLs.
+function(rose_deploy_runtime target)
+    rose_deploy_crt(${target})
+    rose_deploy_dlls(${target})
+endfunction()
+
 function(multiplatform_compile_options target msvc_options gnu_options)
     if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
         target_compile_options(${target} PRIVATE ${msvc_options})
@@ -184,6 +248,13 @@ find_package(glad REQUIRED)
 find_package(mimalloc REQUIRED)
 find_package(CLI11 REQUIRED)
 
+# Core includes <nlohmann/json.hpp> in application.cpp, paramview.cpp and
+# scene.cpp, but nothing used to look for it: it resolved only because vcpkg
+# installs every package into one flat include/ that arrived through some other
+# target's interface. That accident does not survive vendoring, where each
+# package contributes its own include directory.
+find_package(nlohmann_json REQUIRED)
+
 # ==============================================================================
 # ROSE_Core  --  the engine library
 # ==============================================================================
@@ -206,6 +277,7 @@ target_link_libraries(ROSE_Core
     PRIVATE SDL3_ttf::SDL3_ttf
     PRIVATE imgui::imgui
     PRIVATE glad::glad
+    PRIVATE nlohmann_json::nlohmann_json
     PUBLIC  $<IF:$<TARGET_EXISTS:mimalloc-static>,mimalloc-static,mimalloc>
 )
 
@@ -242,7 +314,7 @@ set_target_properties(ROSE_Core PROPERTIES
     POSITION_INDEPENDENT_CODE ON
 )
 
-rose_deploy_crt(ROSE_Core)
+rose_deploy_runtime(ROSE_Core)
 
 # ==============================================================================
 # Tools
@@ -275,7 +347,7 @@ target_compile_definitions(ROSE_Editor
 
 set_property(TARGET ROSE_Editor PROPERTY FOLDER "Tools")
 
-rose_deploy_crt(ROSE_Editor)
+rose_deploy_runtime(ROSE_Editor)
 
 # --------------------------------------------------------------- ROSE_AssetMaker
 file(GLOB_RECURSE ROSE_ASSET_MAKER_SOURCES
@@ -300,7 +372,7 @@ set_target_properties(ROSE_AssetMaker PROPERTIES
     FOLDER      "Tools"
 )
 
-rose_deploy_crt(ROSE_AssetMaker)
+rose_deploy_runtime(ROSE_AssetMaker)
 
 # ----------------------------------------------------------- ROSE_UUID_Generator
 file(GLOB_RECURSE ROSE_UUID_GENERATOR_SOURCES
@@ -319,7 +391,7 @@ target_link_libraries(ROSE_UUID_Generator PRIVATE
 
 set_property(TARGET ROSE_UUID_Generator PROPERTY FOLDER "Tools")
 
-rose_deploy_crt(ROSE_UUID_Generator)
+rose_deploy_runtime(ROSE_UUID_Generator)
 
 # --------------------------------------------------------- aggregate build target
 add_custom_target(ENGINE_BUILD)
@@ -344,7 +416,7 @@ target_link_libraries(ControllerTest PRIVATE
 
 set_property(TARGET ControllerTest PROPERTY FOLDER "Examples")
 
-rose_deploy_crt(ControllerTest)
+rose_deploy_runtime(ControllerTest)
 
 # ----------------------------------------------------------------- KeyboardTest
 add_executable(KeyboardTest "examples/KeyboardTest/main.cpp")
@@ -360,7 +432,7 @@ target_link_libraries(KeyboardTest PRIVATE
 
 set_property(TARGET KeyboardTest PROPERTY FOLDER "Examples")
 
-rose_deploy_crt(KeyboardTest)
+rose_deploy_runtime(KeyboardTest)
 
 # ------------------------------------------------------------------------ Game1
 file(GLOB_RECURSE GAME1_SOURCES "examples/game1/*.cpp")
@@ -380,7 +452,7 @@ target_link_libraries(Game1 PRIVATE
 
 set_property(TARGET Game1 PROPERTY FOLDER "Examples")
 
-rose_deploy_crt(Game1)
+rose_deploy_runtime(Game1)
 
 rose_deploy_assets(Game1 "${CMAKE_CURRENT_SOURCE_DIR}/examples/game1/assets")
 
@@ -398,7 +470,7 @@ target_link_libraries(Orbits PRIVATE
 
 set_property(TARGET Orbits PROPERTY FOLDER "Examples")
 
-rose_deploy_crt(Orbits)
+rose_deploy_runtime(Orbits)
 
 rose_deploy_assets(Orbits "${CMAKE_CURRENT_SOURCE_DIR}/examples/orbits/assets")
 
@@ -407,15 +479,16 @@ file(GLOB_RECURSE GAME2_SOURCES "examples/game2/*.cpp")
 
 add_executable(Game2 ${GAME2_SOURCES})
 
-# vnstuff.h includes SDL_ttf directly.
+# vnstuff.h includes SDL_ttf and nlohmann/json.hpp directly.
 target_link_libraries(Game2 PRIVATE
         ROSE_Core
         SDL3::SDL3
         SDL3_ttf::SDL3_ttf
+        nlohmann_json::nlohmann_json
 )
 
 set_property(TARGET Game2 PROPERTY FOLDER "Examples")
 
-rose_deploy_crt(Game2)
+rose_deploy_runtime(Game2)
 
 rose_deploy_assets(Game2 "${CMAKE_CURRENT_SOURCE_DIR}/examples/game2/assets")
