@@ -46,7 +46,7 @@ regardless, `--purge` deletes `.vendor` entirely. `--help` lists them all.
 
 ### vcpkg
 
-vcpkg still works and is kept as a fallback, driven by `vcpkg.json`:
+vcpkg still works and is kept as a fallback, driven by `ports/rose/vcpkg.json`:
 
 ```
 cmake --preset release-vcpkg
