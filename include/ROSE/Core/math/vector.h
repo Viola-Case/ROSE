@@ -1,4 +1,4 @@
-/**
+﻿/**
 
   @file      vector.h
   @brief
@@ -14,7 +14,7 @@
 #include <ROSE/Core/rtl.h>
 #include <ROSE/Core/typetraits.h>
 #include <ROSE/Core/math/mathenum.h>
-
+#include <ROSE/Core/math/mathfunctions.h>
 
 namespace ROSE::math {
 
@@ -150,12 +150,6 @@ namespace ROSE::math {
 
     constexpr Vec() noexcept = default;
 
-    constexpr T dot(const Vec &rhs) const noexcept {
-      T sum { 0 };
-      for (size_t i = 0; i < N; ++i)
-        sum += data[i] * rhs.data[i];
-      return sum;
-    }
 
     constexpr Vec &operator+=(const Vec &rhs) noexcept {
       for (size_t i { 0 }; i < N; ++i) {
@@ -216,7 +210,14 @@ namespace ROSE::math {
       return v;
     }
 
-    constexpr Vec cross(const Vec &rhs) const noexcept
+    constexpr T Dot(const Vec &rhs) const noexcept {
+      T sum { 0 };
+      for (size_t i = 0; i < N; ++i)
+        sum += data[i] * rhs.data[i];
+      return sum;
+    }
+
+    constexpr Vec Cross(const Vec &rhs) const noexcept
       requires(N == 3 || N == 7)
     {
       /* (a x b)_i = phi_ijk a_j b_k, with the same contraction in both dimensions and only the symbol
@@ -239,10 +240,32 @@ namespace ROSE::math {
       return out;
     }
 
-    static constexpr T DotProduct(const Vec &lhs, const Vec &rhs) { return lhs.dot(rhs); }
+    constexpr T Norm() {
+      T sum{0};
+      for (size_t idx = 0; idx < N; ++idx) {
+        sum += data[idx]*data[idx];
+      }
+      return Sqrt(sum);
+    }
 
-    static constexpr T CrossProduct(const Vec &lhs, const Vec &rhs) { return lhs.cross(rhs); }
+    constexpr Vec Unit() {
+      const T n = Norm();
+      Vec out;
+      for (size_t idx = 0; idx < N; ++idx) {
+        out.data[idx] = data[idx] / n;
+      }
+      return out;
+    }
+
+    static constexpr T DotProduct(const Vec &lhs, const Vec &rhs) { return lhs.Dot(rhs); }
+
+    static constexpr Vec CrossProduct(const Vec &lhs, const Vec &rhs) { return lhs.Cross(rhs); }
   };
+
+  template<Scalar T, size_t N>
+  constexpr T operator *(const T lhs, const Vec<T, N> &rhs) noexcept {
+    return rhs * lhs;
+  }
 
   template <Scalar T>
   using Vec2 = Vec<T, 2>;
@@ -266,6 +289,15 @@ namespace ROSE::math {
 
 #ifndef ROSE_MATH_NO_FORMAT
 
+/* Spec grammar: `{:[flags][|scalar-spec]}`, with the flags being
+ *   `t`  tuple form, `(1, 2, 3)` -- the default
+ *   `c`  cartesian form, `(1x +2y -3z)`; only defined for N <= 4
+ *   `q`  label the components `i`, `j`, `k` rather than `x`, `y`, `z`; cartesian only
+ *   `n`  naked: leave off the enclosing parentheses
+ *   `m`  one component per line
+ *   `z`  keep zero components, which cartesian form drops by default
+ * Anything past the `|` is the spec every component is formatted with, so `{:c|.3f}`
+ * gives `(1.000x +2.000y)`. */
 template <ROSE::Scalar T, size_t N>
 struct std::formatter<ROSE::math::Vec<T, N>> {
 
@@ -276,7 +308,6 @@ struct std::formatter<ROSE::math::Vec<T, N>> {
   bool naked = false;
   bool multiline = false;
   bool quatstyle = false;
-  bool verbose = false;
   bool incZero = false;
 
 
@@ -293,14 +324,28 @@ struct std::formatter<ROSE::math::Vec<T, N>> {
   constexpr auto parse(std::format_parse_context &ctx) {
     auto it = ctx.begin();
     const auto end = ctx.end();
-    while (it != end && *it != '}' && *it != '|') {
+    for (; it != end && *it != '}' && *it != '|'; ++it) {
       switch (*it) {
-      case 'c':
+      case 't':
         if (form != Form::Tuple) throw std::format_error { "conflicting forms" };
+        break;
+      case 'c':
+        if constexpr (N > 4) {
+          throw std::format_error { "cartesian form is only defined for vectors of at most four components" };
+        }
         form = Form::Cartesian;
         break;
       case 'q':
         quatstyle = true;
+        break;
+      case 'n':
+        naked = true;
+        break;
+      case 'm':
+        multiline = true;
+        break;
+      case 'z':
+        incZero = true;
         break;
       default:
         throw std::format_error { "unknown vector format flag" };
@@ -322,6 +367,27 @@ struct std::formatter<ROSE::math::Vec<T, N>> {
     return it;
   }
 
+  static constexpr bool is_zero(const T &v) {
+    if constexpr (requires {
+                    { v == T {} } -> std::convertible_to<bool>;
+                  }) {
+      return v == T {};
+    } else {
+      return false;
+    }
+  }
+
+  /* Cartesian form spells the sign itself, so the magnitude is what gets formatted. */
+  static constexpr char split_sign(T &v) {
+    if constexpr (std::is_signed_v<T>) {
+      if (v < T {}) {
+        v = static_cast<T>(-v);
+        return '-';
+      }
+    }
+    return '+';
+  }
+
   template <class Out>
   Out emit_scalar(Out out, T v) const {
     if (nested_spec.empty()) return std::format_to(out, "{}", v);
@@ -330,48 +396,42 @@ struct std::formatter<ROSE::math::Vec<T, N>> {
   }
 
   template <class Out>
-  auto format_tuple(const ROSE::math::Vec<T, N> &val, Out out) const {
-    *out++ = '(';
+  Out format_tuple(const ROSE::math::Vec<T, N> &val, Out out) const {
     for (size_t i = 0; i < N; ++i) {
-      emit_scalar(out, val[i]);
-      *out++ = ',';
-      *out++ = (multiline ? '\n' : ' ');
+      if (i) {
+        *out++ = ',';
+        *out++ = (multiline ? '\n' : ' ');
+      }
+      out = emit_scalar(out, val[i]);
     }
-    *out++ = ')';
 
     return out;
   }
 
   template <class Out>
-  auto format_cartesian(const ROSE::math::Vec<T, N> &val, Out out) const
+  Out format_cartesian(const ROSE::math::Vec<T, N> &val, Out out) const
     requires(N <= 4)
   {
     constexpr char coordbuf[5] = "wxyz";
     constexpr char quatstylebuf[5] = "\0ijk";
-    const char *data = coordbuf;
-    if (quatstyle) data = quatstylebuf;
-    if constexpr (N < 4) data++;
+    const char *labels = quatstyle ? quatstylebuf : coordbuf;
+    if constexpr (N < 4) labels++;
 
-    if (!naked) [[likely]] {
-      *out++ = '(';
+    bool first = true;
+    for (size_t i = 0; i < N; ++i) {
+      T value = val[i];
+      if (!incZero && is_zero(value)) continue;
+      if (!first) {
+        *out++ = (multiline ? '\n' : ' ');
+        *out++ = split_sign(value);
+      }
+      out = emit_scalar(out, value);
+      if (const char c = labels[i]; c) *out++ = c;
+      first = false;
     }
 
-    for (int i = 0; i < N && (val.operator[](i) != 0 || incZero); ++i) {
-      T value = val.operator[](i);
-      if (!value && !incZero) continue;
-      char sign = (value >= 0 ? '+' : '-');
-      if ((i < N - 1) && i) *out++ = sign;
-      emit_scalar(out, val[i]);
-      char c { quatstylebuf[i] };
-      if (c) *out++ = c;
-      *out++ = ' ';
-    }
-
-    if (!naked) [[likely]] {
-      *--out++ = ')';
-    } else {
-      *--out = '\0';
-    }
+    /* Every component dropped as zero -- the vector is the origin, and something has to stand for it. */
+    if (first) out = emit_scalar(out, T {});
 
     return out;
   }
@@ -382,13 +442,10 @@ struct std::formatter<ROSE::math::Vec<T, N>> {
 
     if (!naked) *out++ = '(';
 
-    switch (form) {
-    case Form::Tuple:
+    if constexpr (N <= 4) {
+      out = (form == Form::Cartesian) ? format_cartesian(val, out) : format_tuple(val, out);
+    } else {
       out = format_tuple(val, out);
-      break;
-    case Form::Cartesian:
-      out = format_cartesian(val, out);
-      break;
     }
 
     if (!naked) [[likely]]

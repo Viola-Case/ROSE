@@ -11,7 +11,7 @@
 
 #include <ROSE/ROSE.h>
 namespace ROSE {
-  BehaviorFactory &BehaviorFactory::get() {
+  BehaviorFactory &BehaviorFactory::Get() {
     static BehaviorFactory factory;
     return factory;
   }
@@ -19,15 +19,15 @@ namespace ROSE {
 
   UniquePtr<Behavior> BehaviorFactory::Create(const UUID &id) noexcept {
     if (!IsRegistered(id)) return nullptr;
-    auto it = get().m_factoryFunctions.find(id);
-    if (it == get().m_factoryFunctions.end()) {
+    auto it = Get().m_factoryFunctions.find(id);
+    if (it == Get().m_factoryFunctions.end()) {
       return nullptr;
     }
     return it->second();
   }
 
   RegisterResult BehaviorFactory::Register(FactoryFn fn, const UUID &id, const char *moduleName) {
-    auto &factory = get();
+    auto &factory = Get();
     auto it = factory.m_factoryFunctions.find(id);
     if (it == factory.m_factoryFunctions.end()) {
       auto ins = factory.m_factoryFunctions.insert(id, fn);
@@ -41,11 +41,11 @@ namespace ROSE {
     return RegisterResult::Success;
   }
 
-  void BehaviorFactory::RegisterModule(const char *moduleName) { get().m_registeredModules.push_back(moduleName); }
+  void BehaviorFactory::RegisterModule(const char *moduleName) { Get().m_registeredModules.push_back(moduleName); }
 
   bool BehaviorFactory::IsRegistered(const UUID &id) noexcept {
-    const auto it = get().m_factoryFunctions.find(id);
-    return it != get().m_factoryFunctions.end();
+    const auto it = Get().m_factoryFunctions.find(id);
+    return it != Get().m_factoryFunctions.end();
   }
 } // namespace ROSE
 

@@ -47,9 +47,9 @@ namespace ROSE {
       const Vec3d qv { q.x, q.y, q.z };
 
       const Vec3d offset = position - origin;
-      const Vec3d t = qv.cross(offset) * 2.;
+      const Vec3d t = qv.Cross(offset) * 2.;
 
-      position = origin + offset + t * q.w + qv.cross(t);
+      position = origin + offset + t * q.w + qv.Cross(t);
       rotation = (q * rotation).Normalized();
     }
   /*!

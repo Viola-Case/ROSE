@@ -31,7 +31,7 @@ namespace ROSE {
      * the rate in rad/s, so over dt it sweeps |dTdt|·dt radians about that axis.
      * Composing that delta on the left applies it in world space, matching the
      * way position is integrated in world space above. */
-    const double omega = math::Sqrt(m_dTdt.dot(m_dTdt));
+    const double omega = math::Sqrt(m_dTdt.Dot(m_dTdt));
     if (omega > 0.0) {
       const double inv = 1.0 / omega;
       const Quatd delta = Quatd::AxisAngle(omega * dt, m_dTdt.x * inv, m_dTdt.y * inv, m_dTdt.z * inv);

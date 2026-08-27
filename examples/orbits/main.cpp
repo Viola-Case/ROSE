@@ -20,6 +20,11 @@ int main() {
   if (auto i = Init(); i != InitStatus::Success) {
     return static_cast<int>(i);
   }
+  {
+    BehaviorFactory &factory = BehaviorFactory::Get();
+    RoseRegisterCoreModule(factory);
+  }
+
   ApplicationInitSettings settings { "Orbits" };
   settings.SetFlags(APPLICATION_SOFTWARE_RENDERER).SetWindowSize(WIDTH, HEIGHT).AddSceneFromFile("assets/orbits.json");
 

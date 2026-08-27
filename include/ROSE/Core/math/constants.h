@@ -11,7 +11,6 @@
 #pragma once
 
 #include <cstdint>
-#include <ROSE/Core/math/complex.h>
 #include <ROSE/Core/bigint.h>
 
 namespace ROSE::math {
@@ -20,7 +19,6 @@ namespace ROSE::math {
   constexpr double PHI = 1.61803398874989484820;       //!< φ
   constexpr double TAU = 2. * PI;                      //!< τ
   constexpr double SQRT2 = 1.41421356237309504880;     //!< sqrt 2)
-  constexpr Compd I = 0 + 1_i;                         //!< i (sqrt -1)
   constexpr uint32_t FNVPRIME32 = 0x01000193;          //!< 32-bit FNV prime
   constexpr uint64_t FNVPRIME64 = 0x00000100000001b3;  //!< 64-bit FNV prime
   constexpr uint32_t FNVOFFSET32 = 0x811c9dc5;         //!< 32-bit FNV offset basis

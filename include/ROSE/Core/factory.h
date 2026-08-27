@@ -49,7 +49,7 @@ namespace ROSE {
     TypedHashMap<UUID, FactoryFn> m_factoryFunctions{};
     TypedHashMap<UUID, String> m_behaviorLegend{};
   public:
-    static BehaviorFactory &get();
+    static BehaviorFactory &Get();
     /*!
      * @param fn pointer to a `UniquePtr<Behavior>()`
      * @param id said behavior's typeid

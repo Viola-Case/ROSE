@@ -159,6 +159,8 @@ namespace ROSE::math {
   constexpr Comp<long double> operator""_i(long double im) { return { 0.0L, im }; }
   constexpr Comp<unsigned long long> operator""_i(unsigned long long im) { return { 0ULL, im }; }
 
+  constexpr Compd I = 0 + 1_i; //!< i (sqrt -1)
+
 } // namespace ROSE::math
 
 #ifndef ROSE_MATH_NO_FORMAT

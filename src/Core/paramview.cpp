@@ -28,7 +28,7 @@ namespace ROSE {
   ParamView::ParamView() noexcept : m_node(nullptr) {}
   ParamView::ParamView(const void *node) noexcept : m_node(node) {}
 
-  int ParamView::GetInt(const String &key, int fallback) const noexcept {
+  [[nodiscard]] int ParamView::GetInt(const String &key, int fallback) const noexcept {
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);
     const auto it = node->find(key.c_str());
@@ -39,7 +39,7 @@ namespace ROSE {
 
   /* TODO is_number_float() rejects JSON integers, so `"focalLength": 30` silently falls
    * back while `30.0` works. GetInt uses the wider is_number() - this should too. */
-  double ParamView::GetDouble(const String &key, double fallback) const noexcept {
+  [[nodiscard]] double ParamView::GetDouble(const String &key, double fallback) const noexcept {
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);
     const auto it = node->find(key.c_str());
@@ -48,7 +48,7 @@ namespace ROSE {
     return v.get<double>();
   }
 
-  bool ParamView::GetBool(const String &key, bool fallback) const noexcept {
+  [[nodiscard]] bool ParamView::GetBool(const String &key, bool fallback) const noexcept {
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);
     const auto it = node->find(key.c_str());
@@ -57,7 +57,7 @@ namespace ROSE {
     return v.get<bool>();
   }
 
-  String ParamView::GetString(const String &key, const String &fallback) const noexcept {
+  [[nodiscard]] String ParamView::GetString(const String &key, const String &fallback) const noexcept {
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);
     const auto it = node->find(key.c_str());
@@ -66,7 +66,7 @@ namespace ROSE {
     return String(v.get_ref<const std::string&>().c_str());
   }
 
-  UUID ParamView::GetUUID(const String &key) const noexcept {
+  [[nodiscard]] UUID ParamView::GetUUID(const String &key) const noexcept {
     #if UUID_THROW_ON_FAILURE
     #define FALLBACK() throw
     #else
@@ -86,7 +86,7 @@ namespace ROSE {
     #undef FALLBACK
   }
 
-  ParamView ParamView::Child(const String &key) const noexcept {
+  [[nodiscard]] ParamView ParamView::Child(const String &key) const noexcept {
     const ParamView fallback {};
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);
@@ -98,7 +98,7 @@ namespace ROSE {
     return child;
   }
 
-  Vec3d ParamView::GetVec3d(const String &key, const Vec3d fallback) const noexcept {
+  [[nodiscard]] Vec3d ParamView::GetVec3d(const String &key, const Vec3d fallback) const noexcept {
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);
     const auto it = node->find(key.c_str());
@@ -114,5 +114,5 @@ namespace ROSE {
 
 
 
-  const void *ParamView::GetNode() const noexcept { return m_node; }
+  [[nodiscard]] const void *ParamView::GetNode() const noexcept { return m_node; }
 } // namespace ROSE
