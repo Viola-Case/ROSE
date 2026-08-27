@@ -2,27 +2,54 @@
   "name": "Orbits",
   "objects": [
     {
-      "name": "sim control",
-      "uuid": "0a11c0de00000001-9f3b7c2d61aa0001",
+      "name": "closer",
+      "uuid": "a1415ebbfe6e827e-6f0aab643d65988e",
       "transform": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,0,0
+        ],
+        "rotation": [
+          0,0,0
+        ],
+        "scale": [
+          1,1,1
+        ]
       },
       "behaviors": [
-
+        {
+          "typeid": "f1f08ac7480fbd15-6c1353928d659a6b",
+          "factoryParameters": {}
+        }
       ]
     },
     {
       "name": "point cloud",
-      "uuid": "0a11c0de00000001-9f3b7c2d61aa0002",
+      "uuid": "34465c257f3f8097-9445afaf556598db",
       "transform": {
-        "position": [0,0,0],
-        "rotation": [0,0,0],
-        "scale": [1,1,1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "behaviors": [
-
+        {
+          "typeid": "6592694121c0a7d9-ea7b9a70926599a7",
+          "factoryParameters": {
+            "seed":0,
+            "count": 100
+          }
+        }
       ]
     }
   ]
