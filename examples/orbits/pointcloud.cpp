@@ -142,18 +142,24 @@ namespace Orbits {
     }
     ImGui::End();
 
+    /*
+    ======== THE TEMPORARY CODE BLOCK OF SHAME ========
+    Claude Code added this to benchmark the trails then forgot to remove it afterward, ending up in the repo.
+    Let this be a lesson unto you: LLMs are dumb.
+
     {
       static int frames = 0;
       static double acc = 0.0;
       ++frames;
       if (frames > 100) acc += Time::deltaTime;
       if (frames == 700) {
-        if (FILE *f = std::fopen("C:/Users/ajros/AppData/Local/Temp/bench_C.txt", "w")) {
+        if (FILE *f = std::fopen("C:/Users/my_actual_name_wtf_claude/AppData/Local/Temp/bench_C.txt", "w")) {
           std::fprintf(f, "%.4f\n", acc / 600.0 * 1000.0);
           std::fclose(f);
         }
         m_object->GetScene().GetApplication().Quit();
       }
     }
+    */
   }
 } // namespace Orbits
