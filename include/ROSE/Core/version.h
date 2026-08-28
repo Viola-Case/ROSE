@@ -16,6 +16,8 @@
 
 // so anyway I stole basically all of this from SDL
 
+// TODO probably completely replace with repo tag/baseline
+
 #define ROSE_VERSION_MAJOR 0
 #define ROSE_VERSION_MINOR 1
 #define ROSE_VERSION_PATCH 5

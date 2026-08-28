@@ -350,12 +350,24 @@ find_package(nlohmann_json REQUIRED)
 # ROSE_Core  --  the engine library
 # ==============================================================================
 
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+        ${CMAKE_SOURCE_DIR}/.git/HEAD
+        ${CMAKE_SOURCE_DIR}/.git/index)
+
 file(GLOB_RECURSE ROSE_CORE_SOURCES "src/Core/*.cpp" "src/Core/*.c" "src/Core/*.h")
 
 # SHARED, not STATIC: a static Core gets copied into every module that links it,
 # which means BehaviorFactory, InputSystem, MeshRegistry and Time exist once per
 # module with no diagnostic. One DLL means one of each.
 add_library(ROSE_Core SHARED ${ROSE_CORE_SOURCES})
+
+execute_process(
+        COMMAND git rev-parse HEAD
+        OUTPUT_VARIABLE ROSE_BASELINE
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+target_compile_definitions(ROSE_Core PRIVATE ROSE_BASELINE="${ROSE_BASELINE}")
 
 set_target_properties(ROSE_Core PROPERTIES CXX_SCAN_FOR_MODULES OFF)
 

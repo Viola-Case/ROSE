@@ -36,3 +36,5 @@
     #define ROSE_CORE_API ROSE_API_IMPORT
   #endif
 #endif
+
+extern "C" ROSE_API(CORE) const char *ROSE_GetBaseline();
