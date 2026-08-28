@@ -15,6 +15,8 @@
 
 #pragma region preprocessor macros
 
+// todo force clang on windows (definitely no mingw)
+
 #if ROSE_COMPILER_CLANG || ROSE_COMPILER_GCC
   #define ROSE_RESTRICT __restrict__
 #elif ROSE_COMPILER_MSVC

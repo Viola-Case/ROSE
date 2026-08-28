@@ -37,4 +37,8 @@
   #endif
 #endif
 
+/*!
+ * Modders should call this on shipped games so they can build on the correct baseline and address library
+ * @return null-terminated string of the full
+ */
 extern "C" ROSE_API(CORE) const char *ROSE_GetBaseline();
