@@ -303,7 +303,7 @@ namespace ROSE {
   void Application::SetWindowSize(const math::Vec2<int> size) noexcept {
     m_windowSize = size;
     if (m_window) m_window->SetSize(size);
-    else ROSE_LOG_WARN("No window to resize! Are you sure you've structured your application correctly?\n");
+    else ROSE_LOG_WARN("No window to resize! Are you sure you've initialized your application correctly?\n");
     if (m_renderer) m_renderer->OnResize(size.x, size.y);
   }
 } // namespace ROSE
