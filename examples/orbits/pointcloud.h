@@ -1,7 +1,7 @@
 /**
 
     @file      pointcloud.h
-    @brief
+    @brief     N-body-ish point cloud: integration, and the glue to the trail renderer.
     @details   ~
     @author    Viola Case
     @date      26.08.2026
@@ -13,12 +13,10 @@
 
 #include <ROSE/ROSE.h>
 
-using namespace ROSE;
+#include "trailrenderer.h"
 
 namespace Orbits {
-  struct Point {
-    float x, y;
-  };
+  using namespace ROSE;
 
   class PointCloud : public Behavior {
   public:
@@ -27,16 +25,23 @@ namespace Orbits {
     UUID GetTypeID() const noexcept override { return typeID; }
 
   protected:
-    void OnCreate() override;
-    //void OnStart() override;
+    void OnStart() override;
     void FrameUpdate() override;
     void Unpack(const ParamView &) override;
 
   private:
-    List<Vec3d> m_points;
+    void integrate(double dt);
+    void render();
+
+    List<Vec3d> m_positions;
     List<Vec3d> m_velocities;
-    void renderCloud();
+
+    TrailBuffer m_trails;
+    TrailRenderer m_trailRenderer;
+    TrailStyle m_trailStyle;
+
+    List<Point> m_screen; //!< positions in window space; sized once in Unpack, overwritten each frame
+
+    SDL_Renderer *m_renderer { nullptr }; //!< resolved once in OnStart
   };
-
-
-} // namespace
+} // namespace Orbits

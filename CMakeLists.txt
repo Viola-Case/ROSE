@@ -575,7 +575,9 @@ rose_deploy_runtime(Game1)
 rose_deploy_assets(Game1 "${CMAKE_CURRENT_SOURCE_DIR}/examples/game1/assets")
 
 # ----------------------------------------------------------------------- Orbits
-file(GLOB_RECURSE ORBITS_SOURCES "examples/orbits/*.cpp")
+# CONFIGURE_DEPENDS: this example is split across several translation units now, so a plain glob
+# would silently keep building the old file list until someone re-ran CMake by hand.
+file(GLOB_RECURSE ORBITS_SOURCES CONFIGURE_DEPENDS "examples/orbits/*.cpp")
 
 add_executable(Orbits ${ORBITS_SOURCES})
 
@@ -584,6 +586,7 @@ add_executable(Orbits ${ORBITS_SOURCES})
 target_link_libraries(Orbits PRIVATE
         ROSE_Core
         SDL3::SDL3
+        imgui::imgui
 )
 
 set_property(TARGET Orbits PROPERTY FOLDER "Examples")

@@ -47,7 +47,8 @@
           "typeid": "6592694121c0a7d9-ea7b9a70926599a7",
           "factoryParameters": {
             "seed":0,
-            "count": 100
+            "count": 100,
+            "trail": 64
           }
         }
       ]
