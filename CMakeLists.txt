@@ -354,7 +354,19 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
         ${CMAKE_SOURCE_DIR}/.git/HEAD
         ${CMAKE_SOURCE_DIR}/.git/index)
 
-file(GLOB_RECURSE ROSE_CORE_SOURCES "src/Core/*.cpp" "src/Core/*.c" "src/Core/*.h")
+# CONFIGURE_DEPENDS on every source glob in this file, without exception. A plain
+# glob is evaluated once, at configure time, and the generator has no idea the
+# answer can change -- add a translation unit and the build keeps happily linking
+# the old file list until someone remembers to re-run CMake by hand, which shows
+# up as an unresolved external rather than as anything pointing at the cause.
+# With it, the generator re-runs the glob before each build and re-configures when
+# the result differs, so a new .cpp is picked up by the next `cmake --build`.
+#
+# The cost is a directory scan per build, which is nothing next to a compile, and
+# the check is per-glob rather than per-file. Supported by Ninja, the Makefile
+# generators and Visual Studio; other generators fall back to the once-only
+# behaviour, so a new file there still needs a manual re-configure.
+file(GLOB_RECURSE ROSE_CORE_SOURCES CONFIGURE_DEPENDS "src/Core/*.cpp" "src/Core/*.c" "src/Core/*.h")
 
 # SHARED, not STATIC: a static Core gets copied into every module that links it,
 # which means BehaviorFactory, InputSystem, MeshRegistry and Time exist once per
@@ -433,7 +445,7 @@ rose_deploy_runtime(ROSE_Core)
 # ROSE_EDITOR is defined, and that happens in exactly that configuration. See the
 # ROSE_BUILD_EDITOR block near the top of this file.
 if (ROSE_BUILD_EDITOR)
-    file(GLOB_RECURSE ROSE_EDITOR_SOURCES
+    file(GLOB_RECURSE ROSE_EDITOR_SOURCES CONFIGURE_DEPENDS
             "src/Tools/Editor/*.cpp"
             "src/Tools/Editor/*.c"
     )
@@ -462,7 +474,7 @@ endif ()
 ]]
 
 # --------------------------------------------------------------- ROSE_AssetMaker
-file(GLOB_RECURSE ROSE_ASSET_MAKER_SOURCES
+file(GLOB_RECURSE ROSE_ASSET_MAKER_SOURCES CONFIGURE_DEPENDS
         "src/Tools/AssetMaker/*.cpp"
         "src/Tools/AssetMaker/*.c"
 )
@@ -487,7 +499,7 @@ set_target_properties(ROSE_AssetMaker PROPERTIES
 rose_deploy_runtime(ROSE_AssetMaker)
 
 # ----------------------------------------------------------- ROSE_UUID_Generator
-file(GLOB_RECURSE ROSE_UUID_GENERATOR_SOURCES
+file(GLOB_RECURSE ROSE_UUID_GENERATOR_SOURCES CONFIGURE_DEPENDS
         "src/Tools/UUIDGenerator/*.cpp"
         "src/Tools/UUIDGenerator/*.c"
 )
@@ -507,7 +519,7 @@ rose_deploy_runtime(ROSE_UUID_Generator)
 
 # --------------------------------------------------------- aggregate build target
 add_custom_target(ENGINE_BUILD)
-add_dependencies(ENGINE_BUILD ROSE_Core)
+add_dependencies(ENGINE_BUILD ROSE_Core ROSE_UUID_Generator ROSE_AssetMaker)
 # Commented out with ROSE_Editor; see the note near the top of this file.
 #[[
 if (ROSE_BUILD_EDITOR)
@@ -553,7 +565,7 @@ set_property(TARGET KeyboardTest PROPERTY FOLDER "Examples")
 rose_deploy_runtime(KeyboardTest)
 
 # ------------------------------------------------------------------------ Game1
-file(GLOB_RECURSE GAME1_SOURCES "examples/game1/*.cpp")
+file(GLOB_RECURSE GAME1_SOURCES CONFIGURE_DEPENDS "examples/game1/*.cpp")
 
 add_executable(Game1 ${GAME1_SOURCES})
 
@@ -575,8 +587,6 @@ rose_deploy_runtime(Game1)
 rose_deploy_assets(Game1 "${CMAKE_CURRENT_SOURCE_DIR}/examples/game1/assets")
 
 # ----------------------------------------------------------------------- Orbits
-# CONFIGURE_DEPENDS: this example is split across several translation units now, so a plain glob
-# would silently keep building the old file list until someone re-ran CMake by hand.
 file(GLOB_RECURSE ORBITS_SOURCES CONFIGURE_DEPENDS "examples/orbits/*.cpp")
 
 add_executable(Orbits ${ORBITS_SOURCES})
@@ -596,7 +606,7 @@ rose_deploy_runtime(Orbits)
 rose_deploy_assets(Orbits "${CMAKE_CURRENT_SOURCE_DIR}/examples/orbits/assets")
 
 # ------------------------------------------------------------------------ Game2
-file(GLOB_RECURSE GAME2_SOURCES "examples/game2/*.cpp")
+file(GLOB_RECURSE GAME2_SOURCES CONFIGURE_DEPENDS "examples/game2/*.cpp")
 
 add_executable(Game2 ${GAME2_SOURCES})
 
@@ -613,3 +623,6 @@ set_property(TARGET Game2 PROPERTY FOLDER "Examples")
 rose_deploy_runtime(Game2)
 
 rose_deploy_assets(Game2 "${CMAKE_CURRENT_SOURCE_DIR}/examples/game2/assets")
+
+add_custom_target(EXAMPLES_BUILD)
+add_dependencies(EXAMPLES_BUILD Game1 Game2 Orbits ControllerTest KeyboardTest)
