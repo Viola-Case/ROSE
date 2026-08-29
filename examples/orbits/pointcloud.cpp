@@ -160,6 +160,7 @@ namespace Orbits {
         m_object->GetScene().GetApplication().Quit();
       }
     }
+    ===================================================
     */
   }
 } // namespace Orbits
