@@ -37,13 +37,14 @@ namespace ROSE {
     return v.get<int>();
   }
 
-  /* TODO is_number_float() rejects JSON integers, so `"focalLength": 30` silently falls
-   * back while `30.0` works. GetInt uses the wider is_number() - this should too. */
+  /* is_number() rather than is_number_float(): JSON has no way to write 30 as a float, so
+   * requiring one made `"focalLength": 30` fall silently back to the default while `30.0`
+   * worked. Matches GetInt, which was always the wider test. */
   [[nodiscard]] double ParamView::GetDouble(const String &key, double fallback) const noexcept {
     if (!m_node) return fallback;
     const auto *node = static_cast<const nlohmann::json*>(m_node);
     const auto it = node->find(key.c_str());
-    if (it == node->end() || !it->is_number_float()) return fallback;
+    if (it == node->end() || !it->is_number()) return fallback;
     const auto &v = *it;
     return v.get<double>();
   }
@@ -112,7 +113,25 @@ namespace ROSE {
     return vec;
   }
 
+  /* Accepts a 3-element array too, filling w from the fallback, so an RGB colour can be written
+   * without its alpha. */
+  [[nodiscard]] Vec4d ParamView::GetVec4d(const String &key, const Vec4d fallback) const noexcept {
+    if (!m_node) return fallback;
+    const auto *node = static_cast<const nlohmann::json*>(m_node);
+    const auto it = node->find(key.c_str());
+    if (it == node->end() || !it->is_array()) return fallback;
+    const auto &arr = *it;
+    if (arr.size() != 3 && arr.size() != 4) return fallback;
+    for (const auto &e : arr)
+      if (!e.is_number()) return fallback;
 
+    Vec4d vec;
+    vec.x = arr[0].get<double>();
+    vec.y = arr[1].get<double>();
+    vec.z = arr[2].get<double>();
+    vec.w = arr.size() == 4 ? arr[3].get<double>() : fallback.w;
+    return vec;
+  }
 
   [[nodiscard]] const void *ParamView::GetNode() const noexcept { return m_node; }
 } // namespace ROSE

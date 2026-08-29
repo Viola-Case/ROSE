@@ -35,7 +35,8 @@ namespace ROSE {
     bool GetBool(const String &key, bool fallback = 0) const noexcept;
     String GetString(const String &key, const String &fallback = "") const noexcept;
     Vec3d GetVec3d(const String &key, const Vec3d fallback = { 0 }) const noexcept;
-    //Vec4d GetVec4d(const String &key, const Vec4d fallback = { 0 }) const;
+    //! A 3-element array is accepted too; w then comes from @p fallback.
+    Vec4d GetVec4d(const String &key, const Vec4d fallback = { 0 }) const noexcept;
 
     UUID GetUUID(const String &key) const noexcept;
     ParamView Child(const String &key) const noexcept; // nested objects
