@@ -30,6 +30,22 @@ namespace ROSE {
     m_name = String(std::format("Scene{}", sceneCounter++).c_str());
   }
 
+  void Scene::TeardownBehavior(Behavior &b) noexcept {
+    if (b.m_enabled) {
+      b.m_enabled = false;
+      b.OnDisable();
+    }
+    b.OnDestroy();
+  }
+
+  void Scene::TeardownObject(Object &o) noexcept {
+    for (auto &b : o.m_behaviors) TeardownBehavior(*b.second);
+  }
+
+  Scene::~Scene() {
+    for (auto &o : m_objects) TeardownObject(*o.second);
+  }
+
   
 
   void Scene::InitializePendingBehaviors() noexcept {
@@ -85,16 +101,15 @@ namespace ROSE {
     }
 
     for (const UUID &u : m_pendingDestroy) {
+      if (Object *o = GetObject(u)) TeardownObject(*o);
       m_objects.erase(u);
     }
     m_pendingDestroy.clear();
 
-    /* TODO neither destroy pass gives anything a shutdown callback - the map entry is
-     * erased and the destructor runs. Needs an OnDestroy hook (and an OnDisable call)
-     * before erasing, so behaviors can drop cached neighbor pointers. */
     for (auto &o : m_objects) {
       auto &l = o.second->m_pendingDestroy;
       for (const UUID &u : l) {
+        if (Behavior *b = o.second->GetBehavior(u)) TeardownBehavior(*b);
         o.second->m_behaviors.erase(u);
       }
       l.clear();

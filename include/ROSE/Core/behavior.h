@@ -18,6 +18,7 @@
 
 namespace ROSE {
   class Object;
+  class Scene;
 
   class ParamView;
   /*!
@@ -59,33 +60,34 @@ namespace ROSE {
     virtual void Unpack(const ParamView &view);
 
     /*!
-     * @todo Never called. There is no SetEnabled()/enable path at all, so nothing can
-     * flip m_enabled and nothing fires this. UI (gui.h) already overrides it as dead code.
+     * Fired by `Enable()` when the behavior was not already enabled.
      */
     virtual void OnEnable();
 
     /*!
-     * @todo Never called - same as OnEnable. Should also fire on teardown, which is
-     * currently silent (Scene::FrameUpdate just erases the map entry).
+     * Fired by `Disable()` when the behavior was not already disabled, and by the teardown
+     * path just before `OnDestroy()`.
      */
     virtual void OnDisable();
 
     /*!
-     * @todo There is no OnDestroy hook. A behavior that cached neighbor pointers in
-     * OnStart has no way to learn they went away.
+     * Last call a behavior gets. Fired by `Scene::FrameUpdate`'s destroy passes and by
+     * `Scene`'s teardown, before the entry is erased, so a behavior can drop cached neighbor
+     * pointers and unregister itself from anything it enrolled with.
      */
     virtual void OnDestroy();
 
     void Enable();
     void Disable();
-    bool IsEnabled() const noexcept;
 
   public:
+    [[nodiscard]] bool IsEnabled() const noexcept; //!< read-only; `Enable`/`Disable` stay protected
+
     virtual UUID GetTypeID() const noexcept = 0;
 
     virtual ~Behavior();
 
-    // Scene &GetScene() noexcept;
+    Scene &GetScene() const noexcept;
     Object &GetObject() const noexcept;
 
   protected:
@@ -95,8 +97,8 @@ namespace ROSE {
     UUID m_uuid;
     Object *m_object { nullptr };
 
-    /* TODO never read. Nothing gates OnStart/FrameUpdate on it and there's no setter, so
-     * enabling/disabling a behavior isn't actually expressible yet. See OnEnable/OnDisable. */
+    /* Gates FrameUpdate (Object::FrameUpdate) and the render pass (RenderBackend::RenderFrame).
+     * Flipped only through Enable()/Disable(), which fire OnEnable/OnDisable. */
     bool m_enabled { true };
   };
 

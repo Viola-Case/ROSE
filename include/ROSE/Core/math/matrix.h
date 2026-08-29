@@ -12,6 +12,7 @@
 
 #include <ROSE/Core/macros.h>
 #include <ROSE/Core/math/vector.h>
+#include <ROSE/Core/math/mathfunctions.h>
 
 namespace ROSE::math {
 
@@ -98,6 +99,34 @@ namespace ROSE::math {
       Mat result;
       for (size_t d { 0 }; d < Rows; ++d)
         result.data[d * Cols + d] = _diagonal.data[d];
+      return result;
+    }
+
+    /*!
+     * Homogeneous translation by @p _t: the identity with @p _t in the last column.
+     *
+     * Column-vector convention, matching `operator*(Vec)` above - a point is transformed as
+     * `M * v`, and in a product the rightmost factor is applied first, so a full object-to-clip
+     * transform reads `projection * view * model`.
+     */
+    static constexpr Mat Translation(const Vec<T, 3> &_t) noexcept
+      requires(Rows == 4 && Cols == 4)
+    {
+      Mat result = Identity();
+      result.data[3] = _t.x;
+      result.data[7] = _t.y;
+      result.data[11] = _t.z;
+      return result;
+    }
+
+    /*! Homogeneous scale: @p _s down the main diagonal, with the w slot left at 1. */
+    static constexpr Mat Scaling(const Vec<T, 3> &_s) noexcept
+      requires(Rows == 4 && Cols == 4)
+    {
+      Mat result = Identity();
+      result.data[0] = _s.x;
+      result.data[5] = _s.y;
+      result.data[10] = _s.z;
       return result;
     }
 
@@ -440,6 +469,60 @@ namespace ROSE::math {
   constexpr Mat<T, Rows, Cols> operator*(const T _lhs, const Mat<T, Rows, Cols> &_rhs) noexcept {
     return _rhs * _lhs;
   }
+
+#pragma region projections
+
+  /* Both projections below map to the OpenGL clip volume, x/y/z all in [-1, 1], and both use the
+   * column-vector convention of Mat::Translation. z is negated because the eye looks down -z:
+   * a point in front of the camera has negative view-space z and must come out with positive
+   * depth. A backend whose clip space differs (D3D's z in [0, 1]) needs its own builder rather
+   * than a fixup at the call site. */
+
+  /*!
+   * Off-centre orthographic projection. @p _near and @p _far are distances along the view
+   * direction, so the usual call has both positive and @p _far greater.
+   */
+  template <Scalar T>
+  constexpr Mat<T, 4, 4> Orthographic(const T _left, const T _right, const T _bottom, const T _top, const T _near,
+                                      const T _far) noexcept {
+    ROSE_ASSERT_MSG(_right != _left && _top != _bottom && _far != _near, "degenerate orthographic volume");
+
+    Mat<T, 4, 4> result = Mat<T, 4, 4>::Identity();
+    result.data[0] = T { 2 } / (_right - _left);
+    result.data[3] = -(_right + _left) / (_right - _left);
+    result.data[5] = T { 2 } / (_top - _bottom);
+    result.data[7] = -(_top + _bottom) / (_top - _bottom);
+    result.data[10] = T { -2 } / (_far - _near);
+    result.data[11] = -(_far + _near) / (_far - _near);
+    return result;
+  }
+
+  /*!
+   * Symmetric perspective projection.
+   *
+   * @param _fovY   vertical field of view, in **radians**
+   * @param _aspect width / height
+   * @param _near   near plane distance, strictly positive - geometry at or behind it must be
+   *                clipped, which the 2D rasterizer does not yet do
+   * @param _far    far plane distance, greater than @p _near
+   */
+  template <Scalar T>
+  constexpr Mat<T, 4, 4> Perspective(const T _fovY, const T _aspect, const T _near, const T _far) noexcept {
+    ROSE_ASSERT_MSG(_near > T { 0 } && _far > _near, "perspective needs 0 < near < far");
+    ROSE_ASSERT_MSG(_aspect > T { 0 }, "perspective needs a positive aspect ratio");
+
+    const T focal = T { 1 } / Tan(_fovY / T { 2 });
+
+    Mat<T, 4, 4> result; // zero, not identity: the w row is (0, 0, -1, 0)
+    result.data[0] = focal / _aspect;
+    result.data[5] = focal;
+    result.data[10] = (_far + _near) / (_near - _far);
+    result.data[11] = (T { 2 } * _far * _near) / (_near - _far);
+    result.data[14] = T { -1 };
+    return result;
+  }
+
+#pragma endregion
 
   template <Scalar T>
   using Mat2 = Mat<T, 2, 2>;

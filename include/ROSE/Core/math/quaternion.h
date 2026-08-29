@@ -14,6 +14,7 @@
 
 #include <ROSE/Core/math/complex.h>
 #include <ROSE/Core/math/vector.h>
+#include <ROSE/Core/math/matrix.h>
 #include <ROSE/Core/math/mathfunctions.h>
 
 namespace ROSE::math {
@@ -148,6 +149,33 @@ namespace ROSE::math {
     constexpr Quat Normalized() const noexcept {
       Quat result(*this);
       return result.Normalize();
+    }
+
+    /*!
+     * The equivalent rotation as a homogeneous 4x4 matrix, in the column-vector convention the
+     * rest of the math library uses: `M * v` rotates a point, and `M` composes on the left.
+     *
+     * Assumes a unit quaternion - a drifted one produces a matrix that also scales. Call
+     * `Normalized()` first if the quaternion has been accumulating products.
+     */
+    constexpr Mat4<T> ToMat4() const noexcept {
+      const T xx = x * x, yy = y * y, zz = z * z;
+      const T xy = x * y, xz = x * z, yz = y * z;
+      const T wx = w * x, wy = w * y, wz = w * z;
+
+      Mat4<T> m = Mat4<T>::Identity();
+      m.data[0]  = T { 1 } - T { 2 } * (yy + zz);
+      m.data[1]  = T { 2 } * (xy - wz);
+      m.data[2]  = T { 2 } * (xz + wy);
+
+      m.data[4]  = T { 2 } * (xy + wz);
+      m.data[5]  = T { 1 } - T { 2 } * (xx + zz);
+      m.data[6]  = T { 2 } * (yz - wx);
+
+      m.data[8]  = T { 2 } * (xz - wy);
+      m.data[9]  = T { 2 } * (yz + wx);
+      m.data[10] = T { 1 } - T { 2 } * (xx + yy);
+      return m;
     }
 
     constexpr Quat &operator*=(const Quat &rhs) noexcept {
