@@ -119,16 +119,32 @@ for (;;) {
 }
 ```
 
+### Enabling, disabling, and teardown
+
+`Enable()` / `Disable()` flip `m_enabled` and fire `OnEnable()` / `OnDisable()`. Both
+guard on the current state, so a redundant call is a no-op rather than a second
+callback — the pair is balanced.
+
+`m_enabled` gates two things: `Object::FrameUpdate` skips a disabled behavior, and
+`RenderBackend::RenderFrame` skips a disabled `Renderable`. A disabled renderable stays
+enrolled, so toggling visibility costs nothing.
+
+> A behavior cannot re-enable *itself* — `Disable()` stops its own `FrameUpdate`, so
+> something else has to turn it back on.
+
+`OnDestroy()` is called by both of `Scene::FrameUpdate`'s destroy passes and by
+`~Scene`, before the map entry is erased, so a behavior can drop cached neighbor
+pointers. Teardown runs `OnDisable()` first when the behavior was enabled, so whatever
+it set up on enable has one place to be undone.
+
 ### Hooks that exist but are never called
 
-`FixedUpdate()`, `OnEnable()`, `OnDisable()`, and `UnpackParameters()` are declared,
-have empty base implementations, and have **no call sites anywhere in the engine**.
-`m_enabled` is likewise set to `true` and never read. `FixedUpdate`'s own doc
-comment admits it ("Currently this doesn't get called"). Overriding any of them is
-dead code today — `UI` (`gui.h`) overrides `OnEnable()` and nothing calls it.
+`FixedUpdate()` and `UnpackParameters()` are declared, have empty base implementations,
+and have **no call sites anywhere in the engine**. `FixedUpdate`'s own doc comment
+admits it ("Currently this doesn't get called").
 
-Note also `Behavior::Unpack()` is the deserialization hook the loader actually
-calls; `UnpackParameters()` is a vestigial second spelling. Override `Unpack`.
+Note also `Behavior::Unpack()` is the deserialization hook the loader actually calls;
+`UnpackParameters()` is a vestigial second spelling. Override `Unpack`.
 
 ## 3. Scene
 
@@ -426,11 +442,12 @@ Each verified against the source at `6870ee3`.
    `transform(_transform)`), which means the 3-argument overload silently discards
    the transform too.
 
-4. **`ParamView::GetDouble` rejects integers.** It gates on
-   `is_number_float()`, so `"focalLength": 30` falls through to the fallback while
-   `30.0` works. `Camera::Unpack` reads both `focalLength` and `orthographic` through
-   `GetDouble`, so a JSON `true`/`false` or a whole number for either is silently
-   ignored. `GetInt` uses the wider `is_number()` and does not have this problem.
+4. ~~**`ParamView::GetDouble` rejects integers.**~~ — FIXED. It gated on
+   `is_number_float()`, so `"focalLength": 30` fell through to the fallback while
+   `30.0` worked, and `Camera::Unpack` read the boolean `orthographic` through it too,
+   so that was always the default. `GetDouble` now uses the wider `is_number()`, and
+   `Camera::Unpack` reads `orthographic` with `GetBool`. There is also a `GetVec4d`
+   now, which accepts a 3-element array and fills `w` from the fallback.
 
 5. **Objects loaded from JSON have a default `m_uuid`.** The parsed UUID becomes the
    *map key* but is never written to `obj.m_uuid`. Only objects promoted through

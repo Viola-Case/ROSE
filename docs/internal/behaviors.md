@@ -43,16 +43,37 @@ which is how `Ball` flips velocity components in place on a bounce.
 
 ### `Camera`
 Carries `m_aspectRatio` (`Vec2<int16_t>`), `m_focalLength` (millimeters, default 30),
-and `m_orthographic`. `Unpack` reads `focalLength` and `orthographic`, both through
-`ParamView::GetDouble`, which only accepts JSON floats — an integer `30` or a boolean
-`true` falls back to the default (see sharp edge #4 in the API doc). Aspect ratio is
-declared but not unpacked ("do something with the aspect ratio"). No update hook, and
-nothing in the renderer consumes a `Camera` yet.
+`m_orthographic`, `m_near`/`m_far`, and `m_orthographicSize`. `Unpack` reads
+`focalLength`, `orthographic`, `orthographicSize`, `near` and `far`. Aspect ratio is
+still declared but not unpacked — it belongs to the viewport, and
+`GetViewProjection(aspect)` takes it as an argument instead.
+
+`GetViewProjection`, `GetView` and `GetProjection` build the matrices;
+`Application::ResolveViewProjection` picks the first enabled `Camera` in the current
+scene each frame and hands the result to the backend. With no camera, it falls back to
+an orthographic matrix in window pixels, so a scene made entirely of
+`RENDERABLE_SCREEN_SPACE` geometry draws correctly without one.
+
+Focal length is interpreted against a 36×24mm frame, so the vertical field of view is
+`2·atan(12 / focalLength)`.
 
 ### `Renderable`
-Type ID and the `RenderableType` enum (`Sprite`, `Mesh`, `UI`, `InstancedMesh`,
-`Rect`) and nothing else — no members, no overrides. Registered, so it can be
-attached from JSON, where it is inert.
+The base for anything that contributes geometry. Enrolls with the application's backend
+in `OnCreate` and withdraws in `OnDestroy`; a subclass overriding `OnCreate` **must**
+call `Renderable::OnCreate()`. Subclasses implement `Collect(RenderList &)`, which is
+called once a frame, after every `FrameUpdate` and only while `IsEnabled()`.
+
+A renderable never sees a backend type or a native handle — it emits `DrawCommand`s of
+plain vertex data, and the backend consumes them. That is what lets a backend be added
+without touching a behavior. Whatever a command points at must stay valid for the whole
+render pass, so emit from storage the renderable owns, never from a local.
+
+`RenderableType` is gone, replaced by `RenderableFlags` (`Transparent`, `ScreenSpace`,
+`Overlay`, `Textured`) in the `ApplicationFlags` idiom. Concrete subclasses:
+`MeshRenderable`, `SpriteRenderable`, `ShapeRenderable`, `GeometryRenderable`,
+`UIRenderable` and its leaves `ImageUI` and `TextUI` (which still draws nothing —
+real text needs a font atlas). `GeometryRenderable` is the general batched primitive:
+public `vertices`/`indices`/`topology`, passed straight through.
 
 ### `AudioSource`
 Type ID only. Empty private section, no overrides. Registered and inert.
