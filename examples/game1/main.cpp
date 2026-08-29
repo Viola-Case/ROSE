@@ -27,7 +27,7 @@ int main() {
   }
 
   ApplicationInitSettings settings { "Game 1" };
-  settings.SetFlags(APPLICATION_SOFTWARE_RENDERER)
+  settings.SetFlags(APPLICATION_SDL_RENDERER)
     .SetWindowSize(800, 600)
     .AddSceneFromFile("assets/game1scene1.json")
     .SetVSync(true);

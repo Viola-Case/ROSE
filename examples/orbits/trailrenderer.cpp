@@ -13,17 +13,14 @@
 
 #include <ROSE/Core/math.h>
 
-static_assert(sizeof(Orbits::Point) == sizeof(SDL_FPoint) && alignof(Orbits::Point) == alignof(SDL_FPoint),
-              "Point is handed to SDL as an SDL_FPoint array; the two must stay layout-compatible.");
-
 namespace Orbits {
   namespace {
     //! Below this a segment has no direction to take a normal from, so it contributes nothing.
     constexpr float DEGENERATE = 1e-6f;
 
-    constexpr SDL_FColor Lerp(const SDL_FColor &from, const SDL_FColor &to, float t) noexcept {
-      return { from.r + (to.r - from.r) * t, from.g + (to.g - from.g) * t, from.b + (to.b - from.b) * t,
-               from.a + (to.a - from.a) * t };
+    constexpr Vec4f Lerp(const Vec4f &from, const Vec4f &to, float t) noexcept {
+      return { from.x + (to.x - from.x) * t, from.y + (to.y - from.y) * t, from.z + (to.z - from.z) * t,
+               from.w + (to.w - from.w) * t };
     }
   } // namespace
 
@@ -36,10 +33,10 @@ namespace Orbits {
     m_indices.clear();
     m_indices.reserve(static_cast<size_t>(trails) * segments * 6);
     for (uint32_t t = 0; t < trails; ++t) {
-      const int base = static_cast<int>(t * samples * 2);
+      const uint32_t base = t * samples * 2;
       for (uint32_t s = 0; s < segments; ++s) {
         // Two triangles across the ribbon: (left, right, next left) and (right, next right, next left).
-        const int v = base + static_cast<int>(s) * 2;
+        const uint32_t v = base + s * 2;
         m_indices.push_back(v);
         m_indices.push_back(v + 1);
         m_indices.push_back(v + 2);
@@ -53,14 +50,14 @@ namespace Orbits {
     m_indexedSamples = samples;
   }
 
-  void TrailRenderer::Draw(SDL_Renderer *renderer, const TrailBuffer &trails, const TrailStyle &style) {
+  void TrailRenderer::Build(const TrailBuffer &trails, const TrailStyle &style) {
     const uint32_t count = trails.TrailCount();
     const uint32_t samples = trails.Filled();
-    if (!renderer || count == 0 || samples < 2) return; // nothing to connect on the first frame
-
-    buildIndices(count, samples);
 
     m_vertices.clear();
+    if (count == 0 || samples < 2) return; // nothing to connect on the first frame
+
+    buildIndices(count, samples);
     m_vertices.reserve(static_cast<size_t>(count) * samples * 2);
 
     const float span = static_cast<float>(samples - 1);
@@ -84,16 +81,11 @@ namespace Orbits {
 
         const float along = static_cast<float>(s) / span; // 0 at the tail, 1 at the body
         const float half = (style.tailWidth + (style.headWidth - style.tailWidth) * along) * 0.5f;
-        const SDL_FColor color = Lerp(style.tail, style.head, along);
+        const Vec4f color = Lerp(style.tail, style.head, along);
 
-        m_vertices.emplace_back(SDL_Vertex { { here.x + nx * half, here.y + ny * half }, color, {} });
-        m_vertices.emplace_back(SDL_Vertex { { here.x - nx * half, here.y - ny * half }, color, {} });
+        m_vertices.push_back(DrawVertex { { here.x + nx * half, here.y + ny * half, 0.0f }, color, {} });
+        m_vertices.push_back(DrawVertex { { here.x - nx * half, here.y - ny * half, 0.0f }, color, {} });
       }
     }
-
-    // The fade lives in the vertex alpha, so it only shows up with blending on.
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_RenderGeometry(renderer, nullptr, m_vertices.data(), static_cast<int>(m_vertices.size()), m_indices.data(),
-                       static_cast<int>(m_indices.size()));
   }
 } // namespace Orbits

@@ -18,20 +18,31 @@
 namespace Orbits {
   using namespace ROSE;
 
-  class PointCloud : public Behavior {
+  /*!
+   * A `Renderable`, so the cloud hands its geometry up rather than drawing it.
+   *
+   * Nothing in here knows which backend is running - there is no SDL renderer to resolve, no
+   * SDL call, and no SDL header - which is the whole point: the same demo runs on SDL's
+   * renderer, the software rasterizer and OpenGL with no source change.
+   */
+  class PointCloud : public Renderable {
   public:
     static constexpr UUID typeID = "6592694121c0a7d9-ea7b9a70926599a7"_uuid;
     static constexpr UUID TypeID() noexcept { return typeID; }
     UUID GetTypeID() const noexcept override { return typeID; }
 
+    PointCloud() noexcept;
+
   protected:
-    void OnStart() override;
     void FrameUpdate() override;
     void Unpack(const ParamView &) override;
+    void Collect(RenderList &) override;
 
   private:
     void integrate(double dt);
-    void render();
+
+    //! Advances the trails, projects to window space, and rebuilds the geometry Collect emits.
+    void updateGeometry();
 
     List<Vec3d> m_positions;
     List<Vec3d> m_velocities;
@@ -42,6 +53,9 @@ namespace Orbits {
 
     List<Point> m_screen; //!< positions in window space; sized once in Unpack, overwritten each frame
 
-    SDL_Renderer *m_renderer { nullptr }; //!< resolved once in OnStart
+    /* What Collect hands to the backend. Members, not locals: a DrawCommand keeps the pointer
+     * for the whole render pass. */
+    List<DrawVertex> m_bodyVertices;
+    DrawVertex m_centerVertex {};
   };
 } // namespace Orbits

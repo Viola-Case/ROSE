@@ -40,7 +40,7 @@ int main() {
   }
 
   ApplicationInitSettings settings { "Orbits" };
-  settings.SetFlags(APPLICATION_SOFTWARE_RENDERER)
+  settings.SetFlags(APPLICATION_SDL_RENDERER)
     .SetWindowSize(WIDTH, HEIGHT)
     .AddSceneFromFile("assets/orbits.json")
     .SetVSync(false);
