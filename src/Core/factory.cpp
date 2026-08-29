@@ -60,7 +60,8 @@ extern "C" void RoseRegisterCoreModule(BehaviorFactory &factory) {
                                     { MakeBehavior<UIRenderable>, UIRenderable::TypeID() },
                                     { MakeBehavior<ImageUI>, ImageUI::TypeID() },
                                     { MakeBehavior<TextUI>, TextUI::TypeID() },
-                                    { MakeBehavior<ShapeRenderable>, ShapeRenderable::TypeID() }
+                                    { MakeBehavior<ShapeRenderable>, ShapeRenderable::TypeID() },
+                                    { MakeBehavior<GeometryRenderable>, GeometryRenderable::TypeID() }
   };
   for (const auto &p : fns) {
     switch (factory.Register(p.first, p.second, "Core")) {

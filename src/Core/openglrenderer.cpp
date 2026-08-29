@@ -151,7 +151,15 @@ BackendStatus OpenGLRenderer::Init(const RenderBackendContext &ctx) {
 
   SDL_GL_SetSwapInterval(ctx.vsync ? 1 : 0);
 
+  if (!BuildPipeline()) {
+    ROSE_LOG_ERROR("Could not build the built-in GL pipeline!\n");
+    Shutdown();
+    return BackendStatus::Failure;
+  }
+
   glViewport(0, 0, ctx.width, ctx.height);
+  m_viewportWidth = ctx.width;
+  m_viewportHeight = ctx.height;
 
   Log(LogLevel::Trace, "GL context sucessfully created. Version: {}\n", m_name.c_str());
 
@@ -162,6 +170,18 @@ void OpenGLRenderer::Shutdown() {
   /* Runs twice on a normal exit - once from Application::Run, once from the destructor - so
    * everything here is guarded on the context and clears it on the way out. */
   if (!m_context) return;
+
+  for (auto &entry : m_textures)
+    if (entry.second) glDeleteTextures(1, &entry.second);
+  m_textures.clear();
+
+  if (m_ibo) glDeleteBuffers(1, &m_ibo);
+  if (m_vbo) glDeleteBuffers(1, &m_vbo);
+  if (m_vao) glDeleteVertexArrays(1, &m_vao);
+  if (m_program) glDeleteProgram(m_program);
+  m_ibo = m_vbo = m_vao = m_program = 0;
+
+  DetachAllRenderables();
 
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplSDL3_Shutdown();
@@ -189,8 +209,229 @@ void OpenGLRenderer::EndFrame() {
 void OpenGLRenderer::OnResize(int width, int height) {
   if (!m_context) return;
   glViewport(0, 0, width, height);
+  m_viewportWidth = width;
+  m_viewportHeight = height;
 }
 
 const char *OpenGLRenderer::GetName() const { return m_name.c_str(); }
 
 void *OpenGLRenderer::GetNativeHandle() const { return m_context; }
+
+#pragma region the built-in pipeline
+
+/* One program covers the whole draw vocabulary. Materials and shaders-as-assets are deliberately
+ * out of scope, so there is nothing here to select between: a command is coloured, optionally
+ * textured, and either in world space or in window pixels. */
+namespace {
+
+  constexpr const char *kVertexBody = R"(
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec4 aColor;
+layout(location = 2) in vec2 aTexCoord;
+
+uniform mat4 uViewProjection;
+uniform mat4 uModel;
+uniform int  uScreenSpace;
+uniform vec2 uViewport;
+
+out vec4 vColor;
+out vec2 vTexCoord;
+
+void main() {
+  vColor = aColor;
+  vTexCoord = aTexCoord;
+  if (uScreenSpace != 0) {
+    // Window pixels, top-left origin, straight to clip space.
+    vec2 ndc = vec2(aPosition.x / uViewport.x * 2.0 - 1.0, 1.0 - aPosition.y / uViewport.y * 2.0);
+    gl_Position = vec4(ndc, 0.0, 1.0);
+  } else {
+    gl_Position = uViewProjection * uModel * vec4(aPosition, 1.0);
+  }
+}
+)";
+
+  constexpr const char *kFragmentBody = R"(
+in vec4 vColor;
+in vec2 vTexCoord;
+
+uniform int uUseTexture;
+uniform sampler2D uTexture;
+
+out vec4 FragColor;
+
+void main() {
+  FragColor = uUseTexture != 0 ? texture(uTexture, vTexCoord) * vColor : vColor;
+}
+)";
+
+  GLuint CompileStage(const GLenum _stage, const char *_directive, const char *_body) noexcept {
+    const GLuint shader = glCreateShader(_stage);
+    const char *sources[2] { _directive, _body };
+    glShaderSource(shader, 2, sources, nullptr);
+    glCompileShader(shader);
+
+    GLint ok = GL_FALSE;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &ok);
+    if (!ok) {
+      char log[1024] {};
+      glGetShaderInfoLog(shader, sizeof(log), nullptr, log);
+      ROSE_LOG_ERROR("GL shader compilation failed:\n{}\n", log);
+      glDeleteShader(shader);
+      return 0;
+    }
+    return shader;
+  }
+
+} // namespace
+
+bool OpenGLRenderer::BuildPipeline() noexcept {
+  /* The requested version, matching what ImGui is told: a driver never hands back a context
+   * older than what was asked for, so this always compiles. */
+  const char *directive = GLSLVersionDirective(m_versionMajor, m_versionMinor);
+  if (!directive) directive = "#version 330 core\n";
+
+  const String vertexDirective = Format("{}\n", directive);
+  const GLuint vertex = CompileStage(GL_VERTEX_SHADER, vertexDirective.c_str(), kVertexBody);
+  if (!vertex) return false;
+
+  const GLuint fragment = CompileStage(GL_FRAGMENT_SHADER, vertexDirective.c_str(), kFragmentBody);
+  if (!fragment) {
+    glDeleteShader(vertex);
+    return false;
+  }
+
+  m_program = glCreateProgram();
+  glAttachShader(m_program, vertex);
+  glAttachShader(m_program, fragment);
+  glLinkProgram(m_program);
+
+  glDeleteShader(vertex);
+  glDeleteShader(fragment);
+
+  GLint linked = GL_FALSE;
+  glGetProgramiv(m_program, GL_LINK_STATUS, &linked);
+  if (!linked) {
+    char log[1024] {};
+    glGetProgramInfoLog(m_program, sizeof(log), nullptr, log);
+    ROSE_LOG_ERROR("GL program link failed:\n{}\n", log);
+    glDeleteProgram(m_program);
+    m_program = 0;
+    return false;
+  }
+
+  m_uViewProjection = glGetUniformLocation(m_program, "uViewProjection");
+  m_uModel = glGetUniformLocation(m_program, "uModel");
+  m_uUseTexture = glGetUniformLocation(m_program, "uUseTexture");
+  m_uScreenSpace = glGetUniformLocation(m_program, "uScreenSpace");
+  m_uViewport = glGetUniformLocation(m_program, "uViewport");
+
+  glGenVertexArrays(1, &m_vao);
+  glGenBuffers(1, &m_vbo);
+  glGenBuffers(1, &m_ibo);
+
+  glBindVertexArray(m_vao);
+  glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+
+  const auto stride = static_cast<GLsizei>(sizeof(DrawVertex));
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void *>(offsetof(DrawVertex, position)));
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void *>(offsetof(DrawVertex, color)));
+  glEnableVertexAttribArray(2);
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void *>(offsetof(DrawVertex, texCoord)));
+
+  glBindVertexArray(0);
+  return true;
+}
+
+uint32_t OpenGLRenderer::ResolveTexture(const TextureID &_id) noexcept {
+  if (_id == UUID::Invalid()) return 0;
+
+  if (const auto it = m_textures.find(_id); it != m_textures.end()) return it->second;
+
+  GLuint name = 0;
+  const Surface *surface = TextureRegistry::Get().GetTexture(_id);
+  if (surface && surface->IsValid() && surface->GetPixels()) {
+    glGenTextures(1, &name);
+    glBindTexture(GL_TEXTURE_2D, name);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    /* The registry normalises everything to ARGB32, which GL has no enum for. BGRA plus
+     * UNSIGNED_INT_8_8_8_8_REV is the byte-exact match on little-endian, so no CPU swizzle. */
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, surface->GetPitch() / 4);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, surface->GetWidth(), surface->GetHeight(), 0, GL_BGRA,
+                 GL_UNSIGNED_INT_8_8_8_8_REV, surface->GetPixels());
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
+
+  m_textures.insert(_id, name); // cached even when 0, so a miss costs one lookup, not one a frame
+  return name;
+}
+
+void OpenGLRenderer::Draw(const DrawCommand &_cmd) {
+  if (!m_program || _cmd.vertexCount == 0) return;
+
+  const bool screenSpace = (_cmd.flags & RENDERABLE_SCREEN_SPACE) != 0;
+  const bool blend = (_cmd.flags & RENDERABLE_TRANSPARENT) != 0;
+
+  if (blend) {
+    glEnable(GL_BLEND);
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  } else {
+    glDisable(GL_BLEND);
+  }
+
+  glUseProgram(m_program);
+  glBindVertexArray(m_vao);
+
+  /* Orphan both buffers each draw rather than sub-updating: the driver hands back fresh storage
+   * instead of stalling on the previous frame's. */
+  glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+  glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(_cmd.vertexCount * sizeof(DrawVertex)), _cmd.vertices,
+               GL_STREAM_DRAW);
+
+  // ROSE matrices are row-major; GL reads column-major, hence the transpose.
+  glUniformMatrix4fv(m_uViewProjection, 1, GL_TRUE, m_viewProjection.data.data());
+  glUniformMatrix4fv(m_uModel, 1, GL_TRUE, _cmd.transform.data.data());
+  glUniform1i(m_uScreenSpace, screenSpace ? 1 : 0);
+  glUniform2f(m_uViewport, static_cast<float>(m_viewportWidth), static_cast<float>(m_viewportHeight));
+
+  const uint32_t texture = (_cmd.flags & RENDERABLE_TEXTURED) ? ResolveTexture(_cmd.texture) : 0;
+  glUniform1i(m_uUseTexture, texture ? 1 : 0);
+  if (texture) {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+  }
+
+  GLenum mode = GL_TRIANGLES;
+  switch (_cmd.topology) {
+  case Topology::Points:
+    mode = GL_POINTS;
+    glPointSize(_cmd.pointSize);
+    break;
+  case Topology::Lines:
+    mode = GL_LINES; // disjoint pairs, per Topology::Lines
+    break;
+  case Topology::Triangles:
+    mode = GL_TRIANGLES;
+    break;
+  }
+
+  if (_cmd.indices && _cmd.indexCount > 0) {
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(_cmd.indexCount * sizeof(uint32_t)), _cmd.indices,
+                 GL_STREAM_DRAW);
+    glDrawElements(mode, static_cast<GLsizei>(_cmd.indexCount), GL_UNSIGNED_INT, nullptr);
+  } else {
+    glDrawArrays(mode, 0, static_cast<GLsizei>(_cmd.vertexCount));
+  }
+
+  glBindVertexArray(0);
+}
+
+#pragma endregion

@@ -151,14 +151,23 @@ namespace ROSE {
 
     SDL_WindowFlags windowFlags = SDL_WINDOW_HIDDEN;
 
-    if (!GetFlag(ApplicationFlag::Headless)) {
-      if (!GetFlag(ApplicationFlag::SoftwareRenderer)) {
-        // figure out opengl vs vulkan here
-        windowFlags |= (1 ? SDL_WINDOW_VULKAN : SDL_WINDOW_OPENGL);
-
-        // maybe eventually figure out directx but maybe not
-      } else {
+    /* Backend selection. A flag naming a backend that does not exist yet falls back to the SDL
+     * renderer with a warning rather than leaving m_renderer null, which used to be the silent
+     * outcome for every non-software flag - including the Vulkan one this branch half-honoured. */
+    if (!GetFlag(ApplicationFlag::Headless) && !GetFlag(ApplicationFlag::NoRenderer)) {
+      if (GetFlag(ApplicationFlag::OpenGL)) {
+        windowFlags |= SDL_WINDOW_OPENGL;
+        m_renderer = new OpenGLRenderer();
+      } else if (GetFlag(ApplicationFlag::SoftwareRenderer)) {
         m_renderer = new SoftwareRenderer();
+      } else {
+        if (GetFlag(ApplicationFlag::Vulkan) || GetFlag(ApplicationFlag::Metal) ||
+            GetFlag(ApplicationFlag::DirectX9) || GetFlag(ApplicationFlag::DirectX11) ||
+            GetFlag(ApplicationFlag::DirectX12))
+          ROSE_LOG_WARN("No backend implements that graphics API yet - falling back to the SDL renderer, "
+                        "which will pick a hardware driver of its own.\n");
+
+        m_renderer = new SDLRenderer();
       }
     }
 
@@ -198,6 +207,32 @@ namespace ROSE {
 
 
     return 0;
+  }
+
+  /*!
+   * The active camera's world-to-clip matrix, or a screen-pixel orthographic fallback when the
+   * scene has no enabled camera.
+   *
+   * The fallback matters more than it looks: it maps window pixels with a top-left origin
+   * straight to clip space, which is the same convention `RENDERABLE_SCREEN_SPACE` uses, so a
+   * scene made entirely of screen-space geometry draws correctly with no camera at all.
+   */
+  Mat4f Application::ResolveViewProjection() noexcept {
+    const math::Vec2<int> size = m_window ? m_window->GetSize() : math::Vec2<int> { m_windowSize.x, m_windowSize.y };
+    const float width = static_cast<float>(size.x > 0 ? size.x : 1);
+    const float height = static_cast<float>(size.y > 0 ? size.y : 1);
+
+    if (m_currentScene) {
+      Camera *active = nullptr;
+      m_currentScene->ForEachObject([&active](Object &_object) {
+        if (active) return; // first enabled camera wins
+        if (Camera *camera = _object.GetBehaviorOfType<Camera>(); camera && camera->IsEnabled()) active = camera;
+      });
+
+      if (active) return active->GetViewProjection(width / height);
+    }
+
+    return math::Orthographic(0.f, width, height, 0.f, -1.f, 1.f);
   }
 
   void Application::Run() {
@@ -247,6 +282,13 @@ namespace ROSE {
       Time::dT = dur.count();
       if (m_currentScene) m_currentScene->FrameUpdate();
 
+      /* The render pass runs after FrameUpdate, so a renderable's Collect sees the state its own
+       * FrameUpdate just produced, and before ImGui::Render, so the HUD ends up on top. */
+      if (m_renderer) {
+        m_renderer->SetViewProjection(ResolveViewProjection());
+        m_renderer->RenderFrame();
+      }
+
       ImGui::Render();
 
       if (m_renderer) m_renderer->EndFrame();
@@ -291,6 +333,7 @@ namespace ROSE {
 
   const List<Scene> &Application::GetScenes() noexcept { return m_scenes; }
   Scene *Application::GetCurrentScene() noexcept { return m_currentScene; }
+  RenderBackend *Application::GetRenderBackend() noexcept { return m_renderer; }
 
   bool Application::GetFlag(ApplicationFlag m) const noexcept {
     const ApplicationFlags mask = static_cast<ApplicationFlags>(1) << m;
