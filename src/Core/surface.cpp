@@ -17,6 +17,23 @@
 
 namespace ROSE {
 
+  inline SDL_PixelFormat SDLPixelFormatFromPixelFormat(const PixelFormat format) noexcept {
+    switch (format.value) {
+    case PixelFormat::RGBA32:
+      return SDL_PIXELFORMAT_RGBA32;
+    case PixelFormat::RGB24:
+      return SDL_PIXELFORMAT_RGB24;
+    case PixelFormat::BGRA32:
+      return SDL_PIXELFORMAT_BGRA32;
+    case PixelFormat::ARGB32:
+      return SDL_PIXELFORMAT_ARGB32;
+    case PixelFormat::RGBA64:
+      return SDL_PIXELFORMAT_RGBA64;
+    default:
+      return SDL_PIXELFORMAT_UNKNOWN;
+    }
+  }
+
   inline PixelFormat PixelFormatFromSDLPixelFormat(const SDL_PixelFormat format) noexcept {
     switch (format) {
     case SDL_PIXELFORMAT_RGBA32:
@@ -100,17 +117,41 @@ namespace ROSE {
     m_ptr = nullptr;
   }
 
+  /* All four guard on m_ptr: an invalid Surface is an ordinary outcome - a missing file, an
+   * unimplemented LoadAsset - and asking it for its size should answer zero, not crash. */
   uint16_t Surface::GetWidth() const noexcept {
-    return static_cast<SDL_Surface *>(m_ptr)->w;
+    return m_ptr ? static_cast<uint16_t>(static_cast<SDL_Surface *>(m_ptr)->w) : 0;
   }
   uint16_t Surface::GetHeight() const noexcept {
-    return static_cast<SDL_Surface *>(m_ptr)->h;
+    return m_ptr ? static_cast<uint16_t>(static_cast<SDL_Surface *>(m_ptr)->h) : 0;
   }
   uint16_t Surface::GetPitch() const noexcept {
-    return static_cast<SDL_Surface *>(m_ptr)->pitch;
+    return m_ptr ? static_cast<uint16_t>(static_cast<SDL_Surface *>(m_ptr)->pitch) : 0;
   }
   PixelFormat Surface::GetFormat() const noexcept {
     return m_format;
+  }
+
+  const void *Surface::GetPixels() const noexcept {
+    return m_ptr ? static_cast<SDL_Surface *>(m_ptr)->pixels : nullptr;
+  }
+
+  void *Surface::GetNativeHandle() const noexcept { return m_ptr; }
+
+  bool Surface::ConvertTo(const PixelFormat format) noexcept {
+    if (!m_ptr) return false;
+    if (m_format.value == format.value) return true;
+
+    const SDL_PixelFormat target = SDLPixelFormatFromPixelFormat(format);
+    if (target == SDL_PIXELFORMAT_UNKNOWN) return false;
+
+    SDL_Surface *converted = SDL_ConvertSurface(static_cast<SDL_Surface *>(m_ptr), target);
+    if (!converted) return false;
+
+    SDL_DestroySurface(static_cast<SDL_Surface *>(m_ptr));
+    m_ptr = converted;
+    m_format = format;
+    return true;
   }
 
   bool Surface::IsValid() const noexcept {
