@@ -10,7 +10,7 @@
 
 #pragma once
 
-
+static_assert(sizeof(void *) == 8, "ROSE depends on 64-bit targets.");
 
 #if defined(_WIN32)
 #define ROSE_PLATFORM_WINDOWS 1
@@ -34,10 +34,7 @@
 #endif
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-#define ROSE_PLATFORM_BSD 1
-#define ROSE_PLATFORM     "BSD"
-#else
-#define ROSE_PLATFORM_BSD 0
+#error "Stop."
 #endif
 
 #if defined(_XBOX_ONE)
@@ -52,6 +49,10 @@
 #define ROSE_PLATFORM                "Xbox Series X/S"
 #else
 #define ROSE_PLATFORM_XBOX_SERIES_XS 0
+#endif
+
+#if defined (__CELLOS_LV2__)
+#error "PS3 isn't supported. Go touch some grass."
 #endif
 
 #if defined(__ORBIS__)
@@ -132,12 +133,27 @@
 #endif
 
 #if !defined(__x86_64__) && !defined(_M_X64)
-#error "ROSE requires AMD64/x86-64"
-#endif
+#error "ROSE requires AMD64 architexture!
+#else
 // TODO i mean... does it really though
+// YES, YES IT DOES, UNLESS I FIGURE OUT AN ALTERNATIVE TO CERTAIN LINES OF CODE IN THIS REPO
+
+#define ROSE_ARCH_X86_64 1
+#define ROSE_ARCHITECTURE "AMD64"
+#endif
 
 #if !(__cplusplus >= 202002L || _MSVC_LANG >= 202002L)
 #error "ROSE is designed for C++20 or newer!"
 #endif
 // TODO make a fallback in case someone at like CERN or somewhere has some super legacy bullshit
+
+
+#if ROSE_COMPILER_GCC
+#if ROSE_PLATFORM_WINDOWS
+#error "Compiling for windows requires the MSVC ABI! Please use clang-cl!"
+#else
+#warning "GNU tools have been known to overaggressively vectorize! Compile at your own risk!"
+#endif
+#endif
+
 
