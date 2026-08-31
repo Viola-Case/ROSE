@@ -41,6 +41,9 @@ namespace ROSE {
   template <RegistrableBehavior T>
   UniquePtr<Behavior> MakeBehavior() { return MakeUnique<T>(); }
 
+  #define ROSE_BEHAVIOR_REGISTRY_PAIR(bhvr) \
+    {MakeBehavior<bhvr>, bhvr::TypeID()}
+
   /*!
    *
    */

@@ -18,9 +18,9 @@ int main() {
     BehaviorFactory &factory = BehaviorFactory::Get();
     RoseRegisterCoreModule(factory);
     Pair<FactoryFn, UUID> fns[] {
-      { MakeBehavior<AppCloser>, AppCloser::TypeID() },   { MakeBehavior<Paddle>, Paddle::TypeID() },
-      { MakeBehavior<FpsCounter>, FpsCounter::TypeID() }, { MakeBehavior<Ball>, Ball::TypeID() },
-      { MakeBehavior<Scoreboard>, Scoreboard::TypeID() }, { MakeBehavior<ResetController>, ResetController::TypeID() },
+      ROSE_BEHAVIOR_REGISTRY_PAIR(AppCloser), ROSE_BEHAVIOR_REGISTRY_PAIR(Paddle),
+      ROSE_BEHAVIOR_REGISTRY_PAIR(Scoreboard), ROSE_BEHAVIOR_REGISTRY_PAIR(Ball),
+      ROSE_BEHAVIOR_REGISTRY_PAIR(FpsCounter), ROSE_BEHAVIOR_REGISTRY_PAIR(ResetController),
     };
     for (const auto &p : fns)
       factory.Register(p.first, p.second, "Game1");

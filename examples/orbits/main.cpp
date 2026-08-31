@@ -31,8 +31,8 @@ int main() {
     BehaviorFactory &factory = BehaviorFactory::Get();
     RoseRegisterCoreModule(factory);
     Pair<FactoryFn, UUID> fns[] {
-      { MakeBehavior<PointCloud>, PointCloud::TypeID() },
-      { MakeBehavior<Closer>, Closer::TypeID() },
+      ROSE_BEHAVIOR_REGISTRY_PAIR(PointCloud),
+      ROSE_BEHAVIOR_REGISTRY_PAIR(Closer),
     };
     for (const auto &p : fns) {
       factory.Register(p.first, p.second, "Orbits");
