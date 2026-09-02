@@ -120,7 +120,7 @@ endif ()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-project(ROSE VERSION 0.0.1)
+project(ROSE VERSION 0.2.0)
 
 # ------------------------------------------------------------------ toolchain
 set(CMAKE_CXX_STANDARD 20)
