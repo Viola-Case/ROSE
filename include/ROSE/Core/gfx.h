@@ -20,7 +20,45 @@
 
 namespace ROSE {
 
+  enum class UniformType { Bool, Int, Float, Vec2, Vec3, Vec4, Mat3, Mat4, Texture };
+  struct Uniform {
+    String m_name;
+    UniformType m_type;
+    union {
+      bool b;
+      float f;
+      Vec2f v2;
+      Vec3f v3;
+      Vec4f v4;
+      Mat3f m3;
+      Mat4f m4;
+      UUID texture;
+    };
+  };
+
+  class ROSE_API(CORE) Material {
+    friend class ROSE_API(CORE) Shader;
+    friend class RenderBackend;
+
+  public:
+    Material(const Shader &);
+    Material(const Material &);
+    Material &operator=(const Material &);
+    Material(const Material &&) = delete;
+    Material &operator=(Material &&) = delete;
+    void SetUniform(const Uniform &uniform) noexcept;
+  private:
+    Shader *m_shader;
+    UUID m_uuid;
+    List<Uniform> m_uniforms {};
+  };
+
+
+
   class Renderable;
+  class Shader;
+  class Material;
+
 
   /*!
    * Only ever populated from `Window::GetHandle()`.
@@ -214,6 +252,14 @@ namespace ROSE {
 #pragma endregion
 
   protected:
+    /*!
+     *
+     * @param mat Material with uniforms
+     * @return Const reference to material uniform list
+     */
+const auto &GetUniforms(const Material &mat) {
+      return mat.m_uniforms;
+    }
     //! The one backend-specific drawing operation. Everything else about a frame is shared.
     virtual void Draw(const DrawCommand &) = 0;
 
@@ -421,5 +467,38 @@ namespace ROSE {
   protected:
     void Draw(const DrawCommand &) override {}
   };
+
+  /*!
+   * Shader program with linked vertex and fragment shaders
+   */
+  class ROSE_API(CORE) Shader {
+    friend class ROSE_API(CORE) Material;
+
+  //public:
+    Shader();
+    ~Shader();
+    Shader(const Shader &) = delete;
+    Shader &operator=(const Shader &) = delete;
+    Shader(Shader &&) = default;
+    Shader &operator=(Shader &&) = default;
+    UUID GetUUID() const noexcept;
+
+  private:
+    void *m_vertex;
+    void *m_fragment;
+    UUID m_uuid;
+  };
+
+  class ROSE_API(CORE) ShaderRegistry {
+    friend class ROSE_API(CORE) Shader;
+  };
+
+
+
+
+  namespace defaults {
+    extern Material ROSE_API(CORE) DEFAULT_MATERIAL;
+    extern Shader ROSE_API(CORE) DEFAULT_SHADER;
+  } // namespace defaults
 
 } // namespace ROSE

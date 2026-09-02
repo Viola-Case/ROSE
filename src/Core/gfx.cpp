@@ -123,6 +123,11 @@ namespace ROSE {
       Draw(m_frameCommands[entry.index]);
   }
 
+  // TODO consider moving these to a new file dedicated to defaults
+
+  Shader ROSE_API(CORE) defaults::DEFAULT_SHADER {};
+  Material ROSE_API(CORE) defaults::DEFAULT_MATERIAL(DEFAULT_SHADER);
+
 #pragma endregion
 
 } // namespace ROSE
