@@ -48,7 +48,7 @@ include(CMakePackageConfigHelpers)
 # process-global mutable state, and exporting it from a DLL would need a
 # GLAD_API decoration the generated source does not have. Only ROSE_Core links
 # it, so one static copy is exactly one table.
-add_library(glad STATIC src/glad.c)
+add_library(glad STATIC src/gl.c)
 add_library(glad::glad ALIAS glad)
 
 target_include_directories(glad PUBLIC

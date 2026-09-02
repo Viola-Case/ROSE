@@ -12,7 +12,7 @@
 #include <SDL3/SDL.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl3.h>
-#include <glad/glad.h>
+#include <glad/gl.h>
 
 using namespace ROSE;
 
@@ -107,7 +107,7 @@ BackendStatus OpenGLRenderer::Init(const RenderBackendContext &ctx) {
 
   /* Has to come before anything that touches GL, ImGui's backend included - its Init calls
    * glGetString, which is a null function pointer until glad has filled the table in. */
-  if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+  if (!gladLoadGL(SDL_GL_GetProcAddress)) {
     ROSE_LOG_ERROR("Failed to load GL {}.{} function pointers!\n", m_versionMajor, m_versionMinor);
     SDL_GL_DestroyContext(context);
     m_context = nullptr;
