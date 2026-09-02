@@ -1,8 +1,15 @@
 /**
 
   @file       openglrenderer.cpp
-  @brief
-  @details    ~
+  @brief      The OpenGL half of the render path: context, one fixed program, streaming buffers, Draw.
+  @details    Everything backend-independent (enrollment, collect, sort) is in gfx.cpp and shared
+              with the other backends; this file only turns an already-ordered DrawCommand into GL
+              calls. The full walkthrough, including extension points, is docs/opengl-pipeline.md.
+
+              Per-frame call order, driven by Application::Run:
+                BeginFrame  -> ImGui new-frame hooks, clear colour + depth
+                Draw x N    -> one upload + one draw call per DrawCommand, via RenderBackend::RenderFrame
+                EndFrame    -> ImGui draw data on top, then buffer swap
   @author     Viola Case
   @date       20.07.2026
   @copyright  © Viola Case, 2026. All rights reserved.
@@ -81,6 +88,14 @@ OpenGLRenderer::OpenGLRenderer(int majorVersion, int minorVersion)
 
 OpenGLRenderer::~OpenGLRenderer() { Shutdown(); }
 
+/*!
+ * Stage order matters and is fixed: context -> glad -> ImGui -> pipeline -> viewport. glad must
+ * precede anything that calls a gl* symbol (ImGui's init included); ImGui must precede
+ * BuildPipeline only so a failure there tears down in one place via Shutdown.
+ *
+ * Every failure after context creation undoes what it made and returns a status;
+ * Application::Init treats anything but Success as fatal.
+ */
 BackendStatus OpenGLRenderer::Init(const RenderBackendContext &ctx) {
   SDL_Window *window = static_cast<SDL_Window *>(ctx.window.ptr);
   if (!window) {
@@ -191,6 +206,15 @@ void OpenGLRenderer::Shutdown() {
   m_window = nullptr;
 }
 
+/*!
+ * First thing in the frame, before ImGui::NewFrame and before any behavior runs.
+ *
+ * The depth buffer is cleared but GL_DEPTH_TEST is never enabled: draw order comes entirely from
+ * the band/layer sort in RenderBackend::RenderFrame. Enabling depth is the first thing to do here
+ * if that ever changes, alongside SDL_GL_DEPTH_SIZE at window creation.
+ *
+ * TODO m_backgroundColor is declared in gfx.h but not read here; the clear is hardcoded black.
+ */
 void OpenGLRenderer::BeginFrame() {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL3_NewFrame();
@@ -199,6 +223,11 @@ void OpenGLRenderer::BeginFrame() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+/*!
+ * Last thing in the frame, after every Draw and after ImGui::Render. ImGui goes straight to the
+ * default framebuffer here, so anything that renders into an FBO must resolve *before* this or
+ * the HUD ends up underneath it.
+ */
 void OpenGLRenderer::EndFrame() {
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   SDL_GL_SwapWindow(static_cast<SDL_Window *>(m_window));
@@ -221,7 +250,27 @@ void *OpenGLRenderer::GetNativeHandle() const { return m_context; }
 
 /* One program covers the whole draw vocabulary. Materials and shaders-as-assets are deliberately
  * out of scope, so there is nothing here to select between: a command is coloured, optionally
- * textured, and either in world space or in window pixels. */
+ * textured, and either in world space or in window pixels.
+ *
+ * Interface between the two stages and the C++ side, in one place so it is easy to extend:
+ *
+ *   attribute location 0  vec3 aPosition   <- DrawVertex::position   (set up in BuildPipeline)
+ *   attribute location 1  vec4 aColor      <- DrawVertex::color, straight alpha
+ *   attribute location 2  vec2 aTexCoord   <- DrawVertex::texCoord
+ *
+ *   uniform uViewProjection <- RenderBackend::m_viewProjection   (set in Draw)
+ *   uniform uModel          <- DrawCommand::transform
+ *   uniform uScreenSpace    <- RENDERABLE_SCREEN_SPACE
+ *   uniform uViewport       <- m_viewportWidth/Height, in pixels
+ *   uniform uUseTexture     <- whether ResolveTexture found something
+ *   uniform uTexture        <- never set; defaults to unit 0, the only unit bound
+ *
+ * Adding a uniform: declare it below, fetch its location in BuildPipeline into a new m_u* member
+ * in gfx.h, set it in Draw. Adding an attribute also means a field on DrawVertex, which every
+ * backend and every Collect shares.
+ *
+ * The `#version` line is not part of these bodies; CompileStage prepends it as a second source
+ * string so GLSLVersionDirective stays the single authority for both this program and ImGui. */
 namespace {
 
   constexpr const char *kVertexBody = R"(
@@ -284,6 +333,13 @@ void main() {
 
 } // namespace
 
+/*!
+ * Compiles and links the one program, caches its uniform locations, and creates the VAO with a
+ * single interleaved VBO plus an IBO. The vertex layout recorded in the VAO is the DrawVertex
+ * struct verbatim, so the offsets come from offsetof and never need hand-maintaining.
+ *
+ * Called once from Init. Nothing here is per-frame; the buffers get their storage in Draw.
+ */
 bool OpenGLRenderer::BuildPipeline() noexcept {
   /* The requested version, matching what ImGui is told: a driver never hands back a context
    * older than what was asked for, so this always compiles. */
@@ -345,6 +401,14 @@ bool OpenGLRenderer::BuildPipeline() noexcept {
   return true;
 }
 
+/*!
+ * TextureRegistry UUID -> GL texture name, uploaded on first sight and cached in m_textures until
+ * Shutdown. There is no invalidation: a Surface that changes after its first upload is never
+ * re-uploaded. Streamed or animated textures need a SubImage path or a registry hook first.
+ *
+ * @retval 0 for an untextured id or one the registry cannot serve; Draw then falls back to
+ *         vertex colour rather than sampling an unbound unit.
+ */
 uint32_t OpenGLRenderer::ResolveTexture(const TextureID &_id) noexcept {
   if (_id == UUID::Invalid()) return 0;
 
@@ -373,12 +437,35 @@ uint32_t OpenGLRenderer::ResolveTexture(const TextureID &_id) noexcept {
   return name;
 }
 
+/*!
+ * The one backend-specific operation. Called by RenderBackend::RenderFrame once per command, in
+ * final draw order (opaque, transparent, overlay; then layer; then enrollment order).
+ *
+ * Deliberately stateless between calls: no batching, no state caching, one upload and one draw
+ * call per command. The steps are:
+ *   1. blend state from the Transparent flag
+ *   2. bind program + VAO
+ *   3. stream the vertices into the VBO (orphaning, see below)
+ *   4. uniforms
+ *   5. texture, if Textured and resolvable
+ *   6. topology -> GL primitive mode
+ *   7. indexed or non-indexed draw
+ *
+ * What is left dirty on return: program, blend enable/func, active unit, and the unit-0 texture.
+ * Only the VAO is unbound. ImGui's backend saves and restores its own state so it is unaffected,
+ * but any new GL code here should either restore what it touches or set it unconditionally at
+ * the top, the way blend is.
+ *
+ * Depth: never tested. Screen-space commands write z = 0 and world-space ones whatever the
+ * projection yields, but with GL_DEPTH_TEST off it only matters for ordering if that changes.
+ */
 void OpenGLRenderer::Draw(const DrawCommand &_cmd) {
   if (!m_program || _cmd.vertexCount == 0) return;
 
   const bool screenSpace = (_cmd.flags & RENDERABLE_SCREEN_SPACE) != 0;
   const bool blend = (_cmd.flags & RENDERABLE_TRANSPARENT) != 0;
 
+  // Straight-alpha colours (DrawVertex::color), hence the classic SRC_ALPHA / ONE_MINUS pair for RGB.
   if (blend) {
     glEnable(GL_BLEND);
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);

@@ -287,8 +287,22 @@ namespace ROSE {
     List<Vec4f> m_scratchRects {}; //!< `SDL_FRect`
   };
 
+  /*!
+   * Core-profile OpenGL backend over an SDL window created with `SDL_WINDOW_OPENGL`.
+   *
+   * One fixed shader program, one interleaved streaming VBO/IBO, a UUID-keyed texture cache, and
+   * no depth testing: draw order is entirely the band/layer sort in `RenderFrame`. ImGui is drawn
+   * last, in `EndFrame`, directly to the default framebuffer.
+   *
+   * `Init` only sets the *context* GL attributes (version, profile). Pixel-format attributes such
+   * as `SDL_GL_DEPTH_SIZE` and multisampling are read when the window is created and must be set
+   * before `Window::Create` in `Application::Init`.
+   *
+   * See `docs/opengl-pipeline.md` for the frame walkthrough and the extension points.
+   */
   class ROSE_API(CORE) OpenGLRenderer : public RenderBackend {
   public:
+    //! The requested core-profile version. The driver may hand back something newer; `GetName` reports it.
     explicit OpenGLRenderer(int majorVersion = 4, int minorVersion = 5);
     ~OpenGLRenderer() override;
 
@@ -309,24 +323,25 @@ namespace ROSE {
   protected:
     void Draw(const DrawCommand &) override;
 
-    void *m_context { nullptr };
+    void *m_context { nullptr }; //!< `SDL_GLContext`; null means not initialised, and `Shutdown` is a no-op
     void *m_window { nullptr }; //!< `SDL_Window *`, kept for the buffer swap in `EndFrame`
     String m_name { "OpenGL" }; //!< built by `Init` from the context the driver actually handed back
     int m_versionMajor;
     int m_versionMinor;
-    Vec4f m_backgroundColor {0.f, 0.f, 0.f, 1.f};
+    Vec4f m_backgroundColor { 0.f, 0.f, 0.f, 1.f }; //!< TODO not yet read by `BeginFrame`, which clears to black
 
   private:
     uint32_t ResolveTexture(const TextureID &) noexcept; //!< GL texture name, cached
 
-    TypedHashMap<UUID, uint32_t> m_textures {};
+    TypedHashMap<UUID, uint32_t> m_textures {}; //!< GL name per registry id; 0 is cached for misses, never evicted
     bool BuildPipeline() noexcept; //!< the one built-in program, plus its streaming buffers
 
-    uint32_t m_program { 0 };
-    uint32_t m_vao { 0 }, m_vbo { 0 }, m_ibo { 0 };
+    uint32_t m_program { 0 }; //!< the single linked program; 0 makes `Draw` a no-op
+    uint32_t m_vao { 0 }, m_vbo { 0 }, m_ibo { 0 }; //!< one VAO with the `DrawVertex` layout, one streaming VBO and IBO
+    //! Uniform locations, fetched once after link. -1 (not found) is silently ignored by GL.
     int m_uViewProjection { -1 }, m_uModel { -1 }, m_uUseTexture { -1 };
     int m_uScreenSpace { -1 }, m_uViewport { -1 };
-    int m_viewportWidth { 0 }, m_viewportHeight { 0 };
+    int m_viewportWidth { 0 }, m_viewportHeight { 0 }; //!< fed to `uViewport` for screen-space commands; logical size, not drawable (HiDPI TODO)
   };
 
   /*!
