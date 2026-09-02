@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Viola-Case/ROSE/master/schemas/scene.schema.json",
+  "title": "ROSE scene",
+  "description": "A ROSE scene file, as read by ROSE::Scene::FromJSONString. Every key the loader reaches for with .at() is required here: a missing one throws, the whole parse is abandoned, and you get an empty scene plus a \"Scene string corrupt\" log line.",
+
+  "type": "object",
+  "required": ["name", "objects"],
+  "properties": {
+    "$schema": { "type": "string" },
+
+    "name": {
+      "type": "string",
+      "description": "Display name of the scene. Overwrites the auto-generated \"SceneN\" name."
+    },
+
+    "objects": {
+      "type": "array",
+      "description": "Every object in the scene. May be empty, but the key itself must be present.",
+      "items": { "$ref": "#/$defs/object" }
+    }
+  },
+  "additionalProperties": false,
+
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "description": "A ROSE UUID: two 16-digit hex halves joined by a single separator, e.g. \"a1415ebbfe6e827e-6f0aab643d65988e\". The loader only checks the length, so a stray non-hex digit parses as garbage rather than an error - hence the pattern here.",
+      "pattern": "^[0-9a-fA-F]{16}-[0-9a-fA-F]{16}$"
+    },
+
+    "vec3": {
+      "type": "array",
+      "description": "Three numbers, x/y/z. Exactly three - the loader indexes [0..2] without a length check.",
+      "items": { "type": "number" },
+      "minItems": 3,
+      "maxItems": 3
+    },
+
+    "color": {
+      "type": "array",
+      "description": "Three or four numbers, normally r/g/b/a in 0..1. With three, the alpha falls back to the behavior's default.",
+      "items": { "type": "number" },
+      "minItems": 3,
+      "maxItems": 4
+    },
+
+    "object": {
+      "type": "object",
+      "required": ["name", "uuid", "transform", "behaviors"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Looked up by ROSE::Scene::FindObjectByName. Not required to be unique; the first match wins."
+        },
+        "uuid": {
+          "$ref": "#/$defs/uuid",
+          "description": "Identity of the object, and its key in the scene's object map."
+        },
+        "transform": { "$ref": "#/$defs/transform" },
+        "behaviors": {
+          "type": "array",
+          "description": "Behaviors attached to this object. One entry per behavior type: the map is keyed by typeid, so a repeated typeid silently overwrites the earlier entry.",
+          "items": { "$ref": "#/$defs/behavior" }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "transform": {
+      "type": "object",
+      "required": ["position", "rotation", "scale"],
+      "properties": {
+        "position": { "$ref": "#/$defs/vec3" },
+        "rotation": {
+          "$ref": "#/$defs/vec3",
+          "description": "Euler angles in radians, applied XYZ, converted to a quaternion on load."
+        },
+        "scale": { "$ref": "#/$defs/vec3" }
+      },
+      "additionalProperties": false
+    },
+
+    "behavior": {
+      "type": "object",
+      "required": ["typeid", "factoryParameters"],
+      "properties": {
+        "typeid": {
+          "$ref": "#/$defs/uuid",
+          "description": "The behavior type's TypeID(). It must be registered with BehaviorFactory by the time the scene loads, or the load fails on this entry."
+        },
+        "factoryParameters": {
+          "type": "object",
+          "description": "Handed to the behavior's Unpack() as a ParamView. Must be an object: ParamView looks keys up by name, so an array or a null reads as empty and every parameter silently takes its default. An empty object is the correct way to say \"no parameters\"."
+        }
+      },
+      "additionalProperties": false,
+
+      "allOf": [
+        { "if": { "properties": { "typeid": { "const": "98b16c050e659798-2ba97b3cd1a9dd7c" } }, "required": ["typeid"] },
+          "then": { "properties": { "factoryParameters": { "$ref": "#/$defs/params/camera" } } } },
+
+        { "if": { "properties": { "typeid": { "const": "ab0a57d02d8e9fde-462c4cdfe26597d3" } }, "required": ["typeid"] },
+          "then": { "properties": { "factoryParameters": { "$ref": "#/$defs/params/motion" } } } },
+
+        { "if": { "properties": { "typeid": { "const": "8448e5b94997ad4d-ccee5b44f06598a2" } }, "required": ["typeid"] },
+          "then": { "properties": { "factoryParameters": { "$ref": "#/$defs/params/audioSource" } } } },
+
+        { "if": { "properties": { "typeid": { "const": "9cfaac61886d5e2e-9e75d84332659afc" } }, "required": ["typeid"] },
+          "then": { "properties": { "factoryParameters": { "$ref": "#/$defs/params/meshRenderable" } } } },
+
+        { "if": { "properties": { "typeid": { "const": "32c5294ce2e000fd-271098999265987f" } }, "required": ["typeid"] },
+          "then": { "properties": { "factoryParameters": { "$ref": "#/$defs/params/spriteRenderable" } } } },
+
+        { "if": { "properties": { "typeid": { "const": "4e503b30bef7e6ef-a5250bb2d5659727" } }, "required": ["typeid"] },
+          "then": { "properties": { "factoryParameters": { "$ref": "#/$defs/params/shapeRenderable" } } } },
+
+        { "if": { "properties": { "typeid": { "const": "1f6b0c7d94a3e582-b0d47e2c3165a91d" } }, "required": ["typeid"] },
+          "then": { "properties": { "factoryParameters": { "$ref": "#/$defs/params/geometryRenderable" } } } },
+
+        { "if": { "properties": { "typeid": { "const": "cb497ab81ab3dd7b-85272b1b21659b69" } }, "required": ["typeid"] },
+          "then": { "properties": { "factoryParameters": { "$ref": "#/$defs/params/uiRenderable" } } } },
+
+        { "if": { "properties": { "typeid": { "const": "9f24e65aa0a93483-992866975b659b59" } }, "required": ["typeid"] },
+          "then": { "properties": { "factoryParameters": { "$ref": "#/$defs/params/textUI" } } } },
+
+        { "if": { "properties": { "typeid": { "const": "03552ebc7a5d6dea-0aecc877e265992b" } }, "required": ["typeid"] },
+          "then": { "properties": { "factoryParameters": { "$ref": "#/$defs/params/imageUI" } } } }
+      ]
+    },
+
+    "params": {
+      "$comment": "One entry per behavior the Core module registers, mirroring that behavior's Unpack(). These are closed: an unrecognised key is almost always a typo, and ParamView answers a typo with the default rather than an error, so this is the only place it gets caught. Behaviors from a game module are not listed here and their parameters go unconstrained.",
+
+      "camera": {
+        "title": "ROSE::Camera",
+        "type": "object",
+        "properties": {
+          "focalLength": { "type": "number", "default": 30, "description": "In millimetres, against a 36x24 frame. Ignored when orthographic." },
+          "orthographic": { "type": "boolean", "default": false },
+          "orthographicSize": { "type": "number", "default": 10, "description": "Half-height of the orthographic view volume, in world units." },
+          "near": { "type": "number", "default": 0.1 },
+          "far": { "type": "number", "default": 1000 }
+        },
+        "additionalProperties": false,
+        "$comment": "Aspect ratio is deliberately absent: it belongs to the viewport and is passed to GetProjection."
+      },
+
+      "motion": {
+        "title": "ROSE::Motion",
+        "type": "object",
+        "properties": {
+          "drdt": { "$ref": "#/$defs/vec3", "description": "Linear velocity, world units per second." },
+          "dTdt": { "$ref": "#/$defs/vec3", "description": "Angular velocity: direction is the axis, magnitude the rate in rad/s." }
+        },
+        "additionalProperties": false
+      },
+
+      "audioSource": {
+        "title": "ROSE::AudioSource",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false,
+        "$comment": "Registered by the Core module but does not override Unpack, so it reads nothing from the scene file yet."
+      },
+
+      "meshRenderable": {
+        "title": "ROSE::MeshRenderable",
+        "type": "object",
+        "properties": {
+          "mesh": { "$ref": "#/$defs/uuid", "description": "Mesh id, resolved against the MeshRegistry in OnCreate rather than at parse time." },
+          "tint": { "$ref": "#/$defs/color", "default": [1, 1, 1, 1] },
+          "layer": { "type": "integer", "default": 0 },
+          "transparent": { "type": "boolean", "default": false }
+        },
+        "additionalProperties": false
+      },
+
+      "spriteRenderable": {
+        "title": "ROSE::SpriteRenderable",
+        "type": "object",
+        "properties": {
+          "texture": { "$ref": "#/$defs/uuid" },
+          "size": { "$ref": "#/$defs/vec3", "description": "Width and height in world units. Read as a three-element vector; z is ignored." },
+          "tint": { "$ref": "#/$defs/color", "default": [1, 1, 1, 1] },
+          "layer": { "type": "integer", "default": 0 }
+        },
+        "additionalProperties": false
+      },
+
+      "shapeRenderable": {
+        "title": "ROSE::ShapeRenderable",
+        "type": "object",
+        "properties": {
+          "color": { "$ref": "#/$defs/color", "default": [1, 1, 1, 1] },
+          "width": { "type": "number", "default": 1, "description": "Line width. At or below 1 the shape is drawn as lines; above, it is expanded to a triangle ribbon." },
+          "closed": { "type": "boolean", "default": false },
+          "layer": { "type": "integer", "default": 0 },
+          "transparent": { "type": "boolean", "default": false },
+          "screenSpace": { "type": "boolean", "default": false }
+        },
+        "additionalProperties": false,
+        "$comment": "The point list is not readable from JSON yet - a shape is driven from code."
+      },
+
+      "geometryRenderable": {
+        "title": "ROSE::GeometryRenderable",
+        "type": "object",
+        "properties": {
+          "layer": { "type": "integer", "default": 0 },
+          "transparent": { "type": "boolean", "default": false },
+          "screenSpace": { "type": "boolean", "default": false },
+          "overlay": { "type": "boolean", "default": false },
+          "pointSize": { "type": "number", "default": 1 },
+          "texture": { "$ref": "#/$defs/uuid", "description": "Setting this also marks the renderable textured." }
+        },
+        "additionalProperties": false,
+        "$comment": "Vertices, indices and topology are public members filled from code, not from the scene file."
+      },
+
+      "uiRenderable": {
+        "title": "ROSE::UIRenderable",
+        "type": "object",
+        "properties": {
+          "position": { "$ref": "#/$defs/vec3", "description": "Top-left corner in window pixels; z is ignored." },
+          "size": { "$ref": "#/$defs/vec3", "description": "Width and height in window pixels; z is ignored." },
+          "layer": { "type": "integer", "default": 0 }
+        },
+        "additionalProperties": false
+      },
+
+      "textUI": {
+        "title": "ROSE::TextUI",
+        "type": "object",
+        "properties": {
+          "position": { "$ref": "#/$defs/vec3" },
+          "size": { "$ref": "#/$defs/vec3" },
+          "layer": { "type": "integer", "default": 0 },
+          "text": { "type": "string", "default": "" },
+          "color": { "$ref": "#/$defs/color", "default": [1, 1, 1, 1] }
+        },
+        "additionalProperties": false
+      },
+
+      "imageUI": {
+        "title": "ROSE::ImageUI",
+        "type": "object",
+        "properties": {
+          "position": { "$ref": "#/$defs/vec3" },
+          "size": { "$ref": "#/$defs/vec3" },
+          "layer": { "type": "integer", "default": 0 },
+          "texture": { "$ref": "#/$defs/uuid" },
+          "tint": { "$ref": "#/$defs/color", "default": [1, 1, 1, 1] }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}
