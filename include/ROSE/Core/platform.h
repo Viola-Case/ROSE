@@ -34,7 +34,7 @@ static_assert(sizeof(void *) == 8, "ROSE depends on 64-bit targets.");
 #endif
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-#error "Stop."
+#error "Stop. Go touch grass."
 #endif
 
 #if defined(_XBOX_ONE)
