@@ -3,13 +3,15 @@
 `include/ROSE/Core/rtl.h` is an umbrella that pulls in, in this order:
 
 ```cpp
-buffer.h  list.h  string.h  memory.h  array.h  pair.h  hashmap.h  bigint.h
+buffer.h  list.h  string.h  memory.h  array.h  pair.h  hashmap.h  bigint.h  tuple.h
 ```
 
 Not in the umbrella but part of the same layer: `stdlib.h`, `typetraits.h`,
 `utility.h`. `rtl.h` gets them transitively.
 
 Everything is in namespace `ROSE` (no nested namespace, unlike math).
+
+Checked against the headers on **2026-09-02** (`master` @ `de3eafa`).
 
 ---
 
@@ -29,7 +31,7 @@ concept Character;      // char, signed/unsigned char, wchar_t, char8_t, char16_
 concept StdScalar;      // std::is_arithmetic_v<T>
 concept Scalar;         // Comp<...>, Quat<...>, or StdScalar
 concept MultiByteType;  // sizeof(T) > 1
-concept BehaviorType;   // std::derived_from<T, Behavior>
+concept BehaviorType;   // std::is_base_of_v<Behavior, T>
 ```
 
 Forward-declares `ROSE::math::Comp` and `ROSE::math::Quat` so `Scalar` can name
@@ -50,6 +52,10 @@ constexpr T    Min(T a, T b)            // by value
 constexpr T    Max(T a, T b)
 constexpr T    Exchange(T& obj, U&& newval)
 
+constexpr U    ImplicitCast(std::type_identity_t<U>&&)   // named cast helpers
+constexpr T    FunctionalCast(U&&)
+constexpr T&   PublicCast(T&)
+
 void           MemCpy(void*, const void*, size_t)   // out-of-line, in utility.cpp
 constexpr void SmartMemCpy(T* dst, U* src, size_t count = 1)  // copies Min(sizeof(T),sizeof(U)) — ignores count
 constexpr int  MemCmp(const T* a, const T* b, size_t count)   // count is in ELEMENTS; null-safe
@@ -68,9 +74,9 @@ uint64_t FNV1A64(const char*);
 `MemCmp` compares **elements**, `std::memcmp` compares **bytes** — mixing the two
 up is the cause of `known-issues.md` #4.
 
-`utility.cpp` also *defines* `FNV1A64(const StringView&)` and
-`FNV1A128(const StringView&)`, but no header declares them, so they are dead
-symbols. `string.h` has the declaration commented out.
+The `StringView` overloads of `FNV1A64`/`FNV1A128` that `utility.cpp` used to
+define without any header declaring them — dead symbols — are gone. Only the
+`const void*` and `const char*` pairs remain.
 
 ---
 
@@ -120,7 +126,9 @@ The default constructor **default-initializes**, so `FixedArray<int,3> a;` gives
 three indeterminate ints — assign before reading. It exists at all only since the
 `math::Mat` work; before that, declaring the two other constructors suppressed the
 implicit one and made `math::Mat` and generic `math::Vec<T, N>` impossible to
-construct (`known-issues.md` #2).
+construct (`known-issues.md` #2). Note `math::Vec` does not rely on it: every
+`VecStorage` constructor initialises `data` explicitly, so a default-constructed
+`Vec` is zeroed.
 
 Includes `<ROSE/Core/macros.h>` for `ROSE_ASSERT_MSG`, which replaced an
 ill-formed `static_assert(list.size() == N, …)` in the `initializer_list`
@@ -438,6 +446,47 @@ void reset();  void swap(WeakPtr&);
 
 ---
 
+## `tuple.h` — `Tuple<Types...>`
+
+The newest and thinnest piece of the RTL. Recursive inheritance, one `value` per
+level:
+
+```cpp
+template <typename... Types> struct Tuple;
+template <> struct Tuple<> {};
+
+template <typename Head, typename... Tail>
+struct Tuple<Head, Tail...> : Tuple<Tail...> {
+  Head value;
+  Tuple() : Tuple<Tail...>(), value() {}
+  Tuple(Head head, Tail... tail) : Tuple<Tail...>(tail...), value(head) {}
+};
+
+template <size_t Idx, typename TupleT> struct TupleElement;   // ::Type and ::TupleType
+template <size_t Idx, typename... Types> auto& Get(Tuple<Types...>&);
+```
+
+`Get<I>` walks to the right base through `TupleElement<I, …>::TupleType` and
+returns that level's `value`. Verified working:
+
+```cpp
+ROSE::Tuple<int, double> t(1, 2.5);
+ROSE::Get<0>(t);   // 1
+ROSE::Get<1>(t);   // 2.5
+```
+
+What it does **not** have: a `const` overload of `Get` (so `Get<0>` on a
+`const Tuple` does not compile), `MakeTuple`, `tuple_size`/structured-binding
+support, comparison operators, `Get` by type, or perfect forwarding in the
+constructor. It is enough for a fixed pack of values and nothing more.
+
+The header includes nothing at all and names `size_t` unqualified. It compiles
+standalone in practice, but it is last in `rtl.h` for a reason — do not move it
+up, and do not assume it stands alone on a compiler with a stricter global
+namespace.
+
+---
+
 ## `bigint.h` — 128-bit integers
 
 ```cpp
@@ -485,17 +534,18 @@ only) `+`/space sign modes. Verified: `std::format("{:#x}", FNVPRIME128)` gives
 | Want | Answer |
 |---|---|
 | `std::vector` | `List<T>` — but no `insert`/`erase`/`front` |
-| `std::array` | `FixedArray<T,N>` — no default ctor |
+| `std::array` | `FixedArray<T,N>` — has a default ctor; elements indeterminate |
 | `std::string` | `String` — no `find`/`substr`/`clear` |
 | `std::string_view` | `StringView` — `c_str()` may not be NUL-terminated |
 | `std::unordered_map` | `TypedHashMap<K,V>` — no `operator[]` |
 | `std::map` / ordered | nothing |
 | `std::unique_ptr` | `UniquePtr<T>` — no array form, no deleter |
 | `std::shared_ptr` | `SharedPtr<T>` — non-atomic counts |
+| `std::tuple` | `Tuple<Types...>` — minimal; see below |
 | `std::optional` / `variant` / `span` / `function` | nothing |
 | `std::pair` | `Pair<T1,T2>` |
 | `__int128` | `int128_t` / `uint128_t`, Clang/GCC only |
 | deque, list, set, algorithms | nothing |
 
-See [`known-issues.md`](known-issues.md) before relying on `List::operator==`,
-`String::resize`, or `FixedArray`'s default constructor.
+See [`known-issues.md`](known-issues.md) before relying on `List::operator==` or
+`String::resize`.

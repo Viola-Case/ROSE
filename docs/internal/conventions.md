@@ -2,7 +2,8 @@
 
 House style, so new code reads like the code already there. Written against
 `master` @ `6870ee3` (**2026-07-24**) from the config files plus what the tree
-actually does.
+actually does; re-verified against `de3eafa` (**2026-09-02**) — the config files
+are unchanged and every rule below still holds.
 
 **Order of authority.** Where these disagree, the earlier one wins:
 
@@ -99,8 +100,16 @@ you want for a known API-level gap. Multi-line TODOs follow the `/* */` rule abo
 Say what's wrong *and* what the fix would be:
 
 ```cpp
-/* TODO is_number_float() rejects JSON integers, so `"focalLength": 30` silently falls
- * back while `30.0` works. GetInt uses the wider is_number() - this should too. */
+/* TODO m_parent is never assigned by anything, so GetParent() always returns nullptr.
+ * Either implement the hierarchy (parenting + transform composition) or drop the member. */
+```
+
+A TODO that gets fixed becomes a comment explaining the decision, not a deleted
+line — `paramview.cpp:40` is the pattern:
+
+```cpp
+/* is_number() rather than is_number_float(): JSON has no way to write 30 as a float, so
+ * ... */
 ```
 
 Swearing in comments is established practice and nobody is going to stop you.
@@ -169,9 +178,11 @@ bare and that's fine where it already is.
                 └── everything else
   ```
 
-  `ROSE.h` fixes the order `platform.h → macros.h → api.h → rtl.h → … → math.h`, and some
-  headers rely on that (`math/vector.h` uses `ROSE_ASSERT` without including
-  `macros.h`). See `known-issues.md` #1 before you reorder anything.
+  `ROSE.h` fixes the order `platform.h → macros.h → api.h → rtl.h → … → math.h`. The
+  math headers used to *rely* on that — `math/vector.h` spelled `ROSE_ASSERT` without
+  including `macros.h` — and no longer do, since `vector.h` includes `rtl.h`. Reaching
+  a macro through the umbrella rather than including its header is still the wrong
+  shape; see `known-issues.md` #1 for how it was fixed.
 - Third-party headers (`nlohmann/json.hpp`, `SDL3/SDL.h`, `imgui.h`) belong in `.cpp` files. Keep them out of public headers — `ParamView` wraps its JSON node in a `const void*` specifically to avoid leaking nlohmann into the API, and `paddle.h` forward-declares `struct SDL_Renderer` rather than including SDL.
 
 ## 5. Language rules

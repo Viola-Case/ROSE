@@ -3,9 +3,9 @@
 The runtime composition layer: `Application` owns `Scene`s, a `Scene` owns
 `Object`s, an `Object` owns `Behavior`s, and gameplay code lives in behaviors.
 
-Checked against the headers and sources on **2026-07-24** (`master` @ `6870ee3`).
-Where the header comment and the code disagree, this file describes **the code**;
-those spots are flagged.
+Checked against the headers and sources on **2026-09-02** (`master` @ `de3eafa`);
+first written against `6870ee3` (**2026-07-24**). Where the header comment and the
+code disagree, this file describes **the code**; those spots are flagged.
 
 | Piece | Header | Source |
 |---|---|---|
@@ -49,9 +49,11 @@ GetObject().GetScene().GetApplication()       // Application&
 ```
 
 `m_behaviors` is keyed by the behavior's **type ID**, not by an instance UUID.
-That is the design, and it means **one instance per behavior type per object** —
-`CreateBehavior<T>()` on an object that already has a `T` hands back the existing
-one. Two paddles means two `Object`s, not two `Paddle`s on one object.
+That is the design, and it means **one instance per behavior type per object**.
+`CreateBehavior<T>()` on an object that already has a `T` now logs an error and
+returns `nullptr` rather than handing back the existing instance — check the
+result, or use `FindBehavior<T>()` when you only want the one that is there. Two
+paddles means two `Object`s, not two `Paddle`s on one object.
 
 `Scene` is move-only (`Scene(Scene&&)`/`operator=(Scene&&)` defaulted, no copy)
 and stores raw back-pointers, so **`Bind()` must be re-called after any move** —
@@ -139,12 +141,14 @@ it set up on enable has one place to be undone.
 
 ### Hooks that exist but are never called
 
-`FixedUpdate()` and `UnpackParameters()` are declared, have empty base implementations,
-and have **no call sites anywhere in the engine**. `FixedUpdate`'s own doc comment
-admits it ("Currently this doesn't get called").
+`OnEnable()` and `OnDisable()` fire only from `Enable()`/`Disable()`, which nothing
+in the engine calls on its own — a behavior has to be turned off by other game code.
+Teardown does call `OnDisable()` before `OnDestroy()` when the behavior was enabled.
 
-Note also `Behavior::Unpack()` is the deserialization hook the loader actually calls;
-`UnpackParameters()` is a vestigial second spelling. Override `Unpack`.
+`FixedUpdate()` and `UnpackParameters()` are **gone**. Both used to be declared with
+empty base implementations and no call sites; they have since been removed from
+`behavior.h` rather than left as traps. `Behavior::Unpack()` is the one
+deserialization hook, and the loader calls it.
 
 ## 3. Scene
 
@@ -158,12 +162,17 @@ public:
   Object *GetObject(const UUID &) noexcept;                // hash lookup, nullptr if absent
   void    DestroyObject(const UUID &) noexcept;     // queued; erased next FrameUpdate
 
+  using OFun = void (*)(Object &);
+  template <typename F> void ForEachObject(F fn);   // fn(Object&) over m_objects
+
   static Scene FromJSONString(const String &) noexcept;
   Scene(Scene &&) noexcept = default;
   Scene &operator=(Scene &&) noexcept = default;
 
 private:
   Scene();                                          // auto-names itself "Scene<N>"
+  static void TeardownBehavior(Behavior &) noexcept;
+  static void TeardownObject(Object &) noexcept;
   void OnStart() noexcept;
   void FrameUpdate() noexcept;
   void InitializePendingBehaviors() noexcept;
@@ -201,12 +210,15 @@ public:
   Object(const char *name, const Transform &, List<UniquePtr<Behavior>> &&);
 
   template <class B> requires std::is_base_of_v<Behavior, B>
-  Behavior *CreateBehavior();        // returns existing instance if the type is present
+  B *CreateBehavior();               // nullptr if unregistered or already present
 
   template <class B> requires std::is_base_of_v<Behavior, B>
   B *FindBehavior() noexcept;        // nullptr if absent
 
+  template <class F> void ForEachBehavior(F fn);   // fn(Behavior&) over the map
+
   Scene &GetScene() const noexcept;
+  const char *GetName() const noexcept;
 
   Transform transform;               // public, { position, rotation, scale }
 
@@ -229,11 +241,19 @@ have no callers in the tree right now: today the only paths that install a behav
 are the JSON loader and `CreateBehavior<T>()`.
 
 `transform` is a plain public member with no dirty tracking — write to it directly.
-`Transform` is `{ Vec3d position; Quatd rotation; Vec3d scale; }`; note the
-default-constructed `Object` leaves `scale` at `{0,0,0}` (the in-class initializer
-covers only position and rotation).
+`Transform` is `{ Vec3d position; Quatd rotation; Vec3d scale; }`, each member
+`alignas(16)`. Its constructor defaults are `({0,0,0}, {1,0,0,0}, {1,1,1})`, so a
+default-constructed `Object` now gets **unit scale**, not the `{0,0,0}` it used to.
+`Object`'s own in-class initializer supplies position and rotation and lets scale
+take the constructor default.
 
-There are no public accessors for an object's name or UUID.
+`GetName()` is public. There is still no public accessor for an object's UUID —
+see §8.5 for why the one on the object disagrees with its map key anyway.
+
+`ForEachBehavior(fn)` is public and is how a behavior sweeps its object's other
+behaviors without knowing their types; `Scene::ForEachObject(fn)` is its
+scene-level counterpart. `examples/game1`'s `ResetController` uses both together
+to collect every `Resetter` in the scene by `dynamic_cast`.
 
 ## 5. Behavior
 
@@ -245,19 +265,19 @@ protected:
   virtual void OnCreate() {}
   virtual void OnStart();
   virtual void FrameUpdate();
-  virtual void FixedUpdate();                       // never called
   virtual void Unpack(const ParamView &);           // deserialization hook
-  virtual void OnEnable();                          // never called
-  virtual void OnDisable();                         // never called
+  virtual void OnEnable();                          // only from Enable()
+  virtual void OnDisable();                         // only from Disable(), and at teardown
+  virtual void OnDestroy();                         // called by both destroy passes and ~Scene
 public:
   virtual UUID GetTypeID() const noexcept = 0;      // the one pure virtual
   virtual ~Behavior();
-  virtual void UnpackParameters(const ParamView &); // vestigial, never called
+  [[nodiscard]] bool IsEnabled() const noexcept;    // read-only; Enable/Disable stay protected
   Object &GetObject() const noexcept;
 protected:
-  UUID    m_uuid;                                   // never assigned
+  UUID    m_uuid;                                   // never assigned — see §8.6
   Object *m_object { nullptr };
-  bool    m_enabled { true };                       // never read
+  bool    m_enabled { true };
 };
 ```
 
@@ -296,7 +316,7 @@ Two concepts describe behavior types:
 
 | Concept | Where | Requires |
 |---|---|---|
-| `BehaviorType<T>` | `typetraits.h` | `std::derived_from<T, Behavior>` |
+| `BehaviorType<T>` | `typetraits.h` | `std::is_base_of_v<Behavior, T>` |
 | `RegistrableBehavior<T>` | `behavior.h` | derived, default-initializable, **and** `T::TypeID()` returning `UUID` |
 
 `MakeBehavior<T>` takes the second, which is what makes the "must be default
@@ -310,16 +330,22 @@ member values, with the JSON overriding them in `Unpack()`.
 ```cpp
 using FactoryFn = UniquePtr<Behavior> (*)();
 
-template <RegistrableBehavior T> UniquePtr<Behavior> MakeBehavior();
+template <RegistrableBehavior T> UniquePtr<Behavior> MakeBehavior() { return MakeUnique<T>(); }
+
+#define ROSE_BEHAVIOR_REGISTRY_PAIR(bhvr) {MakeBehavior<bhvr>, bhvr::TypeID()}
 
 class BehaviorFactory {
 public:
-  static BehaviorFactory &get();                                    // singleton
+  static BehaviorFactory &Get();                                    // singleton — note the capital G
   static RegisterResult Register(FactoryFn, const UUID &id, const char *moduleName = "");
   static void RegisterModule(const char *moduleName);
   static UniquePtr<Behavior> Create(const UUID &id) noexcept;       // nullptr if unregistered
+  static bool IsRegistered(const UUID &id) noexcept;
 };
 ```
+
+`IsRegistered` is what `Object::CreateBehavior<T>()` checks before minting, so an
+unregistered type is a logged error rather than a null insert (§8.1).
 
 Core lives in `ROSE_Core.dll`, so there is exactly one `BehaviorFactory` in the
 process no matter how many modules register into it. `FactoryFn` is a raw function
@@ -339,16 +365,18 @@ registers its own behaviors via
 its types:
 
 ```cpp
-BehaviorFactory &factory = BehaviorFactory::get();
-RoseRegisterCoreModule(factory);
+BehaviorFactory &factory = BehaviorFactory::Get();
 Pair<FactoryFn, UUID> fns[] {
-  { MakeBehavior<AppCloser>,  AppCloser::TypeID()  },
-  { MakeBehavior<Paddle>,     Paddle::TypeID()     },
-  { MakeBehavior<FpsCounter>, FpsCounter::TypeID() },
-  { MakeBehavior<Ball>,       Ball::TypeID()       },
+  ROSE_BEHAVIOR_REGISTRY_PAIR(AppCloser),  ROSE_BEHAVIOR_REGISTRY_PAIR(Paddle),
+  ROSE_BEHAVIOR_REGISTRY_PAIR(Scoreboard), ROSE_BEHAVIOR_REGISTRY_PAIR(Ball),
+  ROSE_BEHAVIOR_REGISTRY_PAIR(FpsCounter), ROSE_BEHAVIOR_REGISTRY_PAIR(ResetController),
 };
 for (const auto &p : fns) factory.Register(p.first, p.second, "Game1");
 ```
+
+Note there is no `RoseRegisterCoreModule(factory)` call here any more: `ROSE::Init()`
+does it (`init.cpp:30`), and every example simply calls `Init()` first. See
+[`application.md`](application.md) §1.
 
 Each module records its name with `factory.RegisterModule("Game1")` once the
 `Register` calls are done. This used to be a `reinterpret_cast` of the factory to
@@ -398,9 +426,14 @@ double  GetDouble(const String &key, double fallback = 0)  const noexcept;
 bool    GetBool  (const String &key, bool   fallback = 0)  const noexcept;
 String  GetString(const String &key, const String &fallback = "") const noexcept;
 Vec3d   GetVec3d (const String &key, Vec3d fallback = {0}) const noexcept;
+Vec4d   GetVec4d (const String &key, Vec4d fallback = {0}) const noexcept;
 UUID    GetUUID  (const String &key) const noexcept;        // UUID::Invalid() on failure
 ParamView Child  (const String &key) const noexcept;        // nested objects; null view if absent
+const void *GetNode() const noexcept;
 ```
+
+`GetVec4d` accepts a 3-element array and fills `w` from the fallback, which is what
+lets a colour be written either way in a scene file.
 
 Every getter is `noexcept` and falls back rather than failing: a null node, a
 missing key, and a wrong-typed key all produce the fallback. The header calls this
@@ -419,28 +452,32 @@ void Motion::Unpack(const ParamView &view) {
 
 ## 8. Sharp edges
 
-Each verified against the source at `6870ee3`.
+Each re-verified against the source at `de3eafa`.
 
-1. **`Object::CreateBehavior<T>()` skips the whole lifecycle.** It inserts straight
-   into `m_behaviors` rather than `m_pendingAdd`, so the scene's initializer never
-   sees it: `m_object` stays `nullptr` and `OnCreate()`/`OnStart()` never run. The
-   first `FrameUpdate()` then calls into a behavior whose `GetObject()` dereferences
-   null. It also does not check the factory result, so an unregistered `T` inserts a
-   null `UniquePtr` and the next frame crashes. Use it only for types with no
-   lifecycle hooks, or fix it to route through `AddBehavior`.
+1. ~~**`Object::CreateBehavior<T>()` skips the whole lifecycle.**~~ — FIXED. It now
+   checks `BehaviorFactory::IsRegistered(tID)` and logs an error rather than
+   inserting a null `UniquePtr`; refuses and logs if the type is already on the
+   object, since `m_behaviors` is keyed by type ID; routes through `AddBehavior`,
+   so the behavior lands in `m_pendingAdd` and gets its `m_object`, `OnCreate()`
+   and `OnStart()` from `InitializePendingBehaviors()` like any other; and returns
+   `B *` rather than `Behavior *`. It carries one live `// TODO`: the pointer it
+   hands back is not yet fully added, and nothing stops the caller using it before
+   the next initialize pass.
 
-2. **The JSON loader dereferences a null factory result.** `FromJSONString` does
-   `bvr->m_object = &obj` immediately after `BehaviorFactory::Create(tID)`. An
-   unregistered or misspelled `typeid` in the scene file is a null-pointer crash
-   during load, not the "log loudly, skip, limp forward" the design comment
-   describes.
+2. ~~**The JSON loader dereferences a null factory result.**~~ — FIXED
+   (`d1440b3`, "harden behavior creation"). `FromJSONString` now null-checks
+   `BehaviorFactory::Create(tID)`, logs the bad type ID and the object it was on
+   — asking whether you spelled it correctly — and `continue`s to the next
+   behavior. An unregistered `typeid` costs you that behavior, not the process.
 
-3. **`Object(name, transform, behaviors)` calls `std::terminate()`.** The loop body
-   in `object.cpp:22-25` inserts and then unconditionally terminates, so the
-   4-argument constructor is unusable with a non-empty list. The same constructor
-   also ignores its `Transform` argument (it initializes `transform()` instead of
-   `transform(_transform)`), which means the 3-argument overload silently discards
-   the transform too.
+3. ~~**`Object(name, transform, behaviors)` calls `std::terminate()`.**~~ — FIXED,
+   mostly. The `std::terminate()` is commented out, the loop keys by
+   `b->GetTypeID()` the way every other path does, and the member init is
+   `transform(_transform)`, so neither the 3- nor the 4-argument overload drops
+   its `Transform` any more. **The `// TODO` block above the constructor in
+   `object.cpp:20-24` still describes all three of those as broken and is itself
+   stale** — the doc comment outlived the fix. Worth deleting next time anyone is
+   in there.
 
 4. ~~**`ParamView::GetDouble` rejects integers.**~~ — FIXED. It gated on
    `is_number_float()`, so `"focalLength": 30` fell through to the fallback while
@@ -463,8 +500,12 @@ Each verified against the source at `6870ee3`.
 8. **`Scene::ToJSONString()` does not serialize objects** (§3). It also builds an
    unused local struct per object — the loop body has no effect.
 
-9. **Behaviors erased from `m_pendingDestroy` get no shutdown callback.** The map
-   entry is erased and the destructor runs; there is no `OnDestroy`.
+9. ~~**Behaviors erased from `m_pendingDestroy` get no shutdown callback.**~~ —
+   FIXED. `Behavior::OnDestroy()` exists and is called from `scene.cpp:38`, on both
+   of `Scene::FrameUpdate`'s destroy passes and from `~Scene`, before the map entry
+   is erased — so a behavior can drop cached neighbour pointers. `OnDisable()` runs
+   first when the behavior was enabled. `Renderable` relies on this to withdraw
+   from the render backend, with its destructor as a backstop for a bare `delete`.
 
 10. **Scene switching re-runs `OnStart()` on the whole scene.** The guard in
     `Application::Run()` is a `static Scene*`, so returning to a previously active

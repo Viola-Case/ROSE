@@ -23,15 +23,22 @@ So:
 
 - ✅ `ROSE::Vec3d`, `ROSE::Mat4d`, `ROSE::Quatf`, … work unqualified inside
   `namespace ROSE`.
-- ❌ The `Vec2`/`Vec3`/`Vec4` and `Mat2`/`Mat3`/`Mat4` template aliases, the `Mat`
-  and `Vec` templates themselves, `Sign`, `EulerOrder`, `Sqrt`, `Clamp`, `PI` and
-  `LeviCivita` all need a `math::` qualifier.
+- ❌ The `Vec2`/`Vec3`/`Vec4`/`Vec7` and `Mat2`/`Mat3`/`Mat4` template aliases, the
+  `Mat` and `Vec` templates themselves, the `Vec7f`/`Vec7d` concrete aliases,
+  `Sign`, `EulerOrder`, `Sqrt`, `Clamp`, `PI`, `LeviCivita`, `FanoSign`,
+  `Orthographic` and `Perspective` all need a `math::` qualifier.
 
 Where the engine actually uses these: `Transform` (`Vec3d position/scale`,
 `Quatd rotation`), `mesh.h` (`Vec3d position/normal`), `motion.h` (four `Vec3d`
-derivatives), `input.h` (`Vec2f GetStickAxes`), `paramview.h` (`GetVec3d`).
-Note the engine standardises on **double** for spatial data and float only for
-input axes.
+derivatives), `input.h` (`Vec2f GetStickAxes`), `paramview.h` (`GetVec3d`,
+`GetVec4d`), `camera.h`/`gfx.h`/`application.h` (`Mat4` view-projection),
+`renderable.h` (`Vec4f` tints and colours).
+Note the engine standardises on **double** for spatial data, and float for input
+axes and anything heading for a graphics API.
+
+Checked against the headers on **2026-09-02** (`master` @ `de3eafa`). `vector.h`
+was rewritten since the previous pass and its section here is new; `matrix.h` and
+`quaternion.h` both gained members.
 
 ---
 
@@ -53,6 +60,17 @@ template <typename T>      constexpr bool KDelta(T a, T b);       // Kronecker d
 template <typename... A>   constexpr Sign LeviCivita(A... args);  // permutation sign
 ```
 
+There is also a 7D counterpart, added for `Vec7::Cross`:
+
+```cpp
+constexpr Sign FanoSign(size_t i, size_t j, size_t k) noexcept;
+```
+
+Same totally-antisymmetric role as `LeviCivita`, but supported on the seven lines
+of the Fano plane rather than on permutations of `0..N-1`. It locates each index
+within its line and hands the positions to `LeviCivita`, so the parity logic lives
+in one place.
+
 `LeviCivita` `static_assert`s that every argument is convertible to `size_t`,
 returns `Zero` unless the arguments are exactly a permutation of `0..N-1`, and
 otherwise counts inversions. The error message still says `cse::math::` from a
@@ -65,63 +83,102 @@ previous name for the library.
 ## `vector.h` — `Vec<T, N>`
 
 ```cpp
-template <Scalar T, size_t N> requires (N > 1) struct Vec;
+template <Scalar T, size_t N> requires (N > 1) struct Vec : detail::VecStorage<T, N>;
 ```
 
-A primary template plus **full specialisations for N = 2, 3, 4**. The
-specialisations wrap an anonymous union giving both `data` (a `FixedArray<T,N>`)
-and named components:
+**Rewritten.** There is now one primary template and no per-`N` specialisations of
+`Vec` itself. Only the storage varies with `N`, in `detail::VecStorage<T, N>`;
+everything else — the arithmetic, indexing, conversion, `Dot`, `Cross`, `Norm`,
+`Unit` — is written once, in `Vec`.
 
-| N | components | constructor |
+### Storage
+
+| `N` | Layout | Constructor |
 |---|---|---|
-| 2 | `x, y` | `Vec(T _x = T{}, T _y = T{})` |
-| 3 | `x, y, z` | `Vec(T _x = T{0}, T _y = T{0}, T _z = T{0})` |
-| 4 | `x, y, z, w` | `Vec(T _x = T{}, T _y = T{})` ← **only two parameters** |
+| generic | `FixedArray<T, NextPow2(N)> data` | up to `N` args, rest zeroed |
+| 2 | union of `FixedArray<T,2> data` and `{ T x, y; }` | `(T _x, T _y = T{})` |
+| 3 | union of `FixedArray<T,4> data` and `{ T x, y, z, w; }` | `(T _x, T _y = T{}, T _z = T{})` |
+| 4 | union of `FixedArray<T,4> data` and `{ T x, y, z, w; }` | `(T _x, T _y = T{}, T _z = T{}, T _w = T{})` |
 
-The N = 4 constructor is a copy-paste of the N = 2 one: you cannot write
-`Vec4f(1,2,3,4)`, and `z`/`w` are never initialised. See `known-issues.md` #3.
+Three things fall out of that table:
 
-### Common members (present on all four)
+1. **`Vec3` stores four elements.** The fourth is named `w` and is SIMD padding, so
+   `sizeof(Vec3f)` is 16, not 12. The generic case pads to `NextPow2(N)` for the
+   same reason. Do not assume tight packing when handing an array of `Vec3` to a
+   graphics API.
+2. **The component constructors initialise `data`, not the named members**, which
+   makes the array the active union member. That is deliberate: the whole-vector
+   operations all go through `data`, so they fold in a constant expression, at the
+   cost of `v.x` not being readable in one. Reading `x`/`y`/`z`/`w` still works at
+   runtime, as an extension every compiler implements.
+3. The default constructor zeroes. `explicit VecStorage(NoInit)` skips that, for
+   the case where you are about to overwrite everything anyway.
+
+### Members
 
 ```cpp
-constexpr T    dot(const Vec&) const noexcept;
+static constexpr size_t size = N;
+
+constexpr Vec() noexcept = default;                       // zeroed
+
 constexpr Vec& operator+=/-=(const Vec&) noexcept;
-constexpr Vec& operator*=(T) noexcept;                 // scalar only
+constexpr Vec& operator*=(T) noexcept;                    // scalar only
 constexpr Vec  operator+/-(const Vec&) const noexcept;
 constexpr Vec  operator*(T) const noexcept;
-constexpr T&   operator[](size_t);                     // + const overload; asserts idx < N
-template <size_t I> requires (I < N) constexpr T& at() noexcept;
-template <Scalar U> constexpr operator Vec<U, N>();    // element-wise static_cast; non-const
+
+constexpr T&       operator[](size_t);                    // + const overload; asserts idx < N
+template <size_t I> requires (I < N) constexpr T& at() noexcept;   // + const overload
+template <Scalar U> constexpr operator Vec<U, N>() const; // element-wise static_cast
+
+constexpr T   Dot(const Vec&) const noexcept;
+constexpr Vec Cross(const Vec&) const noexcept requires (N == 3 || N == 7);
+constexpr T   Norm();                                     // Euclidean length; non-const
+constexpr Vec Unit();                                     // normalised copy; non-const
+
+static constexpr T   DotProduct(const Vec&, const Vec&);
+static constexpr Vec CrossProduct(const Vec&, const Vec&);
 ```
 
-`Vec<T,3>` additionally has:
+Note the casing: `Dot`/`Cross` are `PascalCase` now, not the old `dot`/`cross`.
+`Norm()` and `Unit()` are **not** `const`, so neither works on a `const Vec` — as
+with `operator Vec<U,N>` before it, that is an oversight rather than a design.
 
-```cpp
-constexpr Vec<T,3> cross(const Vec<T,3>&) const noexcept;   // verified correct
-```
+### The cross product
+
+Defined for `N == 3` **and `N == 7`** — the only two dimensions admitting a
+bilinear cross product. Both go through one contraction, `(a × b)_i = φ_ijk a_j b_k`,
+with φ the Levi-Civita symbol in 3D and the octonion structure constant (supported
+on the seven lines of the Fano plane, via `FanoSign` in `mathenum.h`) in 7D.
+
+The symbol is mostly zeros — two surviving terms per row in 3D, six in 7D — so
+`detail::MakeCrossTable<N>()` sieves the non-zero terms at compile time into
+`detail::crossTable<N>` and the runtime loop visits only those. It is `consteval`,
+and it `throw`s if the symbol it was handed does not have the support the table was
+sized for; that turns a wrong symbol into a compile error and never runs at runtime.
 
 ### Aliases
 
 ```cpp
-template <Scalar T> using Vec2 = Vec<T,2>;   // Vec3, Vec4 likewise
-using Vec2f/Vec2d/Vec3f/Vec3d/Vec4f/Vec4d = Vec<float|double, 2|3|4>;
+template <Scalar T> using Vec2 = Vec<T,2>;   // Vec3, Vec4, Vec7 likewise
+using Vec2f/Vec2d/Vec3f/Vec3d/Vec4f/Vec4d/Vec7f/Vec7d;
 ```
+
+Only the six `Vec2`/`Vec3`/`Vec4` concrete aliases are re-exported into `ROSE`;
+`Vec7f`/`Vec7d` need a `math::` qualifier.
+
+### Formatting
+
+`std::formatter<Vec<T,N>>` works and has a real spec grammar,
+`{:[flags][|scalar-spec]}` — see `known-issues.md` #6 for the flag table and
+verified output. `{}` gives `(1, -2, 0)`; `{:c}` gives cartesian `(1x -2y)`.
 
 ### Missing
 
-No `Length`/`Norm`/`Normalize`, no `operator-` (unary negate), no `operator/`,
-no `operator==`, no `operator*=` by another `Vec` (component-wise), no
-`operator*` with the scalar on the left, no `Lerp`, no swizzles. The conversion
-operator is non-`const`, so a `const Vec3f` will not convert to `Vec3d`.
-
-### Two hazards
-
-1. `operator[]` **does not compile in a `_DEBUG` build** and does not compile at
-   all without `macros.h` already included. The whole codebase uses `.x/.y/.z`
-   instead. See `known-issues.md` #1.
-2. The `std::formatter<Vec<T,N>>` specialisation at the bottom of the header
-   **does not compile**, so `std::format("{}", someVec)` is unusable. See
-   `known-issues.md` #6.
+No `operator-` (unary negate), no `operator/`, no `operator==`, no component-wise
+`operator*`, no `Lerp`, no swizzles. `operator*` with the scalar **on the left**
+exists but does not compile — it is declared to return `T` and returns a `Vec`
+(`known-issues.md` #11). The `Vec<U,N>` conversion operator, `Norm()` and `Unit()`
+are all non-`const`.
 
 ---
 
@@ -147,6 +204,8 @@ static constexpr Mat Zero()      noexcept;
 static constexpr Mat Filled(T)   noexcept;
 static constexpr Mat Identity()  noexcept requires (Rows == Cols);
 static constexpr Mat Diagonal(const Vec<T,Rows>&) noexcept requires (Rows == Cols && Rows > 1);
+static constexpr Mat Translation(const Vec<T,3>&) noexcept;   // 4x4 affine
+static constexpr Mat Scaling(const Vec<T,3>&)     noexcept;   // 4x4 affine
 
 constexpr T& operator()(size_t r, size_t c) noexcept;              // + const overload, both assert bounds
 template <size_t R, size_t C> constexpr T& at() noexcept;          // + const overload
@@ -197,22 +256,44 @@ All six concrete aliases are re-exported into `ROSE` by `math.h`.
 
 ### Two things to know
 
-1. **Everything that touches only `data` is usable in a constant expression.**
-   The members that take or return a `Vec` — `row()`, `col()`, `SetRow()`,
-   `SetCol()`, `Diagonal()`, `operator*(Vec)` — are *not*, for `Vec<T, N ≤ 4>`:
-   those specialisations put their storage in an anonymous union, and touching
-   `Vec::data` while `x`/`y`/`z`/`w` is the active member is not a constant
-   expression. They are correct at runtime. This is a `vector.h` limitation, not
-   a matrix one.
+1. **Everything is usable in a constant expression, including the members that
+   take or return a `Vec`** — `row()`, `col()`, `SetRow()`, `SetCol()`,
+   `Diagonal()`, `operator*(Vec)`. This used to be false: the small `Vec`
+   specialisations kept `x`/`y`/`z`/`w` as the active union member, and reading
+   `Vec::data` through the inactive one is not a constant expression. The
+   `vector.h` rewrite flipped which member the constructors activate — `data` is
+   now the active one — so these fold. The cost landed on the other side: `v.x` is
+   what is no longer readable in a constant expression. See `math.md`'s `vector.h`
+   section and `known-issues.md` #3.
 2. `matrix.h` ends with a block of `static_assert`s covering the indexing, the
    algebra, both determinant paths and the inverse. They compile away to nothing;
    define `ROSE_MATH_NO_SELFTEST` to drop them. Every value in there is exact in
    binary floating point on purpose — don't add a case that isn't.
 
-Still missing: translation/rotation/scale/`LookAt`/projection builders, a
-quaternion→matrix conversion, and a `std::formatter`. `Transform` deliberately
-stores position + quaternion + scale rather than a matrix, so nothing in the
-engine consumes `Mat` yet.
+### Transform and projection builders
+
+`Mat::Translation(Vec3)` and `Mat::Scaling(Vec3)` build 4×4 affine matrices, and
+two free functions in the `projections` region build the clip transforms:
+
+```cpp
+template <Scalar T> constexpr Mat<T,4,4> Orthographic(T left, T right, T bottom, T top, T near, T far) noexcept;
+template <Scalar T> constexpr Mat<T,4,4> Perspective(T fovY, T aspect, T near, T far) noexcept;
+```
+
+Both map to the **OpenGL clip volume** — x, y and z all in [-1, 1] — and both use
+the column-vector convention of `Mat::Translation`. `z` is negated because the eye
+looks down -z, so a point in front of the camera has negative view-space z and
+comes out with positive depth. A backend whose clip space differs (D3D's z in
+[0, 1]) wants its own builder here, not a fixup at the call site. `Orthographic`
+asserts against a degenerate volume.
+
+The rotation half comes from the quaternion side: `Quat::ToMat4()`. There is still
+no `LookAt` and no `std::formatter<Mat>`.
+
+`Mat` is no longer unused by the engine — `camera.h`, `gfx.h` and `application.h`
+all traffic in `Mat4`, and `Camera::GetViewProjection` composes `Perspective` or
+`Orthographic` with the view matrix each frame. `Transform` still stores position +
+quaternion + scale rather than a matrix.
 
 ---
 
@@ -312,17 +393,19 @@ constexpr Quat(T w, T x = {}, T y = {}, T z = {}) noexcept;
 constexpr Quat(Comp<T> c, T y = {}, T z = {}) noexcept;   // Re→w, Im→x
 constexpr explicit Quat(Vec4<T>);                // takes vec.w as w
 
-static constexpr Quat  AxisAngle(T angle, T ax, T ay, T az);   // angle in RADIANS, axis assumed unit
+static constexpr Quat  AxisAngle(T angle, Vec3<T> axis);      // angle in RADIANS, axis assumed unit
 static constexpr Quat  FromEuler(Vec3<T>, EulerOrder = XYZ);
 static constexpr Quat<T> Identity();
 
-constexpr T     Norm() const noexcept;           // magnitude via math::Sqrt, NOT squared norm
-constexpr Quat& Normalize() noexcept;            // in place; degenerate → Identity, never NaN
-constexpr Quat  Normalized() const noexcept;
-constexpr Quat& operator*=(const Quat&) noexcept;
-constexpr Quat  operator*(const Quat&) const noexcept;   // Hamilton product
+constexpr T       Norm() const noexcept;         // magnitude via math::Sqrt, NOT squared norm
+constexpr Quat&   Normalize() noexcept;          // in place; degenerate → Identity, never NaN
+constexpr Quat    Normalized() const noexcept;
+constexpr Mat4<T> ToMat4() const noexcept;       // assumes unit length
+constexpr Quat&   operator*=(const Quat&) noexcept;
+constexpr Quat    operator*(const Quat&) const noexcept;   // Hamilton product
 
-Vec3<T> ToEuler(EulerOrder = ZYX);               // STUB — every branch returns {}
+Vec3<T> ToEuler(EulerOrder = ZYX) const noexcept;
+static constexpr T kGimbalEpsilon;               // 3.5e-4 for float, 1.5e-8 for double
 ```
 
 Notes:
@@ -339,11 +422,33 @@ Notes:
   runtime path that matches libm exactly. Fine for rotations, but don't
   `static_assert` a folded component against a decimal literal, and don't cache a
   folded quaternion expecting it to equal the same call made at runtime.
-- `FromEuler` default order is `XYZ`; `ToEuler` default order is `ZYX`. They do
-  not round-trip — and `ToEuler` returns a zero vector regardless.
+- `FromEuler` default order is `XYZ`; `ToEuler` default order is `ZYX`. **Pass the
+  same order to both** — the defaults differ, so `q.ToEuler()` fed back into
+  `FromEuler()` unqualified does not round-trip.
+- `ToEuler` is **implemented** (it was a stub returning `{}` until `6706679`). It
+  recovers the angles from `Normalized().ToMat4()` rather than from the components:
+  every order here is a Tait-Bryan triple, so one extraction serves all six, with
+  the axis triple and its parity selecting which matrix entries to read.
+  Component `n` of the result is always the angle about axis `n` — `[0]` is X
+  whichever order asked for it — matching how `FromEuler` reads its argument.
+- Two warnings the header spells out and that are worth repeating. `ToEuler` is
+  **not a bijection and cannot be**: Euler angles are three-to-one onto rotations,
+  so the angles that come back need not be the ones that went in. Round-trip the
+  *rotation*, never the *value*. And at the poles only the sum (or difference) of
+  the outer and inner angles survives; the inner one is pinned to zero and the
+  whole of it is reported on the outer.
+- `kGimbalEpsilon` is the cosine of how near the middle rotation may come to a
+  pole before the locked branch takes over. It sits at `sqrt(machineEpsilon)`,
+  where the two branches' errors meet, which is also the worst-case error of the
+  whole function in radians. **Do not tune it by round-tripping random rotations**
+  — uniform angles land near a pole with probability proportional to the threshold
+  itself, so a random sweep never samples the case it governs. Sample `pi/2 - delta`
+  directly.
 - **Missing:** conjugate, inverse, dot, Slerp/Nlerp, vector rotation
-  (`q * v * q⁻¹`), quaternion→matrix, `operator+`, `operator==`, scalar multiply.
-  Rotating a point currently has to be written by hand at the call site.
+  (`q * v * q⁻¹`), `operator+`, `operator==`, scalar multiply. Rotating a point
+  still has to be written by hand at the call site — `Transform::RotateAroundPoint`
+  in `transform.h` is the worked example, expanding the unit-quaternion sandwich so
+  it needs neither a conjugate nor a matrix.
 
 ---
 
@@ -358,6 +463,9 @@ constexpr float  Sqrt(float)  noexcept;
 constexpr double Sin(double)  noexcept;   constexpr float Sin(float) noexcept;
 constexpr double Cos(double)  noexcept;   constexpr float Cos(float) noexcept;
 constexpr double Tan(double)  noexcept;   constexpr float Tan(float) noexcept;
+
+inline double Asin(double)  noexcept;         inline float Asin(float) noexcept;
+inline double Atan2(double y, double x) noexcept;  inline float Atan2(float, float) noexcept;
 
 template <T> constexpr const T& Min(const T& a, const T& b) noexcept requires std::is_arithmetic_v<T>;
 template <T> constexpr const T& Max(const T& a, const T& b) noexcept requires std::is_arithmetic_v<T>;
@@ -400,19 +508,29 @@ different signatures — `ROSE::` takes by value and is unconstrained, `math::`
 takes by const reference and requires an arithmetic type. With both namespaces in
 scope an unqualified call is ambiguous.
 
-Missing: `Abs`, `Floor`/`Ceil`/`Round`, `Lerp`, `Pow`, inverse trig
-(`Asin`/`Acos`/`Atan`/`Atan2`), `ToRadians`/`ToDegrees`.
+`Asin` and `Atan2` were added for `Quat::ToEuler` and are the one place the pattern
+breaks: they are `inline`, **not `constexpr`**, and lower straight to
+`__builtin_asin`/`__builtin_atan2`. A constant-evaluated path would need its own
+range reduction and series the way `detail::SinCosConst` does, and nothing has
+wanted an arcsine inside a constant expression yet — the header asks that it be
+added here rather than at a call site if that changes. `Atan2(y, x)` takes the
+conventional argument order and is quadrant-correct across all four, which is why
+`ToEuler` uses it instead of `Asin` to recover angles from matrix entry pairs.
+`Asin` gives NaN rather than a clamped angle outside [-1, 1], so clamp first.
+
+Missing: `Abs`, `Floor`/`Ceil`/`Round`, `Lerp`, `Pow`, `Acos`/`Atan`,
+`ToRadians`/`ToDegrees`.
 
 ---
 
 ## `constants.h`
 
 ```cpp
-constexpr double    PI    = 3.141592653589793f;   // ⚠ float literal, see below
-constexpr double    E     = 2.718281828459045f;   // ⚠
-constexpr double    PHI   = 1.618033988749895f;   // ⚠
-constexpr double    TAU   = 2.f * PI;             // ⚠ inherits PI's error
-constexpr double    SQRT2 = 1.41421356237309504;  // ✅ correct (no f suffix)
+constexpr double    PI    = 3.14159265358979323846;
+constexpr double    E     = 2.71828182845904523536;
+constexpr double    PHI   = 1.61803398874989484820;
+constexpr double    TAU   = 2. * PI;
+constexpr double    SQRT2 = 1.41421356237309504880;
 constexpr Compd     I     = 0 + 1_i;
 
 constexpr uint32_t  FNVPRIME32   = 0x01000193;
@@ -435,11 +553,16 @@ constexpr float    SUBNORMALSCALE32   = 0x1p50f;
 constexpr float    SUBNORMALUNSCALE32 = 0x1p-25f;
 ```
 
-**`PI`, `E`, `PHI` and `TAU` carry only float precision** despite being `double`
-— the literals have an `f` suffix, so the value is rounded to float and then
-widened. Measured: `PI == 3.14159274101257324219` against a true
-`3.14159265358979311600`, an error of ~8.7e-8. Do not use them for anything that
-needs double precision. Details in `known-issues.md` #8.
+`PI`, `E`, `PHI` and `TAU` used to carry only float precision — the literals had an
+`f` suffix, so each value was rounded to float and then widened, for a measured
+~8.7e-8 relative error. **Fixed**; all five now carry full double precision. See
+`known-issues.md` #8 for why a bare `f` suffix is worth being suspicious of
+anywhere near the `Vec3d`/`Quatd` path.
+
+`detail::SinCosConst` still bakes its own full-precision π/2 literals rather than
+reaching for `math::PI`, which is the right call independent of the fix: its
+range reduction needs π/2 split into a high and low part, which no single constant
+provides.
 
 Only `constants.h` and `bigint.h` provide the FNV magic numbers; `utility.cpp`
 and `hashmap.cpp` both reach into `math::` for them.
@@ -450,20 +573,27 @@ and `hashmap.cpp` both reach into `math::` for them.
 
 | Want | Answer |
 |---|---|
-| vector add/sub/dot/cross | ✅ (cross is `Vec3` only) |
-| vector length / normalize | ❌ write it by hand |
+| vector add/sub/dot/cross | ✅ `Dot`/`Cross`; cross is `Vec3` **and `Vec7`** |
+| vector length / normalize | ✅ `Norm()` / `Unit()` — but both are non-`const` |
 | vector `operator/`, unary `-`, `==` | ❌ |
-| `Vec4` with four arguments | ❌ constructor only takes two |
-| `vec[i]` | ⚠️ fails to compile in `_DEBUG` — use `.x/.y/.z` |
-| `std::format` a `Vec` | ❌ formatter does not compile |
+| scalar `*` on the left (`2.0 * v`) | ⚠️ declared, but returns `T` and does not compile — `known-issues.md` #11 |
+| `Vec4` with four arguments | ✅ fixed |
+| `vec[i]` | ✅ fixed, `_DEBUG` included |
+| `std::format` a `Vec` | ✅ with a flag grammar — `known-issues.md` #6 |
+| `Vec3` packed tight (12 bytes) | ❌ it pads to 16 for SIMD |
 | matrix add/sub/scale/multiply, `Mat*Vec`, transpose, trace | ✅ |
 | matrix identity / determinant / inverse | ✅ square only; inverse is floating-point only |
-| matrix transform builders (translate/rotate/project) | ❌ |
+| matrix translate / scale builders | ✅ `Mat::Translation`, `Mat::Scaling` |
+| projection builders | ✅ `Orthographic`, `Perspective` — OpenGL clip volume |
+| `LookAt` | ❌ |
+| quaternion → matrix | ✅ `Quat::ToMat4()` |
+| `std::format` a `Mat` | ❌ |
 | complex arithmetic + formatting | ✅ |
-| quaternion product, normalize, axis-angle, from-euler | ✅ |
-| quaternion inverse / slerp / rotate-a-vector / to-euler | ❌ |
+| quaternion product, normalize, axis-angle, from-euler, to-euler | ✅ |
+| quaternion inverse / slerp / rotate-a-vector | ❌ (see `Transform::RotateAroundPoint`) |
 | `constexpr` sqrt | ✅ `math::Sqrt` |
 | `constexpr` sin / cos / tan | ✅ `math::Sin`/`Cos`/`Tan` (radians; runtime builtin, constexpr fallback) |
+| `Asin` / `Atan2` | ✅ runtime only — **not** `constexpr` |
 | clamp / min / max | ✅ (mind the `ROSE::` vs `math::` overload clash) |
-| abs, floor, lerp, deg↔rad, inverse trig | ❌ |
-| π to double precision | ❌ `math::PI` is float-precision |
+| abs, floor, lerp, deg↔rad, `Acos`/`Atan` | ❌ |
+| π to double precision | ✅ fixed |

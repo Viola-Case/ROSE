@@ -13,26 +13,27 @@ scratch every session.
 | [`behaviors.md`](behaviors.md)                         | Every concrete `Behavior` in the tree, its type ID, and what it does                                                                |
 | [`conventions.md`](conventions.md)                     | House style — comments, formatting, naming, header layering, language rules                                                         |
 
-The RTL and math files were checked against the headers as of **2026-07-23** (branch `master`, at `8510b49`).
-Behavioural claims were confirmed by compiling and running the code, not inferred from reading — see
-`known-issues.md` for the specific repros. The two composition-layer files were written against `master` @ `6870ee3`
-(**2026-07-24**) by reading the sources; the sharp edges they list are traced to specific lines but were not each run.
-`application.md` was written against `master` @ `9e2683c` plus the working-tree
-`ApplicationInitSettings` change (**2026-08-16**), and its startup claims were confirmed by building and running
-`Game1`.
+All eight files were last re-verified against `master` @ `de3eafa` on **2026-09-02**. Behavioural claims are
+confirmed by compiling and running the code, not inferred from reading — see `known-issues.md` for the specific
+repros. Claims about which hooks fire, which flags are read, and which sharp edges survive are traced to specific
+lines in the current tree.
+
+Earlier stamps, for reading old diffs: the RTL and math files were first written against `8510b49`
+(**2026-07-23**), the two composition-layer files against `6870ee3` (**2026-07-24**), and `application.md` against
+`9e2683c` plus the then-uncommitted `ApplicationInitSettings` change (**2026-08-16**).
 
 ## Ground rules for both layers
 
-- Namespace is `ROSE`; math lives in the nested `ROSE::math`. `math.h` re-exports only ten concrete typedefs into `ROSE`
-  (see `math.md`) — everything else needs a `math::` qualifier.
+- Namespace is `ROSE`; math lives in the nested `ROSE::math`. `math.h` re-exports only sixteen concrete typedefs into
+  `ROSE` (see `math.md`) — everything else needs a `math::` qualifier.
 - The RTL is a deliberate re-implementation of the STL, not a wrapper. Names follow STL casing for container members
   (`size()`, `push_back()`, `begin()`)
   and ROSE casing (`PascalCase`) for free functions (`Move`, `Forward`, `Swap`,
   `MakeUnique`). `HashMap` keeps lower-case members on purpose so range-`for`
   finds `begin()`/`end()`.
 - Members are `m_`-prefixed; parameters in the newer files are `_`-prefixed.
-- No exceptions in engine logic. The only `throw`s are in `constexpr`-only paths (`parse128`) and in
-  `std::formatter::parse` implementations.
+- No exceptions in engine logic. The only `throw`s are in `constexpr`-only paths (`parse128`,
+  `ApplicationFlag`'s constructor, `MakeCrossTable`) and in `std::formatter::parse` implementations.
 - The build is **C++20** (`CMAKE_CXX_STANDARD 20` in `CMakeLists.txt`), even though some comments reference C++23/26
   features.
 - Clang/GCC only in practice: `bigint.h` `#error`s on anything without
@@ -47,15 +48,16 @@ stdlib.h        (the only place <cstring>/<cstdint>/<cmath>/<format>/... are pul
               └── everything else
 ```
 
-`ROSE.h` includes `platform.h` → `macros.h` → `api.h` → `rtl.h` → … → `math.h`, in that order. **That order matters** —
-`math/vector.h` uses `ROSE_ASSERT` without including `macros.h`, so it only compiles because `ROSE.h` got there first.
-See
-`known-issues.md` #1.
+`ROSE.h` includes `platform.h` → `macros.h` → `api.h` → `rtl.h` → … → `math.h`, in that order.
+
+The math headers used to depend on that order — `math/vector.h` spelled `ROSE_ASSERT` without including `macros.h`,
+so it compiled only because `ROSE.h` got there first. It no longer does: `vector.h` includes `rtl.h`, which reaches
+`macros.h` through `array.h`, so `#include <ROSE/Core/math.h>` on its own is enough. See `known-issues.md` #1.
 
 ## Core is a DLL
 
 `ROSE_Core` is a **shared** library (`build/*/bin/ROSE_Core.dll` plus an import lib in `build/*/lib`). The point is
-single instances: `BehaviorFactory::get()`,
+single instances: `BehaviorFactory::Get()`,
 `InputSystem::GetInstance()`, `MeshRegistry::Get()`, `AudioSystem::Get()` and
 `Time`'s storage exist exactly once in the process, however many modules link Core.
 
@@ -113,7 +115,9 @@ Three things about that tree are load-bearing rather than incidental:
   `ROSE::AttachImGui()` exists to rebind.
 
 Dependency DLLs are copied next to each binary by `rose_deploy_dlls()`, which uses `$<TARGET_RUNTIME_DLLS:…>` — the
-replacement for vcpkg's applocal deployment. `rose_deploy_runtime()` calls it alongside `rose_deploy_crt()`.
+replacement for vcpkg's applocal deployment. `rose_deploy_runtime()` is the one-call wrapper: it runs
+`rose_deploy_crt()`, then `rose_deploy_dlls()`, then `rose_deploy_licenses()`, so a built target has the VC++ runtime,
+its dependency DLLs, and the notices those DLLs ship under all sitting next to it.
 
 ## Building the tree
 
@@ -131,7 +135,8 @@ cmake --build --preset debug
 2. the `ROSE_Editor` target block, at the top of the Tools section
 3. the `add_dependencies(ENGINE_BUILD ROSE_Editor)` edge at the bottom
 
-`ENGINE_BUILD` therefore aggregates `ROSE_Core` alone right now.
+`ENGINE_BUILD` still aggregates `ROSE_Core`, `ROSE_UUID_Generator` and `ROSE_AssetMaker` — only the `ROSE_Editor`
+edge is commented out, not the whole target list.
 
 The `Editor` configuration itself is untouched and still works: `ROSE_EDITOR` is defined under `$<$<CONFIG:Editor>:...>`
 for `ROSE_Core`, and `editor.h` still refuses to compile without it —

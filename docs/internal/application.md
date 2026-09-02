@@ -3,12 +3,13 @@
 The top of the runtime: one `Application` owns the window, the render backend, the
 scenes, and the frame loop. Everything a game does happens inside `Run()`.
 
-Checked against the sources on **2026-08-16** (`master` @ `9e2683c` plus the
-`ApplicationInitSettings` work in the tree). For what lives *under* an application,
-see [`scene-object-behavior.md`](scene-object-behavior.md).
+Checked against the sources on **2026-09-02** (`master` @ `de3eafa`); first written
+against `9e2683c` (**2026-08-16**). For what lives *under* an application, see
+[`scene-object-behavior.md`](scene-object-behavior.md).
 
 | Piece | Header | Source |
 |---|---|---|
+| `Init()` / `InitStatus` | `include/ROSE/Core/init.h` | `src/Core/init.cpp` |
 | `Application`, `ApplicationInitSettings`, `ApplicationFlag` | `include/ROSE/Core/application.h` | `src/Core/application.cpp` |
 | `Window` | `include/ROSE/Core/window.h` | `src/Core/window.cpp` |
 | `RenderBackend` and friends | `include/ROSE/Core/gfx.h` | `src/Core/gfx.cpp`, `sdlrenderer.cpp`, `softwarerenderer.cpp`, `openglrenderer.cpp` |
@@ -19,28 +20,46 @@ see [`scene-object-behavior.md`](scene-object-behavior.md).
 
 ```cpp
 int main() {
-  // 1. Register behaviors. Must happen before any scene is parsed.
-  BehaviorFactory &factory = BehaviorFactory::get();
-  RoseRegisterCoreModule(factory);
-  factory.Register(MakeBehavior<Paddle>, Paddle::TypeID(), "Game1");
+  // 1. Bring the engine up. This also registers the Core module's behaviors,
+  //    so main() never calls RoseRegisterCoreModule itself.
+  if (auto i = Init(); i != InitStatus::Success) return static_cast<int>(i);
 
-  // 2. Describe the application. Nothing is created yet.
+  // 2. Register this module's behaviors. Must happen before any scene is parsed,
+  //    which now means before AddSceneFromFile, not merely before Init().
+  {
+    BehaviorFactory &factory = BehaviorFactory::Get();
+    Pair<FactoryFn, UUID> fns[] {
+      ROSE_BEHAVIOR_REGISTRY_PAIR(AppCloser), ROSE_BEHAVIOR_REGISTRY_PAIR(Paddle),
+    };
+    for (const auto &p : fns) factory.Register(p.first, p.second, "Game1");
+  }
+
+  // 3. Describe the application. Nothing is created yet.
   ApplicationInitSettings settings { "Game 1" };
-  settings.SetFlags(APPLICATION_SDL_RENDERER | APPLICATION_CONTROLLER_SUPPORT)
+  settings.SetFlags(APPLICATION_SDL_RENDERER)
     .SetWindowSize(800, 600)
-    .AddSceneFromFile("assets/game1scene1.json");
+    .AddSceneFromFile("assets/game1scene1.json")
+    .SetVSync(true);
 
-  // 3. Build it.
+  // 4. Build it.
   Application app;
   if (const int err = app.Init(Move(settings))) return err;
 
   AttachImGui();      // only if this executable draws ImGui itself; see README.md
 
-  // 4. Run until something calls Quit().
+  // 5. Run until something calls Quit().
   app.Run();
   return 0;
 }
 ```
+
+**`ROSE::Init()` comes first, before anything else.** It is a free function in
+`ROSE/Core/init.h` returning an `InitStatus` enum, and it is what stands up the
+process-wide singletons — including calling `RoseRegisterCoreModule(BehaviorFactory::Get())`
+for you (`init.cpp:30`). Game code registers only its own behaviors; no example in
+the tree calls `RoseRegisterCoreModule` directly. `ROSE_BEHAVIOR_REGISTRY_PAIR(T)`
+in `factory.h` expands to `{MakeBehavior<T>, T::TypeID()}` and is how every example
+builds its registration array.
 
 **`Application` has no pre-init member functions, deliberately.** The constructor
 takes nothing and does nothing but raise the Windows timer resolution; `Init` is the
@@ -101,20 +120,35 @@ enum — the two are easy to confuse and the header says so. Use the
 constexpr ApplicationFlags APPLICATION_DEFAULT = APPLICATION_SDL_RENDERER;
 ```
 
-| Flag | Bit | Read by the engine? |
-|---|---|---|
-| `Headless` | 0 | ✅ skips window creation and the renderer |
-| `SoftwareRenderer` | 4 | ✅ selects the real rasterizer; see §6 |
-| `SDLRenderer` | 6 | ✅ selects SDL's 2D renderer (the default) |
-| `OpenGL` | 8 | ✅ selects `OpenGLRenderer` and adds `SDL_WINDOW_OPENGL` |
-| `NoRenderer` | 1 | ✅ skips the renderer, keeps the window |
-| `ControllerSupport` | 5 | ✅ adds `SDL_INIT_GAMEPAD \| JOYSTICK \| HAPTIC` |
-| `Debug` | 63 | ⚠️ *set* by `Init` under `_DEBUG`, never read |
-| `Vulkan`, `DirectX9/11/12`, `Metal` | 7, 9-12 | ⚠️ warn and fall back to `SDLRenderer` |
-| `Server`, `Light`, `NoSound` | 2-3 | ❌ inert |
+There are **fourteen** flags. This is the whole list — anything not here does not
+exist, whatever an older example may pass:
 
-The renderer-selection flags all do something now (§6). `NoSound` in particular still
-does not suppress `SDL_INIT_AUDIO`, which `Init` always requests.
+| Flag | Bit | Constant | Read by the engine? |
+|---|---|---|---|
+| `Headless` | 0 | `APPLICATION_HEADLESS` | ✅ skips window creation and the renderer |
+| `NoRenderer` | 1 | `APPLICATION_NO_RENDERER` | ✅ skips the renderer, keeps the window |
+| `Server` | 2 | `APPLICATION_SERVER` | ❌ inert |
+| `Light` | 3 | `APPLICATION_LIGHTWEIGHT` | ❌ inert |
+| `SoftwareRenderer` | 4 | `APPLICATION_SOFTWARE_RENDERER` | ✅ selects the real rasterizer; see §6 |
+| `LowPerformance` | 5 | `APPLICATION_LOW_PERFORMANCE` | ⚠️ read, but unreachably — see §8.7 |
+| `SDLRenderer` | 6 | `APPLICATION_SDL_RENDERER` | ✅ selects SDL's 2D renderer (the default) |
+| `Vulkan` | 7 | `APPLICATION_VULKAN` | ⚠️ warns and falls back to `SDLRenderer` |
+| `OpenGL` | 8 | `APPLICATION_OPENGL` | ✅ selects `OpenGLRenderer` and adds `SDL_WINDOW_OPENGL` |
+| `DirectX9` | 9 | `APPLICATION_DIRECTX9` | ⚠️ warns and falls back |
+| `Metal` | 10 | `APPLICATION_METAL` | ⚠️ warns and falls back |
+| `DirectX11` | 11 | `APPLICATION_DIRECTX11` | ⚠️ warns and falls back |
+| `DirectX12` | 12 | `APPLICATION_DIRECTX12` | ⚠️ warns and falls back |
+| `Debug` | 63 | `APPLICATION_DEBUG` | ⚠️ *set* by `Init` under `_DEBUG`, never read |
+
+> **There is no `ControllerSupport` flag and no `NoSound` flag.** Earlier revisions
+> of this file listed both. Gamepad, joystick and haptic subsystems are initialised
+> unconditionally by `ROSE::Init()` (`SDL_INIT_GAMEPAD | SDL_INIT_JOYSTICK |
+> SDL_INIT_HAPTIC`), and so is audio — nothing suppresses `SDL_INIT_AUDIO`. Bit 5 is
+> `LowPerformance`, not controller support.
+
+So: five flags genuinely steer behaviour (`Headless`, `NoRenderer`,
+`SoftwareRenderer`, `SDLRenderer`, `OpenGL`), five warn and fall back, and four —
+`Server`, `Light`, `LowPerformance`, `Debug` — do nothing you can observe.
 
 `ApplicationFlag`'s constructor `throw`s on an out-of-range value. It is
 `constexpr`-only in practice, which is what keeps it inside the no-exceptions rule
@@ -122,25 +156,48 @@ does not suppress `SDL_INIT_AUDIO`, which `Init` always requests.
 
 ## 4. `Init` — what actually happens, in order
 
-`src/Core/application.cpp`. Returns `0` on success, negative on failure.
+Startup is split in two now. `ROSE::Init()` (`src/Core/init.cpp`, returns an
+`InitStatus`) brings the process up, and `Application::Init` builds one application
+on top of it. **`ROSE::Init()` must run first**; nothing checks that it did.
 
 ```
-1.  copy/move every field out of the settings         (title, org, size, flags,
+ROSE::Init()                                             src/Core/init.cpp
+1.  SDL_VERSION vs SDL_GetVersion()      -> InitStatus::SDLVersionMismatch
+2.  SDL_Init(VIDEO | AUDIO | EVENTS | GAMEPAD | JOYSTICK | HAPTIC)
+                                         -> InitStatus::SDLInitFailed
+3.  InputSystem::GetInstance().Init()    (an empty function today)
+4.  RoseRegisterCoreModule(BehaviorFactory::Get())
+                                         -> InitStatus::Success
+```
+
+`Application::Init` returns `0` on success, negative on failure. It has two
+overloads — one taking `ApplicationInitSettings&`, one taking `&&` — and the lvalue
+one just moves and forwards to the other, so the settings object is spent either
+way.
+
+```
+Application::Init(ApplicationInitSettings&&)             src/Core/application.cpp
+1.  move every field out of the settings              (title, org, size, flags,
                                                        fps cap, vsync, scenes)
 2.  |= APPLICATION_DEBUG under _DEBUG
 3.  warn if an existing window handle was supplied     (unimplemented, §8.1)
-4.  SDL_VERSION vs SDL_GetVersion()                    -> -2 on mismatch
-5.  SDL_Init(VIDEO | AUDIO | EVENTS [| GAMEPAD…])      -> -3 on failure
-6.  InputSystem::GetInstance().Init()                  (an empty function today)
-7.  pick window flags / construct the render backend
-8.  ImGui::CreateContext() + StyleColorsDark()         (unconditional, even headless)
-9.  Window::Create(title, size, flags)                 -> -4 if invalid
-10. m_renderer->Init(RenderBackendContext{ handle, w, h, vsync })
-11. m_currentScene = scenes.empty() ? nullptr : begin()
-12. Bind() every scene to this application
+4.  pick window flags / construct the render backend   (§6)
+5.  IMGUI_CHECKVERSION, ImGui::CreateContext, StyleColorsDark
+                                                       (unconditional, even headless)
+6.  Window::Create(title, size, flags)                 -> -4 if invalid
+                                                       (skipped when Headless)
+7.  m_renderer->Init(RenderBackendContext{ handle, w, h, vsync })
+                                                       -> -5 on any non-Success
+                                                          BackendStatus
+8.  m_currentScene = scenes.empty() ? nullptr : begin()
+9.  Bind() every scene to this application
 ```
 
-Two things worth knowing about step 9: the window is created **hidden**
+Step 7 is deliberately not ignorable: a backend that failed to initialise leaves
+ImGui's renderer impl unbound, and the first `BeginFrame` then trips an assert
+inside ImGui rather than reporting anything useful at the call site.
+
+Two things worth knowing about step 6: the window is created **hidden**
 (`SDL_WINDOW_HIDDEN`) and `Run()` shows it, so nothing flashes on screen while the
 renderer comes up. And no `SDL_WINDOW_RESIZABLE` is requested, so the resize
 handling in the loop only fires for programmatic size changes.
@@ -178,9 +235,12 @@ does not spin a core flat. Otherwise it sleeps whatever is left of the
 available post-`Init` and takes effect on the next frame. This is independent of
 vsync — with both on, whichever limit is tighter wins.
 
-**Every scene call is null-guarded.** An application initialized with no scenes at
-all is legal (a headless or server run has nothing to update), and `m_currentScene`
-is `nullptr` in that case rather than pointing into an empty `List`'s storage.
+**Every scene call is null-guarded**, and so is every window and renderer call —
+`m_window->Show()`, `BeginFrame`, `SetViewProjection`, `RenderFrame`, `EndFrame`
+and `Shutdown` all sit behind `if (m_renderer)`. A headless run therefore executes
+the whole loop, ImGui included, and simply draws nothing. An application
+initialized with no scenes at all is equally legal, and `m_currentScene` is
+`nullptr` in that case rather than pointing into an empty `List`'s storage.
 
 `Run()` is re-entrancy-guarded by `m_isRunning`, not one-shot: its doc comment
 claims it "terminates if called again", but it simply returns. After a normal exit
@@ -300,9 +360,11 @@ backend and to the renderer. The *initial* size comes from the settings.
 3. **`UniquePtr<SceneManager> m_manager` is never assigned**, and `SceneManager`
    (`scene.h`) is an empty class with nothing but `friend class Application`.
 
-4. **Ten of the fourteen flags are inert** (§3), and `Debug` is set but never read.
-   The renderer-selection flags all do something now (§6); `Server`, `Light` and
-   `NoSound` still do not.
+4. **Four of the fourteen flags do nothing observable** (§3): `Server`, `Light`,
+   `LowPerformance` (§8.7) and `Debug`, which `Init` sets under `_DEBUG` and nothing
+   reads. Five more name a backend nobody has written and warn before falling back
+   (§6). There is no `NoSound` flag, and nothing suppresses `SDL_INIT_AUDIO` —
+   `ROSE::Init()` always requests it.
 
 5. **Scene switching would re-run `OnStart()`.** The guard in `Run()` is a
    `static Scene *lastScene`, so returning to a previously active scene replays
@@ -310,9 +372,28 @@ backend and to the renderer. The *initial* size comes from the settings.
    2+ scenes, and there is no switching API yet anyway. Same item as
    [`scene-object-behavior.md`](scene-object-behavior.md) §8.10.
 
-6. **The `Orbits` example does not run.** `examples/orbits/` contains only
-   `main.cpp` — the behavior its scene names
-   (`f69e87e51985f92b-cd8aa43477659a22`) and `examples/orbits/assets/` are both
-   absent from the repo, so `rose_deploy_assets` points at nothing and the loader
-   dereferences a null factory result (`scene-object-behavior.md` §8.2). Its
-   `main.cpp` compiles and is current; the rest of the example needs restoring.
+6. ~~**The `Orbits` example does not run.**~~ — FIXED. It was missing both its
+   behaviors and its `assets/` directory. Both are present now:
+   `examples/orbits/` has `closer.h`, `pointcloud.{h,cpp}`, `trail.{h,cpp}`,
+   `trailrenderer.{h,cpp}` and `assets/orbits.json`, and the two type IDs the
+   scene names resolve to `PointCloud` and `Closer`, registered under the module
+   name `"Orbits"`. It is now the best example of a backend-agnostic
+   `Renderable` — `PointCloud` includes no SDL header and resolves no renderer, so
+   the same demo runs on all three backends unchanged.
+
+7. **`APPLICATION_LOW_PERFORMANCE` can never be observed.** The only read of it is
+   in the *constructor*:
+
+   ```cpp
+   Application::Application() noexcept {
+     if (!GetFlag(ApplicationFlag::LowPerformance)) timeBeginPeriod(1);   // Windows only
+   }
+   ```
+
+   `m_flags` is `{ 0 }` until `Init` copies it out of the settings, and the settings
+   object is not reachable from the constructor — so the test always sees `false`
+   and `timeBeginPeriod(1)` always runs, however the caller sets the flag. This is
+   the one knob that genuinely has to be decided before `Init`, which makes it the
+   counter-example to the "no pre-init member functions" rule rather than a
+   violation of it: the fix is for `Init` to raise the timer resolution after
+   reading the flags, not for `Application` to grow a setter.

@@ -1,54 +1,46 @@
 # Known issues — RTL and math
 
-Defects and sharp edges found while surveying the headers on **2026-07-23**
-(`master` @ `8510b49`). Every item below was **verified by compiling and/or
-running it**, not inferred from reading. This file is a record of the trip
-hazards, not a changelog — an item that gets fixed is struck through and kept
-only where the shape of the old problem still explains the code around it.
+Defects and sharp edges found while surveying the headers, first on **2026-07-23**
+(`master` @ `8510b49`) and re-checked on **2026-09-02** (`master` @ `de3eafa`).
+Every item below was **verified by compiling and/or running it**, not inferred
+from reading. This file is a record of the trip hazards, not a changelog — an item
+that gets fixed is struck through and kept only where the shape of the old problem
+still explains the code around it.
 
 Ordered roughly by how likely they are to bite.
 
 ---
 
-## 1. `Vec::operator[]` does not compile in a `_DEBUG` build
+## 1. ~~`Vec::operator[]` does not compile in a `_DEBUG` build~~ — FIXED
 
-`include/ROSE/Core/math/vector.h` — every specialisation, e.g. lines 225-226.
+**Fixed by the `vector.h` rewrite.** Kept because the layering half of it is why
+`README.md` used to call the `ROSE.h` include order load-bearing.
+
+`operator[]` carried a second assert, `ROSE_ASSERT_MSG(data != nullptr, …)`, on a
+`data` that is a `FixedArray<T,N>` and not a pointer — ill-formed, and invisible in
+release only because `ROSE_ASSERT_MSG` expands to `((void)0)` so the expression is
+never parsed. Two failures fell out of it: `vector.h` spelled `ROSE_ASSERT` without
+including `macros.h`, so `#include <ROSE/Core/math.h>` on its own failed with *use
+of undeclared identifier*; and with `macros.h` included first it still failed under
+`_DEBUG`, on the `FixedArray`-versus-`nullptr_t` comparison.
+
+Both are gone. `vector.h` now includes `<ROSE/Core/rtl.h>`, which reaches `macros.h`
+through `array.h`, and the null assert is deleted — only `ROSE_ASSERT(idx < N)` is
+left. Verified at `de3eafa` with a two-line `t.cpp`:
 
 ```cpp
-constexpr T &operator[](const size_t idx) {
-  ROSE_ASSERT(idx < N);
-  ROSE_ASSERT_MSG(data != nullptr, "Vector storage must not be null");
-  return data[idx];
-}
+#include <ROSE/Core/math.h>
+int main() { ROSE::math::Vec3d a(1, 2, 3); return (int)a[0]; }
 ```
-
-`data` is a `FixedArray<T,N>`, not a pointer, so `data != nullptr` is ill-formed.
-It survives in release only because `ROSE_ASSERT_MSG` expands to `((void)0)` and
-the expression is never parsed.
-
-Two separate failures fall out of this:
 
 ```sh
-# (a) vector.h uses ROSE_ASSERT but never includes macros.h
-$ printf '#include <ROSE/Core/math.h>\nusing namespace ROSE::math;\nint main(){Vec3f v(1,2,3);return (int)v[0];}' > t.cpp
-$ clang++ -std=c++20 -I include -fsyntax-only t.cpp
-vector.h:225:7: error: use of undeclared identifier 'ROSE_ASSERT'
-
-# (b) with macros.h included first, it still fails once _DEBUG is on
-$ clang++ -std=c++20 -D_DEBUG -I include -fsyntax-only t.cpp   # (t.cpp now includes macros.h first)
-vector.h:226:28: error: invalid operands to binary expression ('FixedArray<float, N>' and 'std::nullptr_t')
+$ clang++ -std=c++20 -fsyntax-only -I include t.cpp             # clean
+$ clang++ -std=c++20 -fsyntax-only -D_DEBUG -I include t.cpp    # clean
 ```
 
-Without `_DEBUG` and with `macros.h` first, it compiles clean.
-
-**Why it has gone unnoticed:** nothing in the engine calls `Vec::operator[]` —
-`paramview.cpp` and `scene.cpp` both use `.x/.y/.z`. And `CMakeLists.txt:129`
-defines `_DEBUG` only `PRIVATE` on `ROSE_Core`, so example and tool targets never
-see it.
-
-**Fix:** include `<ROSE/Core/macros.h>` in `vector.h`, and drop the second assert
-(or make it `data.data() != nullptr`, though for a `FixedArray` it can never be
-null). Applies to all four copies.
+Still true, and still worth knowing: `CMakeLists.txt:403` defines `_DEBUG` only
+`PRIVATE` on `ROSE_Core`, under `$<$<CONFIG:Debug>:…>`, so assertions are compiled
+out in every example and tool target.
 
 ---
 
@@ -85,28 +77,37 @@ rather than existing for every shape.
 
 ---
 
-## 3. `Vec4`'s constructor only accepts two components
+## 3. ~~`Vec4`'s constructor only accepts two components~~ — FIXED
 
-`include/ROSE/Core/math/vector.h:261` — copy-pasted from the `Vec<T,2>` case:
+**Fixed by the `vector.h` rewrite**, which replaced the four hand-written
+specialisations with one `Vec<T,N>` sitting on a `detail::VecStorage<T,N>` base.
+Only the storage layout and its constructors vary with `N` now, so the constructor
+can no longer drift between the sizes the way it had:
 
 ```cpp
-constexpr Vec(T _x = T {}, T _y = T {}) : x(_x), y(_y) {}
+template <Scalar T> struct VecStorage<T, 4> {
+  union { FixedArray<T, 4> data; struct { T x, y, z, w; }; };
+  constexpr VecStorage() noexcept : data {} {}
+  explicit constexpr VecStorage(NoInit) noexcept {}
+  constexpr VecStorage(T _x, T _y = T {}, T _z = T {}, T _w = T {}) noexcept : data { _x, _y, _z, _w } {}
+};
 ```
 
-`z` and `w` are not in the member-init list, so they are left indeterminate, and
-`Vec4f(1.f,2.f,3.f,4.f)` is a compile error:
+`Vec4f(1,2,3,4)` compiles and reads back `4` in `w`, so `Quat`'s
+`explicit Quat(Vec4<T>)` no longer reads indeterminate components. Two related
+notes from the rewrite:
 
-```
-Vec4f v(1.f,2.f,3.f,4.f);  ->  error: no matching constructor for initialization of 'Vec4f'
-```
-
-`Quat`'s `explicit Quat(Vec4<T>)` constructor therefore reads two indeterminate
-values. (In a quick test the uninitialised components happened to read as `0.0`,
-but nothing guarantees that.)
-
-**Fix:** `constexpr Vec(T _x = T{}, T _y = T{}, T _z = T{}, T _w = T{}) : x(_x), y(_y), z(_z), w(_w) {}`.
-While in there, `Vec<T,2>` also leaves nothing uninitialised but `Vec<T,3>` uses
-`T{0}` where 2 and 4 use `T{}` — worth making consistent.
+- The component constructors initialise `data`, which makes the array the **active
+  union member**. That is deliberate: it is what lets the whole-vector operations
+  fold in a constant expression, at the cost of `v.x` not being readable in one.
+  Reading `x`/`y`/`z`/`w` still works at runtime, as an extension every compiler
+  implements. `matrix.h`'s note about `Vec`-taking members not being `constexpr` is
+  the mirror image of this and is now obsolete.
+- `VecStorage<T,3>` stores **four** elements and names the fourth `w` for SIMD
+  padding; the generic case stores `NextPow2(N)`. `sizeof(Vec3f)` is 16, not 12 —
+  do not assume tight packing when handing a `Vec3` array to a graphics API.
+- There is an `explicit VecStorage(NoInit)` tag constructor that skips
+  zero-initialisation. The default constructor still zeroes.
 
 ---
 
@@ -151,7 +152,7 @@ bool operator==(const List &rhs) const {
 
 ## 5. `BasicString::resize` writes one byte past the allocation
 
-`include/ROSE/Core/string.h:132`:
+`include/ROSE/Core/string.h:145`:
 
 ```cpp
 void resize(size_t newSize) {
@@ -176,39 +177,39 @@ out-of-bounds write.
 
 ---
 
-## 6. `std::formatter<Vec<T,N>>` does not compile
+## 6. ~~`std::formatter<Vec<T,N>>` does not compile~~ — FIXED
 
-`include/ROSE/Core/math/vector.h:447` — `format_cartesian` does
-`*--out++ = ')';` on an output iterator that is not decrementable:
+**Rewritten**, and now the most capable formatter in the tree. The old one
+decremented a `back_insert_iterator`, emitted doubled parentheses, never advanced
+`it` in `parse()`'s flag loop, and declared four flags nothing set — so *every*
+`std::format("{}", vec)` failed to compile, not only the `c` form.
+
+The replacement documents its own grammar, `{:[flags][|scalar-spec]}`:
+
+| Flag | Meaning |
+|---|---|
+| `t` | tuple form, `(1, 2, 3)` — the default |
+| `c` | cartesian form, `(1x -2y)`; only defined for `N <= 4` |
+| `q` | label components `i`/`j`/`k` instead of `x`/`y`/`z`; cartesian only |
+| `n` | naked: no enclosing parentheses |
+| `m` | one component per line |
+| `z` | keep zero components, which cartesian form drops by default |
+
+Anything past the `|` is the spec each component is formatted with. Verified at
+`de3eafa` against `Vec3d(1, -2, 0)`:
 
 ```
-error: cannot decrement value of type 'back_insert_iterator<std::_Fmt_buffer<char>>'
+{}        -> (1, -2, 0)
+{:c}      -> (1x -2y)
+{:cz}     -> (1x -2y +0z)
+{:cq}     -> (1i -2j)
+{:n}      -> 1, -2, 0
+{:c|.3f}  -> (1.000x -2.000y)
 ```
 
-`format()` calls both `format_tuple` and `format_cartesian` from a `switch`, so
-**both branches instantiate** and *any* `std::format("{}", vec)` fails to
-compile, not just the `c` form.
-
-Even if that were fixed, the formatter has more wrong with it:
-
-- `format()` emits `'('` itself and *then* calls `format_tuple`, which emits
-  another `'('` — double parentheses, and the closing paren doubles too.
-- `parse()` never advances `it` in its flag loop, so any flag spins forever;
-  only an immediately-terminating spec escapes.
-- `naked`, `multiline`, `verbose` and `incZero` are declared but no flag ever
-  sets them, and `verbose` is never read.
-- `format_cartesian` picks between `coordbuf`/`quatstylebuf` into a local `data`
-  that it then never uses (`-Wunused-but-set-variable`), and indexes
-  `quatstylebuf` directly instead.
-- The loop condition `i < N && (val[i] != 0 || incZero)` stops at the first zero
-  component rather than skipping it.
-- `format_cartesian` also calls `val.operator[](i)`, which drags in issue #1.
-
-The `Comp`, `BasicString`, `uint128_t` and `int128_t` formatters all work
-correctly — `Vec` is the only broken one.
-
-**Fix:** rewrite against `format_to`/`std::copy` on a plain output iterator; the
-`Comp` formatter in `complex.h` is a good model.
+`parse()` throws `std::format_error` on an unknown flag, on `c` with `N > 4`, and
+on `q` without `c`. That is inside the no-exceptions rule — `std::formatter::parse`
+is one of the sanctioned sites (see `conventions.md` §5).
 
 ---
 
@@ -232,31 +233,23 @@ intuitive reading is "magnitude", which would be `hypot(Re, Im)`).
 
 ---
 
-## 8. `PI`, `E`, `PHI`, `TAU` only carry float precision
+## 8. ~~`PI`, `E`, `PHI`, `TAU` only carry float precision~~ — FIXED
 
-`include/ROSE/Core/math/constants.h:18-21` — declared `double` but initialised
-from `float` literals:
+`include/ROSE/Core/math/constants.h` — the `f` suffixes are gone and `TAU` is
+`2. * PI`, so all five constants now carry full double precision:
 
 ```cpp
-constexpr double PI  = 3.141592653589793f;   // f suffix rounds to float, then widens
-constexpr double TAU = 2.f * PI;             // inherits the error
+constexpr double PI    = 3.14159265358979323846;
+constexpr double E     = 2.71828182845904523536;
+constexpr double PHI   = 1.61803398874989484820;
+constexpr double TAU   = 2. * PI;
+constexpr double SQRT2 = 1.41421356237309504880;
 ```
 
-Measured:
-
-```
-math::PI = 3.14159274101257324219
-true π   = 3.14159265358979311600     -> error ≈ 8.7e-8
-```
-
-`SQRT2` is written without the suffix and is correct to full double precision,
-which is what makes the other four look like slips rather than intent.
-
-An 8.7e-8 relative error is invisible in float rendering maths but will show up
-in anything accumulating over time — the `Vec3d`/`Quatd` physics path in
-`motion.h` is exactly the kind of code that would.
-
-**Fix:** drop the `f` suffixes; make `TAU` `2.0 * PI`.
+Kept because it is the reason to be suspicious of a bare `f` suffix on anything
+feeding the `Vec3d`/`Quatd` path in `motion.h`: the old 8.7e-8 relative error was
+invisible in float rendering maths and would only have surfaced as drift once it
+accumulated.
 
 ---
 
@@ -281,7 +274,7 @@ it is worth remembering before someone puts a `Vec` batch in a map.
 
 ## 10. `MemCmp` cannot be constant-evaluated on two string literals
 
-`include/ROSE/Core/utility.h:120` — the early-out compares the two pointers:
+`include/ROSE/Core/utility.h:121` — the early-out compares the two pointers:
 
 ```cpp
 template <typename T>
@@ -329,19 +322,28 @@ function uses `std::is_integral_v` two lines down.
 
 ## 11. Smaller things
 
+Re-checked at `de3eafa`; line numbers are current.
+
 | Where | What |
 |---|---|
-| `quaternion.h:84` | `Quat::ToEuler` is a stub; every branch returns `{}` |
-| `mathfunctions.h:95` | `SinCosConst`'s Taylor series is truncated at r¹³/r¹² — max absolute error ~3.8e-13 near the ends of the reduced range, not the "couple of ulps" the comment claims. Two more terms in each polynomial would reach double precision |
-| `utility.h:59` | `SmartMemCpy(dst, src, count)` ignores `count` entirely; it copies `Min(sizeof(T), sizeof(U))` bytes once |
-| `string.h:173` | `at()`'s bounds check is commented out — it is `operator[]` with a different name |
-| `bigint.h:27` | The non-`__int128` fallback is a hard `#error`, so MSVC cannot compile the RTL at all |
+| `utility.h:108` | `SmartMemCpy(dst, src, count)` ignores `count` entirely; it copies `Min(sizeof(T), sizeof(U))` bytes once. Carries its own `// TODO` |
+| `string.h:186` | `at()`'s bounds check is commented out — it is `operator[]` with a different name |
+| `bigint.h:28` | The non-`__int128` fallback is a hard `#error`, so MSVC cannot compile the RTL at all |
 | `mathfunctions.h` | `Sqrt` (and `Sin`/`Cos`/`Tan`) rely on `__builtin_*` — `__builtin_sqrt`/`sin`/`cos`/`tan`, `__builtin_bit_cast`, `__builtin_is_constant_evaluated` — with no MSVC path |
-| `mathenum.h:62` | `LeviCivita`'s `static_assert` message still says `cse::math::` |
+| `mathenum.h:63` | `LeviCivita`'s `static_assert` message still says `cse::math::` |
 | `utility.h` vs `mathfunctions.h` | Two different `Min`/`Max` pairs; ambiguous if both namespaces are in scope |
-| `hashmap.h:306` | `TypedHashMap::insert`/`emplace` probe twice per insert (once to insert, once to build the returned iterator) |
-| `hashmap.cpp:252` | private `HashMap::reset()` is never called |
+| `hashmap.h:270-287` | `TypedHashMap::insert`/`emplace` probe twice per insert — `m_map.insert(&tmp)` then `m_map.find(&_key)` to build the returned iterator |
+| `hashmap.cpp:252` | private `HashMap::reset()` is still never called |
 | `list.h`, `string.h` | `begin()`/`end()` on `BasicString` are const-only, so no mutable range-`for` over a string |
+| `vector.h:265-268` | The free `operator*(T lhs, const Vec<T,N> &rhs)` is declared to return `T` but returns `rhs * lhs`, a `Vec`. Being a template it only fails on first instantiation, so `2.0 * someVec3d` is `error: no viable conversion from returned value of type 'Vec<double, 3>' to function return type 'double'`. Fix the return type to `Vec<T,N>` |
+| `tuple.h` | `Get<I>` has no `const` overload, so `Get<0>(someConstTuple)` does not compile. There is no `MakeTuple`, no comparison, and no structured-binding support |
+
+### Fixed since the last pass
+
+| Where | What |
+|---|---|
+| `quaternion.h` | `Quat::ToEuler` was a stub returning `{}` from every branch. Implemented in `6706679`, recovered from the rotation matrix, with a per-type `kGimbalEpsilon` at `sqrt(machineEpsilon)` and a comment explaining why you must not tune it by round-tripping random rotations |
+| `mathfunctions.h:95` | `SinCosConst`'s comment used to claim a couple of ulps. It now says "near-double accuracy", which is honest: measured worst absolute error is **3.888e-13**, at the ends of the reduced range near π/4. The series is unchanged (r¹³ for sin, r¹² for cos); two more terms in each polynomial would still reach full double precision |
 
 ---
 
