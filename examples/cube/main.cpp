@@ -73,11 +73,8 @@ protected:
       return;
     }
     Motion &m = *m_motion;
-    auto angv = m.GetAngularVelocity();
-    angv = (Quatd::FromEuler(angv) * Quatd::FromEuler({0.1, 0.8, 0.7})).ToEuler();
-    m.SetAngularVelocity(
-      angv
-      );
+    auto &angv = m.GetAngularVelocity();
+    angv = (Quatd::FromEuler(angv) * Quatd::AxisAngle(Time::deltaTime * 0.1, {0.6, -0.8, 0.3})).ToEuler();
 
   }
 private:

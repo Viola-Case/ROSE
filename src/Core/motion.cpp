@@ -34,7 +34,7 @@ namespace ROSE {
     const double omega = math::Sqrt(m_dTdt.Dot(m_dTdt));
     if (omega > 0.0) {
       const double inv = 1.0 / omega;
-      const Quatd delta = Quatd::AxisAngle(omega * dt, m_dTdt.x * inv, m_dTdt.y * inv, m_dTdt.z * inv);
+      const Quatd delta = Quatd::AxisAngle(omega * dt, m_dTdt * inv);
       tran.rotation = delta * tran.rotation;
       /* Products accumulate rounding error, which shows up as the object slowly
        * scaling once the quaternion is turned into a matrix. */

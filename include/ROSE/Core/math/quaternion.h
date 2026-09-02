@@ -59,7 +59,7 @@ namespace ROSE::math {
      * @warning The two paths need not agree in the last bit; see the note on @ref ROSE::math::Sin. Don't
      *          `static_assert` a folded component against a decimal literal.
      */
-    static constexpr Quat AxisAngle(T angle, T ax, T ay, T az) {
+    static constexpr Quat AxisAngle(T angle, Vec3<T> axis) {
       using F = std::conditional_t<std::is_same_v<T, float>, float, double>;
 
       const F half = static_cast<F>(angle) * F(0.5);
@@ -67,18 +67,18 @@ namespace ROSE::math {
 
       return {
         static_cast<T>(Cos(half)),
-        static_cast<T>(ax * s),
-        static_cast<T>(ay * s),
-        static_cast<T>(az * s)
+        static_cast<T>(axis.x * s),
+        static_cast<T>(axis.y * s),
+        static_cast<T>(axis.z * s)
       };
     }
 
     static constexpr Quat FromEuler(Vec3<T> v, EulerOrder order = EulerOrder::XYZ) {
       /* Indexed rather than named reads: Vec's constructors activate the `data` member of its union, and constant
        * evaluation will not read the inactive one. Same values, but this folds. */
-      Quat<T> qx = AxisAngle(v[0], T(1), T(0), T(0));
-      Quat<T> qy = AxisAngle(v[1], T(0), T(1), T(0));
-      Quat<T> qz = AxisAngle(v[2], T(0), T(0), T(1));
+      Quat<T> qx = AxisAngle(v[0], {T(1), T(0), T(0)});
+      Quat<T> qy = AxisAngle(v[1], {T(0), T(1), T(0)});
+      Quat<T> qz = AxisAngle(v[2], {T(0), T(0), T(1)});
 
       switch (order) {
       case EulerOrder::XYZ:
