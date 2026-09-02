@@ -96,10 +96,15 @@ namespace ROSE {
     void Collect(RenderList &) override;
 
   private:
-    /*! `Mesh` stores `Vec3d`; the backends want `Vec3f`. Converted once per mesh or tint change. */
+    /*! A `Vert` is geometry; a `DrawVertex` is geometry plus the tint. Flattened once per mesh
+     *  or tint change, rather than per frame. */
     void Rebuild() noexcept;
 
-    UUID m_meshID {};
+    /*! Either names the mesh. `m_meshID` wins when both are set; `m_meshName` is resolved
+     *  through the registry's name map on the first frame that finds a mesh under it. */
+    UUID   m_meshID {};
+    String m_meshName {};
+
     const Mesh *m_mesh { nullptr };
     Vec4f m_tint { 1.f, 1.f, 1.f, 1.f };
     List<DrawVertex> m_vertices {};

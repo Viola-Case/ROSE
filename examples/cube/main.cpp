@@ -95,7 +95,9 @@ int main() {
     MakeBehavior<RotateFunny>, RotateFunny::TypeID(), "Cube"
     );
 
-  MeshRegistry::Get().RegisterMesh(&CUBE_MESH, "13a2e5be51dcfa51-70653c9582659933"_uuid, "Cube");
+  /* The registry takes ownership, so it gets a copy of its own - handing it the address of a
+   * global would have it delete a static at exit. */
+  MeshRegistry::Get().RegisterMesh(new Mesh(CUBE_MESH), "13a2e5be51dcfa51-70653c9582659933"_uuid, "Cube");
 
   Application app;
 

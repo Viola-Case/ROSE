@@ -81,27 +81,32 @@ namespace ROSE {
     m_vertices.reserve(m_mesh->vertices.size());
     for (const Vert &v : m_mesh->vertices) {
       DrawVertex dv;
-      dv.position = ToVec3f(v.position);
+      dv.position = v.position;
       dv.color = m_tint;
-      dv.texCoord = { static_cast<float>(v.texCoord.x), static_cast<float>(v.texCoord.y) };
+      dv.texCoord = v.texCoord;
       m_vertices.push_back(dv);
     }
   }
 
   void MeshRenderable::Unpack(const ParamView &_view) {
     m_meshID = _view.GetUUID("mesh");
+    m_meshName = _view.GetString("meshName", "");
     const Vec4d tint = _view.GetVec4d("tint", { 1.0, 1.0, 1.0, 1.0 });
     m_tint = { static_cast<float>(tint.x), static_cast<float>(tint.y), static_cast<float>(tint.z),
                static_cast<float>(tint.w) };
     m_layer = _view.GetInt("layer", 0);
     if (_view.GetBool("transparent", false)) m_flags |= RENDERABLE_TRANSPARENT;
     m_dirty = true;
-    /* The mesh itself is resolved in OnCreate, not here: Unpack runs at JSON parse time, before
-     * anything has had a chance to register meshes. */
+    /* Neither the id nor the name is resolved here: Unpack runs at JSON parse time, before
+     * anything has had a chance to register meshes. `Collect` retries until it lands. */
   }
 
   void MeshRenderable::Collect(RenderList &_out) {
-    if (!m_mesh && m_meshID != UUID::Invalid()) SetMesh(m_meshID); // late registration
+    if (!m_mesh) { // late registration; the mesh may not have existed when the scene was parsed
+      if (m_meshID == UUID::Invalid() && !m_meshName.empty())
+        m_meshID = MeshRegistry::Get().GetMeshID(m_meshName);
+      if (m_meshID != UUID::Invalid()) SetMesh(m_meshID);
+    }
     if (!m_mesh) return;
     if (m_dirty) Rebuild();
     if (m_vertices.empty() || m_mesh->indices.empty()) return;
