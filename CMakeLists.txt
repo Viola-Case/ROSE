@@ -604,7 +604,21 @@ set_property(TARGET Orbits PROPERTY FOLDER "Examples")
 rose_deploy_runtime(Orbits)
 
 rose_deploy_assets(Orbits "${CMAKE_CURRENT_SOURCE_DIR}/examples/orbits/assets")
+# ------------------------------------------------------------------------ Cube
+file(GLOB_RECURSE CUBE_SOURCES CONFIGURE_DEPENDS "examples/cube/*.cpp")
 
+add_executable(Cube ${CUBE_SOURCES})
+
+target_link_libraries(Cube PRIVATE
+        ROSE_Core
+        imgui::imgui
+)
+
+set_property(TARGET Cube PROPERTY FOLDER "Examples")
+
+rose_deploy_runtime(Cube)
+
+rose_deploy_assets(Cube "${CMAKE_CURRENT_SOURCE_DIR}/examples/cube/assets")
 # ------------------------------------------------------------------------ Game2
 file(GLOB_RECURSE GAME2_SOURCES CONFIGURE_DEPENDS "examples/game2/*.cpp")
 
