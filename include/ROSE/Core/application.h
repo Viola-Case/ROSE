@@ -213,6 +213,13 @@ namespace ROSE {
      *
      * @retval 0 on success, negative otherwise.
      */
+    int Init(ApplicationInitSettings &_settings);
+    /*!
+     * Brings up the subsystems, the window, the renderer and the scenes described by `_settings`,
+     * which is consumed. Call exactly once, before `Run`.
+     *
+     * @retval 0 on success, negative otherwise.
+     */
     int Init(ApplicationInitSettings &&_settings);
     void Run(); //!< Should only be called once. Terminates if called again.
     void Quit() noexcept;

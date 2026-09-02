@@ -51,9 +51,7 @@ namespace ROSE {
     }
 
   protected:
-    math::Vec2<int16_t> m_aspectRatio; //!< I should probably make this just a single float
-    // [[bounds({ 0, inf })]] <--- I really need to figure out what the hell im gonna do with these attributes because
-    // there ain't no clear answer
+    math::Vec2<int16_t> m_aspectRatio; //!< todo I should probably make this just a single float
     float m_focalLength { 30 }; //!< millimeters, against a 36x24mm frame
     bool m_orthographic { false };
     float m_near { 0.1f };

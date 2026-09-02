@@ -132,7 +132,13 @@ namespace ROSE {
 #endif
   }
 
+  int Application::Init(ApplicationInitSettings &_settings) {
+    auto &&settings = Move(_settings);
+    return Init(settings);
+  }
+
   int Application::Init(ApplicationInitSettings &&settings) {
+
     m_title = Move(settings.m_title);
     m_organization = Move(settings.m_organization);
     m_windowSize = settings.m_windowSize;

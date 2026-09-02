@@ -310,10 +310,12 @@ namespace ROSE {
         for (const auto &b : o.at("behaviors")) {
           UUID tID = getUUIDFromNode(b.at("typeid"));
           auto bvr = BehaviorFactory::Create(tID);
-          /* TODO Create returns nullptr for an unregistered/misspelled typeid and this
-           * dereferences it immediately - a bad scene file is a crash on load. Per the
-           * rehydration notes above this should log loudly, skip the behavior, and keep
-           * loading the rest of the scene. */
+          if (!bvr) {
+            ROSE_LOG_ERROR("Bad typeid {:x}-{:x} not created on object {}!\n"
+                           "Are you sure you spelled it correctly?",
+                           tID.high, tID.low, obj.m_name);
+            continue;
+          }
           bvr->m_object = &obj;
           auto paramObj = b.at("factoryParameters");
           ParamView pview{&paramObj};

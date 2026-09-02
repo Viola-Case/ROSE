@@ -101,6 +101,7 @@ namespace ROSE {
     PrintF("{}{} \033[0m ", colorcode, LogLevelToString(level));
     PrintF(format, args...);
     if (level >= LogLevel::Info) PrintF("\033[0m");
+    PrintF("\n");
   }
 
 } // namespace ROSE

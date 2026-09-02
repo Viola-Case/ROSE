@@ -24,7 +24,7 @@
       "behaviors": [
         {
           "typeid": "1510c09900c8cc39-21a67c5c20659851",
-          "factoryParameters": []
+          "factoryParameters": {}
         }
       ]
     },

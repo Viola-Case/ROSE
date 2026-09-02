@@ -16,7 +16,6 @@ int main() {
 
   {
     BehaviorFactory &factory = BehaviorFactory::Get();
-    RoseRegisterCoreModule(factory);
     Pair<FactoryFn, UUID> fns[] {
       ROSE_BEHAVIOR_REGISTRY_PAIR(AppCloser), ROSE_BEHAVIOR_REGISTRY_PAIR(Paddle),
       ROSE_BEHAVIOR_REGISTRY_PAIR(Scoreboard), ROSE_BEHAVIOR_REGISTRY_PAIR(Ball),

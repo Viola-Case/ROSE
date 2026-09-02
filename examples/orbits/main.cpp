@@ -29,7 +29,6 @@ int main() {
 
   {
     BehaviorFactory &factory = BehaviorFactory::Get();
-    RoseRegisterCoreModule(factory);
     Pair<FactoryFn, UUID> fns[] {
       ROSE_BEHAVIOR_REGISTRY_PAIR(PointCloud),
       ROSE_BEHAVIOR_REGISTRY_PAIR(Closer),
