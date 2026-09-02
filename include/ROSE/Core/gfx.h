@@ -20,36 +20,79 @@
 
 namespace ROSE {
 
-  enum class UniformType { Bool, Int, Float, Vec2, Vec3, Vec4, Mat3, Mat4, Texture };
+  /*!
+   * @note OpenGL has explicit uniform functions for both
+   */
+  enum class UniformType {
+    Bool,
+    Float1,
+    Float2,
+    Float3,
+    Float4,
+    Int1,
+    Int2,
+    Int3,
+    Int4,
+    UInt1,
+    UInt2,
+    UInt3,
+    UInt4,
+    Mat2,
+    Mat3,
+    Mat4,
+    Texture
+  };
   struct Uniform {
-    String m_name;
+    String      m_name;
     UniformType m_type;
     union {
-      bool b;
-      float f;
-      Vec2f v2;
-      Vec3f v3;
-      Vec4f v4;
-      Mat3f m3;
-      Mat4f m4;
-      UUID texture;
+      // alignas(4)
+      bool                     b;
+      float                    f1;
+      Vec2f                    f2;
+      Vec3f                    f3;
+      Vec4f                    f4;
+      int                      i1;
+      math::Vec2<int>          i2;
+      math::Vec3<int>          i3;
+      math::Vec4<int>          i4;
+      unsigned int             ui1;
+      math::Vec2<unsigned int> ui2;
+      math::Vec3<unsigned int> ui3;
+      math::Vec4<unsigned int> ui4;
+      Mat2f                    m2;
+      Mat3f                    m3;
+      Mat4f                    m4;
+      math::Mat<float, 2, 3>   m2x3;
+      math::Mat<float, 3, 2>   m3x2;
+      math::Mat<float, 2, 4>   m2x4;
+      math::Mat<float, 4, 2>   m4x2;
+      math::Mat<float, 3, 4>   m3x4;
+      math::Mat<float, 4, 3>   m4x3;
+      UUID                     texture;
     };
   };
 
+  /*!
+   * Surface material passing uniforms into a shader program
+   * todo implement
+   */
   class ROSE_API(CORE) Material {
     friend class ROSE_API(CORE) Shader;
     friend class RenderBackend;
 
+    Material(const UUID &shader, const List<Uniform> &);
+
   public:
-    Material(const Shader &);
     Material(const Material &);
     Material &operator=(const Material &);
     Material(const Material &&) = delete;
     Material &operator=(Material &&) = delete;
     void SetUniform(const Uniform &uniform) noexcept;
+
   private:
-    Shader *m_shader;
-    UUID m_uuid;
+    Shader       *m_shader;
+    UUID          m_uuid;
     List<Uniform> m_uniforms {};
   };
 
@@ -70,9 +113,9 @@ namespace ROSE {
   struct RenderBackendContext {
     WindowHandle window {};
 
-    int width { 0 };
-    int height { 0 };
-    bool vsync { false };
+    int        width { 0 };
+    int        height { 0 };
+    bool       vsync { false };
     ParamView *config { nullptr };
   };
 
@@ -100,8 +143,8 @@ namespace ROSE {
     enum Value : uint8_t {
       Transparent = 0, //!< blend, and draw after the opaque set
       ScreenSpace = 1, //!< positions are already window pixels; the camera transform is skipped
-      Overlay     = 2, //!< drawn last, ignores depth (UI)
-      Textured    = 3, //!< honour `DrawCommand::texture`
+      Overlay = 2,     //!< drawn last, ignores depth (UI)
+      Textured = 3,    //!< honour `DrawCommand::texture`
     } value;
     constexpr RenderableFlag(Value v) : value(v) {}
     constexpr operator uint32_t() const noexcept { return value; }
@@ -155,13 +198,13 @@ namespace ROSE {
    */
   struct DrawCommand {
     const DrawVertex *vertices { nullptr };
-    size_t vertexCount { 0 };
-    const uint32_t *indices { nullptr }; //!< null for a non-indexed draw
-    size_t indexCount { 0 };
-    Topology topology { Topology::Triangles };
-    TextureID texture {};                  //!< resolved by the backend; ignored without `Textured`
-    RenderableFlags flags {};
-    Mat4f transform { Mat4f::Identity() }; //!< object -> world; ignored when `ScreenSpace`
+    size_t            vertexCount { 0 };
+    const uint32_t   *indices { nullptr }; //!< null for a non-indexed draw
+    size_t            indexCount { 0 };
+    Topology          topology { Topology::Triangles };
+    TextureID         texture {}; //!< resolved by the backend; ignored without `Textured`
+    RenderableFlags   flags {};
+    Mat4f             transform { Mat4f::Identity() }; //!< object -> world; ignored when `ScreenSpace`
     /*! Points only. A wide line is geometry (a ribbon), not a backend feature - SDL has no line
      *  width and GL clamps it, so honouring it there would silently disagree per backend. */
     float pointSize { 1.0f };
@@ -190,7 +233,7 @@ namespace ROSE {
     explicit RenderList(List<DrawCommand> &_sink) noexcept : m_sink(&_sink) {}
 
     List<DrawCommand> *m_sink;
-    size_t m_added { 0 };
+    size_t             m_added { 0 };
   };
 
 #pragma endregion
@@ -257,9 +300,7 @@ namespace ROSE {
      * @param mat Material with uniforms
      * @return Const reference to material uniform list
      */
-const auto &GetUniforms(const Material &mat) {
-      return mat.m_uniforms;
-    }
+    const auto &GetUniforms(const Material &mat) { return mat.m_uniforms; }
     //! The one backend-specific drawing operation. Everything else about a frame is shared.
     virtual void Draw(const DrawCommand &) = 0;
 
@@ -275,7 +316,7 @@ const auto &GetUniforms(const Material &mat) {
     void DetachAllRenderables() noexcept;
 
     List<Renderable *> m_renderables {};
-    Mat4f m_viewProjection { Mat4f::Identity() };
+    Mat4f              m_viewProjection { Mat4f::Identity() };
 
   private:
     /* Frame scratch, kept between frames for its capacity. m_frameCommands must outlive every
@@ -284,7 +325,7 @@ const auto &GetUniforms(const Material &mat) {
 
     struct SortEntry {
       uint32_t band;
-      int32_t layer;
+      int32_t  layer;
       uint32_t sequence;
       uint32_t index;
     };
@@ -322,15 +363,15 @@ const auto &GetUniforms(const Material &mat) {
   private:
     void *ResolveTexture(const TextureID &) noexcept; //!< `SDL_Texture *`, cached
 
-    void *m_presenter { nullptr };            //!< `SDLPresenter`
-    TypedHashMap<UUID, void *> m_textures {}; //!< `SDL_Texture *` per registry id
+    void                      *m_presenter { nullptr }; //!< `SDLPresenter`
+    TypedHashMap<UUID, void *> m_textures {};           //!< `SDL_Texture *` per registry id
 
     /* Per-frame scratch, kept for its capacity. SDL wants tightly packed arrays of its own
      * shapes, so points and rects cannot simply alias m_scratch's stride. Vec2f and Vec4f are
      * layout-compatible with SDL_FPoint and SDL_FRect respectively; the .cpp asserts it. */
-    List<DrawVertex> m_scratch {}; //!< transformed vertices
-    List<Vec2f> m_scratchXY {};    //!< `SDL_FPoint`
-    List<Vec4f> m_scratchRects {}; //!< `SDL_FRect`
+    List<DrawVertex> m_scratch {};      //!< transformed vertices
+    List<Vec2f>      m_scratchXY {};    //!< `SDL_FPoint`
+    List<Vec4f>      m_scratchRects {}; //!< `SDL_FRect`
   };
 
   /*!
@@ -369,25 +410,26 @@ const auto &GetUniforms(const Material &mat) {
   protected:
     void Draw(const DrawCommand &) override;
 
-    void *m_context { nullptr }; //!< `SDL_GLContext`; null means not initialised, and `Shutdown` is a no-op
-    void *m_window { nullptr }; //!< `SDL_Window *`, kept for the buffer swap in `EndFrame`
-    String m_name { "OpenGL" }; //!< built by `Init` from the context the driver actually handed back
-    int m_versionMajor;
-    int m_versionMinor;
-    Vec4f m_backgroundColor { 0.f, 0.f, 0.f, 1.f }; //!< TODO not yet read by `BeginFrame`, which clears to black
+    void  *m_context { nullptr }; //!< `SDL_GLContext`; null means not initialised, and `Shutdown` is a no-op
+    void  *m_window { nullptr };  //!< `SDL_Window *`, kept for the buffer swap in `EndFrame`
+    String m_name { "OpenGL" };   //!< built by `Init` from the context the driver actually handed back
+    int    m_versionMajor;
+    int    m_versionMinor;
+    Vec4f  m_backgroundColor { 0.f, 0.f, 0.f, 1.f }; //!< TODO not yet read by `BeginFrame`, which clears to black
 
   private:
     uint32_t ResolveTexture(const TextureID &) noexcept; //!< GL texture name, cached
 
     TypedHashMap<UUID, uint32_t> m_textures {}; //!< GL name per registry id; 0 is cached for misses, never evicted
-    bool BuildPipeline() noexcept; //!< the one built-in program, plus its streaming buffers
+    bool BuildPipeline() noexcept;              //!< the one built-in program, plus its streaming buffers
 
-    uint32_t m_program { 0 }; //!< the single linked program; 0 makes `Draw` a no-op
+    uint32_t m_program { 0 };                       //!< the single linked program; 0 makes `Draw` a no-op
     uint32_t m_vao { 0 }, m_vbo { 0 }, m_ibo { 0 }; //!< one VAO with the `DrawVertex` layout, one streaming VBO and IBO
     //! Uniform locations, fetched once after link. -1 (not found) is silently ignored by GL.
     int m_uViewProjection { -1 }, m_uModel { -1 }, m_uUseTexture { -1 };
     int m_uScreenSpace { -1 }, m_uViewport { -1 };
-    int m_viewportWidth { 0 }, m_viewportHeight { 0 }; //!< fed to `uViewport` for screen-space commands; logical size, not drawable (HiDPI TODO)
+    int m_viewportWidth { 0 },
+      m_viewportHeight { 0 }; //!< fed to `uViewport` for screen-space commands; logical size, not drawable (HiDPI TODO)
   };
 
   /*!
@@ -435,13 +477,13 @@ const auto &GetUniforms(const Material &mat) {
     void RasterLine(const DrawVertex &a, const DrawVertex &b, bool blend) noexcept;
     void RasterPoint(const DrawVertex &v, float size, bool blend) noexcept;
 
-    List<uint32_t> m_color {};     //!< ARGB8888, row-major, `m_width * m_height`
+    List<uint32_t>   m_color {};   //!< ARGB8888, row-major, `m_width * m_height`
     List<DrawVertex> m_scratch {}; //!< transformed vertices; keeps capacity per frame
-    int m_width { 0 }, m_height { 0 };
-    int m_requestedWidth { 0 }, m_requestedHeight { 0 }; //!< 0 = track the window
-    void *m_presenter { nullptr }; //!< `SDLPresenter`
-    void *m_target { nullptr };    //!< streaming `SDL_Texture`, rebuilt only on resolution change
-    uint32_t m_clear { 0xFF000000 };
+    int              m_width { 0 }, m_height { 0 };
+    int              m_requestedWidth { 0 }, m_requestedHeight { 0 }; //!< 0 = track the window
+    void            *m_presenter { nullptr };                         //!< `SDLPresenter`
+    void            *m_target { nullptr }; //!< streaming `SDL_Texture`, rebuilt only on resolution change
+    uint32_t         m_clear { 0xFF000000 };
   };
 
   /*!
@@ -470,12 +512,13 @@ const auto &GetUniforms(const Material &mat) {
 
   /*!
    * Shader program with linked vertex and fragment shaders
+   * todo implement
    */
   class ROSE_API(CORE) Shader {
     friend class ROSE_API(CORE) Material;
+    friend class ROSE_API(CORE) ShaderRegistry;
 
-  //public:
-    Shader();
+    // public:
     ~Shader();
     Shader(const Shader &) = delete;
     Shader &operator=(const Shader &) = delete;
@@ -486,19 +529,18 @@ const auto &GetUniforms(const Material &mat) {
   private:
     void *m_vertex;
     void *m_fragment;
-    UUID m_uuid;
+    UUID  m_uuid;
   };
 
   class ROSE_API(CORE) ShaderRegistry {
     friend class ROSE_API(CORE) Shader;
   };
 
-
-
-
+  // TODO move these to a defaults header
   namespace defaults {
-    extern Material ROSE_API(CORE) DEFAULT_MATERIAL;
-    extern Shader ROSE_API(CORE) DEFAULT_SHADER;
+    // extern Material ROSE_API(CORE) DEFAULT_MATERIAL;
+
+    // extern Shader ROSE_API(CORE) DEFAULT_SHADER;
   } // namespace defaults
 
 } // namespace ROSE

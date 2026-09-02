@@ -73,9 +73,7 @@ namespace ROSE {
     _renderable.m_slot = 0;
   }
 
-  void RenderBackend::SetViewProjection(const Mat4f &_viewProjection) noexcept {
-    m_viewProjection = _viewProjection;
-  }
+  void RenderBackend::SetViewProjection(const Mat4f &_viewProjection) noexcept { m_viewProjection = _viewProjection; }
 
   namespace {
     /*! Opaque first, then transparent, then overlay. See `RenderBackend::RenderFrame`. */
@@ -100,22 +98,21 @@ namespace ROSE {
       if (!r->IsEnabled()) continue;
 
       const size_t first = m_frameCommands.size();
-      RenderList list { m_frameCommands };
+      RenderList   list { m_frameCommands };
       r->Collect(list);
 
       for (size_t i = first; i < m_frameCommands.size(); ++i)
-        m_frameOrder.push_back(SortEntry { BandOf(m_frameCommands[i].flags), r->GetLayer(), mine,
-                                           static_cast<uint32_t>(i) });
+        m_frameOrder.push_back(
+          SortEntry { BandOf(m_frameCommands[i].flags), r->GetLayer(), mine, static_cast<uint32_t>(i) });
     }
 
     if (m_frameOrder.empty()) return;
 
-    std::stable_sort(m_frameOrder.begin(), m_frameOrder.end(),
-                     [](const SortEntry &_a, const SortEntry &_b) noexcept {
-                       if (_a.band != _b.band) return _a.band < _b.band;
-                       if (_a.layer != _b.layer) return _a.layer < _b.layer;
-                       return _a.sequence < _b.sequence;
-                     });
+    std::stable_sort(m_frameOrder.begin(), m_frameOrder.end(), [](const SortEntry &_a, const SortEntry &_b) noexcept {
+      if (_a.band != _b.band) return _a.band < _b.band;
+      if (_a.layer != _b.layer) return _a.layer < _b.layer;
+      return _a.sequence < _b.sequence;
+    });
 
     /* m_frameCommands is not touched again, so every pointer a command carries stays valid for
      * the whole loop - a backend is free to defer past its own Draw call. */
@@ -125,8 +122,8 @@ namespace ROSE {
 
   // TODO consider moving these to a new file dedicated to defaults
 
-  Shader ROSE_API(CORE) defaults::DEFAULT_SHADER {};
-  Material ROSE_API(CORE) defaults::DEFAULT_MATERIAL(DEFAULT_SHADER);
+  // Shader ROSE_API(CORE) defaults::DEFAULT_SHADER {};
+  // Material ROSE_API(CORE) defaults::DEFAULT_MATERIAL(DEFAULT_SHADER);
 
 #pragma endregion
 
