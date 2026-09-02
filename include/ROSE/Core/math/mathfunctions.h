@@ -204,6 +204,26 @@ namespace ROSE::math {
     return __builtin_tanf(value);
   }
 
+  /*!
+   * Inverse trigonometry, in radians.
+   *
+   * Runtime only, unlike everything above: a constant-evaluated path would need its own range
+   * reduction and series the way @ref detail::SinCosConst does, and nothing has yet wanted an
+   * arcsine inside a constant expression. Add one here if that changes rather than at a call
+   * site.
+   *
+   * `Atan2` takes its arguments in the conventional order - `Atan2(y, x)` - and is
+   * quadrant-correct across all four, which is what makes it the right tool for recovering an
+   * angle from a pair of matrix entries whose signs carry the quadrant.
+   *
+   * @param value for `Asin`, must be in [-1, 1]; a value pushed outside by rounding gives a NaN
+   *              rather than a clamped angle, so clamp before calling.
+   */
+  inline double Asin(double value) noexcept { return __builtin_asin(value); }
+  inline float Asin(float value) noexcept { return __builtin_asinf(value); }
+  inline double Atan2(double y, double x) noexcept { return __builtin_atan2(y, x); }
+  inline float Atan2(float y, float x) noexcept { return __builtin_atan2f(y, x); }
+
 
 
 

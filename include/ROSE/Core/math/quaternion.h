@@ -100,25 +100,98 @@ namespace ROSE::math {
       return Quat<T> { 1, 0, 0, 0 }; // fallback identity
     }
 
-    //todo finish
-    Vec3<T> ToEuler(EulerOrder order = EulerOrder::ZYX) {
+    /*!
+     * How near the middle rotation may come to a pole before @ref ToEuler treats it as locked,
+     * measured as the cosine of that angle.
+     *
+     * It is the crossover between two approximations, and it bounds the error of both. The
+     * locked branch is exact *at* the pole and drifts linearly as you move off it; the general
+     * branch is the reverse. So this is also the worst-case error of the whole function, in
+     * radians, and it wants to be as small as the type's precision allows.
+     *
+     * The two costs run opposite ways, so the best threshold is where they meet. Locked costs
+     * about `cosMid`. General divides by it, turning the entries' absolute rounding error into
+     * roughly `machineEpsilon / cosMid`. Those are equal at `sqrt(machineEpsilon)`, which is
+     * where these values come from and why they differ per type: about 3.5e-4 for float, whose
+     * epsilon is ~1.2e-7, and 1.5e-8 for double at ~2.2e-16.
+     *
+     * @note Do not tune this by round-tripping random rotations. Uniform angles land near a
+     *       pole with probability proportional to the threshold itself, so a random sweep never
+     *       samples the case this governs and will happily endorse a value that is orders of
+     *       magnitude too small. Sample `pi/2 - delta` directly instead.
+     */
+    static constexpr T kGimbalEpsilon = std::is_same_v<T, float> ? T(3.5e-4) : T(1.5e-8);
+
+    /*!
+     * The euler angles that reproduce this rotation through @ref FromEuler under the same
+     * @p order, so `FromEuler(q.ToEuler(o), o)` is `q` up to sign and rounding.
+     *
+     * Component `n` of the result is always the angle about axis `n` - `[0]` is the rotation
+     * about X whichever order asked for it - matching the way `FromEuler` reads its argument.
+     *
+     * Recovered from the rotation matrix rather than from the components directly. Every order
+     * here is a Tait-Bryan triple (three distinct axes), so one extraction serves all six: the
+     * middle angle comes out of the single entry that isolates it, and the outer and inner
+     * angles come from two entry pairs whose signs carry the quadrant. Which entries those are
+     * is fixed by the axis triple and by whether it is an even or odd permutation of (X, Y, Z).
+     *
+     * @warning Not a bijection, and cannot be. Euler angles are three-to-one onto rotations
+     *          (adding π to all three names the same rotation), so the angles that come back
+     *          need not be the ones that went in - only the rotation they describe is
+     *          preserved. Round-tripping a *value* through this and comparing is a mistake;
+     *          round-tripping a rotation is fine.
+     *
+     * @warning At the poles, where the middle rotation folds the outer and inner axes onto each
+     *          other, only their sum (or difference) survives. There the inner angle is pinned
+     *          to zero and the whole of it is reported on the outer one, which is a rotation
+     *          equal to the original but an angle triple that can look nothing like the input.
+     */
+    Vec3<T> ToEuler(EulerOrder order = EulerOrder::ZYX) const noexcept {
+      /* i, j, k are the axes of the outer, middle and inner rotation, so `FromEuler` built this
+       * as Ri * Rj * Rk. `parity` is +1 when (i, j, k) is an even permutation of (0, 1, 2) and
+       * -1 when it is odd, which is the only thing that differs between the two halves. */
+      size_t i {}, j {}, k {};
+      T parity {};
+
       switch (order) {
-      case EulerOrder::XYZ:
-        return {};
-      case EulerOrder::XZY:
-        return {};
-
-      case EulerOrder::YXZ:
-        return {};
-      case EulerOrder::YZX:
-        return {};
-
-      case EulerOrder::ZXY:
-        return {};
-      case EulerOrder::ZYX:
-        return {};
+      case EulerOrder::XYZ: i = 0; j = 1; k = 2; parity = T(1); break;
+      case EulerOrder::XZY: i = 0; j = 2; k = 1; parity = -T(1); break;
+      case EulerOrder::YXZ: i = 1; j = 0; k = 2; parity = -T(1); break;
+      case EulerOrder::YZX: i = 1; j = 2; k = 0; parity = T(1); break;
+      case EulerOrder::ZXY: i = 2; j = 0; k = 1; parity = T(1); break;
+      case EulerOrder::ZYX: i = 2; j = 1; k = 0; parity = -T(1); break;
+      default: return Vec3<T> {};
       }
-      return Vec3<T>{}; // fallback
+
+      // ToMat4 assumes unit length; a quaternion that has been accumulating products is not.
+      const Mat4<T> m = Normalized().ToMat4();
+      const auto R = [&m](const size_t _row, const size_t _col) { return m.data[_row * 4 + _col]; };
+
+      Vec3<T> out {};
+
+      const T sinMid = parity * R(i, k); // the one entry the middle angle alone decides
+
+      /* Its cosine comes from the pair of entries that carry it directly, not from
+       * sqrt(1 - sin^2): near a pole that subtraction cancels away most of the significant
+       * digits, and the angles derived from it inherit the loss. These two square to cos^2
+       * exactly, and the middle angle is in [-pi/2, pi/2], so the root is its cosine outright. */
+      const T cosMid = Sqrt(R(j, k) * R(j, k) + R(k, k) * R(k, k));
+
+      // Atan2 rather than Asin: same angle, but it stays accurate as cosMid goes to zero.
+      out[j] = Atan2(sinMid, cosMid);
+
+      if (cosMid > kGimbalEpsilon) {
+        out[i] = Atan2(-parity * R(j, k), R(k, k));
+        out[k] = Atan2(-parity * R(i, j), R(i, i));
+      } else {
+        /* Gimbal lock. The outer and inner axes now coincide, so the matrix only ever saw their
+         * sum (or their difference, depending on which pole). Report all of it on the outer
+         * angle and none on the inner - any split reproduces the same rotation. */
+        out[i] = Atan2(sinMid < T(0) ? -R(j, i) : R(j, i), R(j, j));
+        out[k] = T(0);
+      }
+
+      return out;
     }
 
     static constexpr Quat<T> Identity() {
