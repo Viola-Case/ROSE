@@ -19,8 +19,8 @@
 // TODO probably completely replace with repo tag/baseline
 
 #define ROSE_VERSION_MAJOR 0
-#define ROSE_VERSION_MINOR 1
-#define ROSE_VERSION_PATCH 5
+#define ROSE_VERSION_MINOR 2
+#define ROSE_VERSION_PATCH 0
 
 constexpr unsigned int ROSE_VERSIONNUM(char major, char minor, short patch) { return (1000000 * major + 10000 * minor + patch); }
 

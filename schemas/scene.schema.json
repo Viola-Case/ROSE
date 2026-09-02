@@ -168,7 +168,8 @@
         "title": "ROSE::MeshRenderable",
         "type": "object",
         "properties": {
-          "mesh": { "$ref": "#/$defs/uuid", "description": "Mesh id, resolved against the MeshRegistry in OnCreate rather than at parse time." },
+          "mesh": { "$ref": "#/$defs/uuid", "description": "Mesh id, resolved against the MeshRegistry on the first frame rather than at parse time. Either this or meshName is needed for anything to draw." },
+          "meshName": { "type": "string", "description": "Mesh name, resolved against the MeshRegistry's name map. Only consulted when mesh is absent." },
           "tint": { "$ref": "#/$defs/color", "default": [1, 1, 1, 1] },
           "layer": { "type": "integer", "default": 0 },
           "transparent": { "type": "boolean", "default": false }

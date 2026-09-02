@@ -52,18 +52,22 @@ namespace ROSE {
     template <class B>
       requires std::is_base_of_v<Behavior, B>
     B *CreateBehavior() {
-      constexpr auto tID = B::TypeID();
+      constexpr UUID tID = B::TypeID();
       if (!BehaviorFactory::IsRegistered(tID)) {
-        ROSE_LOG_ERROR("Failed to register behavior {} to {}", tID, m_name);
+        ROSE_LOG_ERROR("Failed to register behavior {}-{} to {}\n", tID.high, tID.low, m_name);
         return nullptr;
       }
-      if (auto it = m_behaviors.find(tID); it != m_behaviors.end())
-        // return nullptr;
-        return m_behaviors.find(tID)->second.get();
+      if (auto it = m_behaviors.find(tID); it != m_behaviors.end()) {
+        ROSE_LOG_ERROR("Cannot create behavior {}-{} on {}; it already exists on the object!\n", tID.high, tID.low, m_name);
+        return nullptr;
+      }
       auto b = BehaviorFactory::Create(tID);
-      B *ptr = b.get();
+      Behavior *ptr = b.get();
       AddBehavior(Move(b));
-      return ptr; // TODO disallow interaction until it's fully added
+      if (auto P = dynamic_cast<B *>(ptr))
+        return P; // TODO disallow interaction until it's fully added
+      ROSE_LOG_ERROR("Something went wrong when dynamic casting behavior pointer to type {}-{}! I don't know why!\n", tID.high, tID.low);
+      return nullptr;
     }
 
     template <class B>

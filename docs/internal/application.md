@@ -11,7 +11,7 @@ see [`scene-object-behavior.md`](scene-object-behavior.md).
 |---|---|---|
 | `Application`, `ApplicationInitSettings`, `ApplicationFlag` | `include/ROSE/Core/application.h` | `src/Core/application.cpp` |
 | `Window` | `include/ROSE/Core/window.h` | `src/Core/window.cpp` |
-| `RenderBackend` and friends | `include/ROSE/Core/gfx.h` | `src/Core/gfx.cpp`, `softwarerenderer.cpp`, `openglrenderer.cpp` |
+| `RenderBackend` and friends | `include/ROSE/Core/gfx.h` | `src/Core/gfx.cpp`, `sdlrenderer.cpp`, `softwarerenderer.cpp`, `openglrenderer.cpp` |
 
 ---
 
@@ -26,7 +26,7 @@ int main() {
 
   // 2. Describe the application. Nothing is created yet.
   ApplicationInitSettings settings { "Game 1" };
-  settings.SetFlags(APPLICATION_SOFTWARE_RENDERER | APPLICATION_CONTROLLER_SUPPORT)
+  settings.SetFlags(APPLICATION_SDL_RENDERER | APPLICATION_CONTROLLER_SUPPORT)
     .SetWindowSize(800, 600)
     .AddSceneFromFile("assets/game1scene1.json");
 
@@ -98,20 +98,23 @@ enum — the two are easy to confuse and the header says so. Use the
 `SetFlag`/`GetFlag`.
 
 ```cpp
-constexpr ApplicationFlags APPLICATION_DEFAULT = APPLICATION_CONTROLLER_SUPPORT
-                                               | APPLICATION_SOFTWARE_RENDERER;
+constexpr ApplicationFlags APPLICATION_DEFAULT = APPLICATION_SDL_RENDERER;
 ```
 
 | Flag | Bit | Read by the engine? |
 |---|---|---|
 | `Headless` | 0 | ✅ skips window creation and the renderer |
-| `SoftwareRenderer` | 4 | ✅ selects `SoftwareRenderer`; see §6 for what "off" does |
+| `SoftwareRenderer` | 4 | ✅ selects the real rasterizer; see §6 |
+| `SDLRenderer` | 6 | ✅ selects SDL's 2D renderer (the default) |
+| `OpenGL` | 8 | ✅ selects `OpenGLRenderer` and adds `SDL_WINDOW_OPENGL` |
+| `NoRenderer` | 1 | ✅ skips the renderer, keeps the window |
 | `ControllerSupport` | 5 | ✅ adds `SDL_INIT_GAMEPAD \| JOYSTICK \| HAPTIC` |
 | `Debug` | 63 | ⚠️ *set* by `Init` under `_DEBUG`, never read |
-| `NoRenderer`, `Server`, `Light`, `NoSound`, `Vulkan`, `OpenGL`, `DirectX9/11/12`, `Metal` | 1-3, 6-12 | ❌ inert |
+| `Vulkan`, `DirectX9/11/12`, `Metal` | 7, 9-12 | ⚠️ warn and fall back to `SDLRenderer` |
+| `Server`, `Light`, `NoSound` | 2-3 | ❌ inert |
 
-Only three flags do anything today. `NoSound` in particular does not suppress
-`SDL_INIT_AUDIO`, which `Init` always requests.
+The renderer-selection flags all do something now (§6). `NoSound` in particular still
+does not suppress `SDL_INIT_AUDIO`, which `Init` always requests.
 
 `ApplicationFlag`'s constructor `throw`s on an out-of-range value. It is
 `constexpr`-only in practice, which is what keeps it inside the no-exceptions rule
@@ -161,6 +164,8 @@ Run()
       ImGui_ImplSDL3_ProcessEvent
     Time::dT = <seconds since the previous iteration>
     if (m_currentScene) m_currentScene->FrameUpdate()
+    m_renderer->SetViewProjection(ResolveViewProjection())  // active Camera, or a pixel ortho
+    m_renderer->RenderFrame()                               // Collect -> order -> Draw
     ImGui::Render()
     m_renderer->EndFrame()                          // includes present
     <frame pacing>
@@ -191,27 +196,68 @@ anywhere in the tree**.
 ## 6. Renderer selection
 
 ```cpp
-if (!GetFlag(Headless)) {
-  if (!GetFlag(SoftwareRenderer)) {
-    windowFlags |= (1 ? SDL_WINDOW_VULKAN : SDL_WINDOW_OPENGL);   // literal `1`
-  } else {
+if (!GetFlag(Headless) && !GetFlag(NoRenderer)) {
+  if (GetFlag(OpenGL)) {
+    windowFlags |= SDL_WINDOW_OPENGL;
+    m_renderer = new OpenGLRenderer();
+  } else if (GetFlag(SoftwareRenderer)) {
     m_renderer = new SoftwareRenderer();
+  } else {
+    // Vulkan/Metal/DirectX* warn and land here.
+    m_renderer = new SDLRenderer();
   }
 }
 ```
 
-`SoftwareRenderer` is the only backend `Application` ever constructs. It is not
-really a software rasteriser — it is SDL's own renderer, asked for
-`"vulkan, direct3d11, opengl, gpu, software"` in that order, so it is normally
-hardware-accelerated. It owns the ImGui SDL3 + SDLRenderer3 backends and honours
-`ctx.vsync` through `SDL_SetRenderVSync`.
+There are three backends, and all three are reachable:
 
-**Clearing the `SoftwareRenderer` flag leaves the application with no renderer at
-all.** The `else` branch only sets a window flag; `m_renderer` stays `nullptr`, no
-ImGui platform backend is initialised, and `ImGui::NewFrame()` then runs every frame
-without a matching backend `NewFrame`. `OpenGLRenderer` is fully implemented in
-`openglrenderer.cpp` and honours `ctx.vsync` via `SDL_GL_SetSwapInterval`, but
-nothing in the tree ever constructs one.
+| Class | Flag | What it is |
+|---|---|---|
+| `SDLRenderer` | `APPLICATION_SDL_RENDERER` (default) | SDL's own 2D renderer, asked for `"vulkan,direct3d11,opengl,gpu,software"` in that order, so normally hardware-accelerated. Owns the ImGui SDL3 + SDLRenderer3 backends; honours `ctx.vsync` via `SDL_SetRenderVSync`. |
+| `SoftwareRenderer` | `APPLICATION_SOFTWARE_RENDERER` | A real rasterizer. Owns an ARGB8888 framebuffer, draws into plain memory, and blits once a frame through a streaming `SDL_Texture`. Its internal resolution is decoupled from the window — construct it with a fixed size, or call `SetInternalResolution`, and the present stretches with nearest-neighbour filtering. ImGui draws *after* the blit, so the HUD stays crisp over a chunky world. |
+| `OpenGLRenderer` | `APPLICATION_OPENGL` | GL 4.5 core by default, one built-in shader program covering the whole draw vocabulary. |
+
+> **Renamed.** `SoftwareRenderer` used to be the SDL-renderer class, despite its name —
+> it asked SDL for a hardware driver first and `"software"` only as a last resort that
+> never fired. That class is now `SDLRenderer` (`src/Core/sdlrenderer.cpp`), and the
+> name `SoftwareRenderer` belongs to the actual rasterizer.
+>
+> **This is a behaviour change, not a compile error.** `APPLICATION_DEFAULT` moved from
+> `APPLICATION_SOFTWARE_RENDERER` to `APPLICATION_SDL_RENDERER`, so code that passed
+> `APPLICATION_SOFTWARE_RENDERER` explicitly and expected SDL's renderer now silently
+> gets the rasterizer. Anything still calling SDL directly (game1's `Ball`/`Paddle`)
+> must say `APPLICATION_SDL_RENDERER`.
+
+A flag naming a backend nobody has written — `Vulkan`, `Metal`, `DirectX9/11/12` —
+logs a warning and falls back to `SDLRenderer`. It used to leave `m_renderer` null,
+with no ImGui platform backend initialised and `ImGui::NewFrame()` running every frame
+without a matching backend `NewFrame`.
+
+The SDL_Renderer creation, vsync and ImGui plumbing shared by `SDLRenderer` and
+`SoftwareRenderer` lives in the internal `src/Core/sdlpresenter.h`, by composition —
+the two backends are free to diverge.
+
+## 6a. The render pass
+
+`RenderBackend` carries the whole frame apart from one method. A backend implements
+the lifecycle plus `Draw(const DrawCommand &)`; enrollment, ordering and the enabled
+check are shared in `src/Core/gfx.cpp`. That is the point: **adding a backend touches
+no behavior.**
+
+- `Renderable::OnCreate` calls `Enroll`, `OnDestroy` calls `Withdraw`. `Enroll` is
+  idempotent, because a scene switch replays `OnCreate` (see §9.5).
+- `RenderFrame` collects a `DrawCommand` list from every *enabled* renderable, orders
+  it — opaque, then transparent, then overlay; within a band by `GetLayer()`; ties by
+  enrollment order — and draws it. Commands stay alive for the whole pass, so a
+  backend may defer.
+- `Application::Run` calls `SetViewProjection(ResolveViewProjection())` then
+  `RenderFrame()`, between `Scene::FrameUpdate()` and `ImGui::Render()`.
+- `GetRenderBackend()` is how a `Renderable` finds somewhere to enroll. It hands back
+  the abstract base, never a concrete backend.
+- `~RenderBackend` nulls every enrolled renderable's back-pointer. Ownership runs the
+  wrong way at teardown — `~Application` deletes the backend in its body but `m_scenes`
+  dies afterwards, as members — so without this every `~Renderable` would touch a freed
+  backend.
 
 ## 7. Post-`Init` API
 
@@ -255,7 +301,8 @@ backend and to the renderer. The *initial* size comes from the settings.
    (`scene.h`) is an empty class with nothing but `friend class Application`.
 
 4. **Ten of the fourteen flags are inert** (§3), and `Debug` is set but never read.
-   Only `Headless`, `SoftwareRenderer` and `ControllerSupport` change anything.
+   The renderer-selection flags all do something now (§6); `Server`, `Light` and
+   `NoSound` still do not.
 
 5. **Scene switching would re-run `OnStart()`.** The guard in `Run()` is a
    `static Scene *lastScene`, so returning to a previously active scene replays

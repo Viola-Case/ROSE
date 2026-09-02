@@ -4,42 +4,45 @@
 #
 # glad is a code generator, not a library, so there is nothing to fetch at a tag.
 # The loader below was generated once and committed; regenerating it is a manual
-# step that should reproduce these files byte for byte:
+# step that should *probably* reproduce these files byte for byte:
 #
-#     pip install glad==0.1.36
-#     python -m glad --profile="compatibility" --api="gl=4.5" --generator="c" \
-#                    --spec="gl" --extensions="" --reproducible --out-path=.
+# Go online to
+# http://glad.sh/#api=gl%3Acore%3D4.5&extensions=GL_ARB_bindless_texture%2CGL_ARB_parallel_shader_compile%2CGL_EXT_texture_filter_anisotropic&generator=c&options=LOADER
 #
-# --reproducible is what keeps the output stable (it pins the packaged gl.xml and
-# blanks the generation timestamp), and the result is byte-identical to what the
-# vcpkg `glad[gl-api-45]` port installs, so switching between the two changes
-# nothing for consumers.
-#
-# The vendor engine (cmake/vendor.cmake) builds this like any other dependency;
-# it is declared with `path =` instead of `repo`/`tag` in dependencies.toml.
+# and download the zip file.
 #
 # ------------------------------------------------------------------- licensing
 #
-# These are someone else's files and they carry someone else's terms. LICENSE
-# beside this file is glad's own, copied verbatim from the 0.1.36 tag, and it
-# covers three separate things that all ended up in this directory:
+# GLAD-generated code is distributed under WTFPL:
 #
-#   * src/glad.c and include/glad/glad.h -- output of the glad generator,
-#     MIT, Copyright (c) 2013-2021 David Herberth.
-#   * the enum values and command signatures in that output, which come from
-#     the Khronos OpenGL registry (gl.xml) -- Apache-2.0, Copyright (c)
-#     2013-2020 The Khronos Group Inc.
-#   * include/KHR/khrplatform.h -- Khronos' MIT-style license, whose text is
-#     also in the header itself and must stay there.
+# ===================================================================
+#            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+#                    Version 2, December 2004
 #
-# The generated sources carry no license header of their own, which is exactly
-# why LICENSE has to travel with them. install() below puts it in the vendor
-# prefix's share/licenses/glad so it reaches anything ROSE ships; see
-# THIRD_PARTY_NOTICES.md.
+# Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+#
+# Everyone is permitted to copy and distribute verbatim or modified
+# copies of this license document, and changing it is allowed as long
+# as the name is changed.
+#
+#            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+#   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+#
+#  0. You just DO WHAT THE FUCK YOU WANT TO.
+# ===================================================================
+#
+# Now Khronos has some of their specifications under Apache Version 2.0 license, which is
+# included in the accompanying LICENSE file next to this one. In addition, their khrplatform.h
+# file includes a license at the top which overrides any other licenses applied to it.
+#
+#
+#
+# If I have misrepresented any of the license agreements of the code here, I hope the IP owners will let me know.
+# You can reach me at <ajr.acnt@gmail.com>.
 
 cmake_minimum_required(VERSION 3.21)
 
-project(glad VERSION 0.1.36 LANGUAGES C)
+project(glad VERSION 2.0.8 LANGUAGES C)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -48,7 +51,7 @@ include(CMakePackageConfigHelpers)
 # process-global mutable state, and exporting it from a DLL would need a
 # GLAD_API decoration the generated source does not have. Only ROSE_Core links
 # it, so one static copy is exactly one table.
-add_library(glad STATIC src/glad.c)
+add_library(glad STATIC src/gl.c)
 add_library(glad::glad ALIAS glad)
 
 target_include_directories(glad PUBLIC

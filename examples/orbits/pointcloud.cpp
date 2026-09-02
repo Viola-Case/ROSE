@@ -14,7 +14,6 @@
 #include <ROSE/Core/imgui.h>
 
 #include <random>
-#include <cstdio>
 
 namespace Orbits {
   namespace {
@@ -34,7 +33,16 @@ namespace Orbits {
     constexpr int MIN_TRAIL = 2; //!< a ribbon needs two samples before it has a segment
 
     constexpr unsigned int ITERATIONS = 3;
+
+    constexpr Vec4f BODY_COLOR { 1.0f, 1.0f, 1.0f, 1.0f };
+    constexpr Vec4f CENTER_COLOR { 0.0f, 1.0f, 1.0f, 1.0f };
   } // namespace
+
+  /* Everything this draws is already in window pixels, so it skips the camera. Transparent puts
+   * all three commands in one band, where they keep the order Collect adds them in - ribbon,
+   * then bodies, then the centre on top. Opaque would have sorted the bodies *under* the
+   * ribbon, which is the one thing the banding would otherwise get wrong here. */
+  PointCloud::PointCloud() noexcept { m_flags = RENDERABLE_SCREEN_SPACE | RENDERABLE_TRANSPARENT; }
 
   void PointCloud::Unpack(const ParamView &view) {
     const int seed = view.GetInt("seed", 0);
@@ -54,6 +62,7 @@ namespace Orbits {
     m_positions.reserve(count);
     m_velocities.reserve(count);
     m_screen.resize(count);
+    m_bodyVertices.resize(count);
     m_trails.Reset(static_cast<uint32_t>(count), static_cast<uint32_t>(trail));
 
     for (int i = 0; i < count; i++) {
@@ -70,21 +79,13 @@ namespace Orbits {
     }
   }
 
-  void PointCloud::OnStart() {
-    /* Resolved once, and per instance: this used to live in a function-local static, so the
-     * first cloud to render picked the renderer every later one would draw into. */
-    Window *window = m_object->GetScene().GetApplication().GetWindow();
-    m_renderer = window ? SDL_GetRenderer(static_cast<SDL_Window *>(window->GetHandle())) : nullptr;
-    if (!m_renderer) ROSE_LOG_ERROR("Orbits: the application window has no SDL renderer to draw into.\n");
-  }
-
   void PointCloud::FrameUpdate() {
     /* Hoisted out of the substep loop: the two lists are only ever sized together in Unpack, so
      * re-checking them once per iteration proved nothing the first check had not. */
     if (m_positions.size() != m_velocities.size()) {
       ROSE_LOG_ERROR("POINT CLOUD SIZE MISMATCH!\npoints size: {}\nvelocities size: {}\n", m_positions.size(),
                      m_velocities.size());
-      m_object->GetScene().GetApplication().Quit();
+      GetScene().GetApplication().Quit();
       return;
     }
 
@@ -93,7 +94,7 @@ namespace Orbits {
       integrate(dt);
     }
 
-    render();
+    updateGeometry();
   }
 
   void PointCloud::integrate(double dt) {
@@ -105,11 +106,12 @@ namespace Orbits {
     }
   }
 
-  void PointCloud::render() {
-    if (!m_renderer) return;
-
+  void PointCloud::updateGeometry() {
     // Cached on the Window, so this costs nothing and beats assuming the launch size forever.
-    const math::Vec2<int> size = m_object->GetScene().GetApplication().GetWindow()->GetSize();
+    const Window *window = GetScene().GetApplication().GetWindow();
+    if (!window) return;
+
+    const math::Vec2<int> size = window->GetSize();
     const float centerX = static_cast<float>(size.x) * 0.5f;
     const float centerY = static_cast<float>(size.y) * 0.5f;
 
@@ -118,18 +120,11 @@ namespace Orbits {
       const Point p { static_cast<float>(m_positions[i].x) + centerX, static_cast<float>(m_positions[i].y) + centerY };
       m_screen[i] = p;
       m_trails.Write(static_cast<uint32_t>(i), p);
+      m_bodyVertices[i] = DrawVertex { { p.x, p.y, 0.0f }, BODY_COLOR, {} };
     }
 
-    /* No clear here: Application has already run the backend's BeginFrame, which clears to black.
-     * The clear this used to do was a second full-screen write over the first. */
-    m_trailRenderer.Draw(m_renderer, m_trails, m_trailStyle);
-
-    SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-    SDL_RenderPoints(m_renderer, reinterpret_cast<const SDL_FPoint *>(m_screen.data()),
-                     static_cast<int>(m_screen.size()));
-
-    SDL_SetRenderDrawColor(m_renderer, 0, 255, 255, SDL_ALPHA_OPAQUE);
-    SDL_RenderPoint(m_renderer, centerX, centerY);
+    m_trailRenderer.Build(m_trails, m_trailStyle);
+    m_centerVertex = DrawVertex { { centerX, centerY, 0.0f }, CENTER_COLOR, {} };
 
     /* Replaces the per-frame Log of every trail's length, which was a formatted write per body
      * per frame and cost more than everything above it put together. */
@@ -162,5 +157,35 @@ namespace Orbits {
     }
     ===================================================
     */
+  }
+
+  void PointCloud::Collect(RenderList &out) {
+    // Order matters and is preserved: same band, same layer, so these draw as added.
+    if (!m_trailRenderer.Vertices().empty()) {
+      DrawCommand ribbon;
+      ribbon.vertices = m_trailRenderer.Vertices().data();
+      ribbon.vertexCount = m_trailRenderer.Vertices().size();
+      ribbon.indices = m_trailRenderer.Indices().data();
+      ribbon.indexCount = m_trailRenderer.Indices().size();
+      ribbon.topology = Topology::Triangles;
+      ribbon.flags = m_flags;
+      out.Add(ribbon);
+    }
+
+    if (!m_bodyVertices.empty()) {
+      DrawCommand bodies;
+      bodies.vertices = m_bodyVertices.data();
+      bodies.vertexCount = m_bodyVertices.size();
+      bodies.topology = Topology::Points;
+      bodies.flags = m_flags;
+      out.Add(bodies);
+    }
+
+    DrawCommand center;
+    center.vertices = &m_centerVertex;
+    center.vertexCount = 1;
+    center.topology = Topology::Points;
+    center.flags = m_flags;
+    out.Add(center);
   }
 } // namespace Orbits

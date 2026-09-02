@@ -56,6 +56,7 @@ namespace ROSE {
   }
 
   void Object::AddBehavior(UniquePtr<Behavior>&& behavior) {
+    behavior->m_object = this;
     m_pendingAdd.push_back(Move(behavior));
   }
 

@@ -17,6 +17,7 @@
 namespace ROSE {
   class Application;
   class Object;
+  class Behavior;
 
   class ROSE_API(CORE) Scene final {
     friend class Application;
@@ -50,8 +51,19 @@ namespace ROSE {
     Scene(Scene &&) noexcept = default;
     Scene &operator=(Scene &&) noexcept = default;
 
+    /* Out of line: firing every behavior's teardown needs Object complete, which it is not
+     * here. A moved-from scene has no objects left, so its destructor is a no-op. */
+    ~Scene();
+
   private:
     Scene();
+
+    /* The single teardown path. A behavior stops being enabled before it stops existing, so
+     * whatever it set up on enable has one place to be undone, and OnDestroy always runs
+     * before the map entry is erased. Used by both of FrameUpdate's destroy passes and by
+     * ~Scene. */
+    static void TeardownBehavior(Behavior &) noexcept;
+    static void TeardownObject(Object &) noexcept;
 
 
 

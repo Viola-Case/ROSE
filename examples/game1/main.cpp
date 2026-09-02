@@ -16,7 +16,6 @@ int main() {
 
   {
     BehaviorFactory &factory = BehaviorFactory::Get();
-    RoseRegisterCoreModule(factory);
     Pair<FactoryFn, UUID> fns[] {
       ROSE_BEHAVIOR_REGISTRY_PAIR(AppCloser), ROSE_BEHAVIOR_REGISTRY_PAIR(Paddle),
       ROSE_BEHAVIOR_REGISTRY_PAIR(Scoreboard), ROSE_BEHAVIOR_REGISTRY_PAIR(Ball),
@@ -27,7 +26,7 @@ int main() {
   }
 
   ApplicationInitSettings settings { "Game 1" };
-  settings.SetFlags(APPLICATION_SOFTWARE_RENDERER)
+  settings.SetFlags(APPLICATION_SDL_RENDERER)
     .SetWindowSize(800, 600)
     .AddSceneFromFile("assets/game1scene1.json")
     .SetVSync(true);

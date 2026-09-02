@@ -1,0 +1,70 @@
+{
+  "schema": "https://raw.githubusercontent.com/Viola-Case/ROSE/master/schemas/scene.schema.json",
+  "name": "cube",
+  "objects": [
+    {
+      "name": "Cube",
+      "uuid": "c591cf352b45d671-53a0034a146597f4",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0.5,
+          1.2,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "behaviors": [
+        {
+          "typeid": "9cfaac61886d5e2e-9e75d84332659afc",
+          "factoryParameters": {
+            "mesh": "13a2e5be51dcfa51-70653c9582659933"
+          }
+        },
+        {
+          "typeid": "71a70e9852f27ed4-e177f66081659b53",
+          "factoryParameters": {}
+        },
+        {
+          "typeid": "ab0a57d02d8e9fde-462c4cdfe26597d3",
+          "factoryParameters": {}
+        }
+      ]
+    },
+    {
+      "name": "Camera",
+      "uuid": "9f8f3119d26ae418-60a687f6f5659981",
+      "transform": {
+        "position": [
+          0,
+          -20,
+          0
+        ],
+        "rotation": [
+          1.5708,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "behaviors": [
+        {
+          "typeid": "98b16c050e659798-2ba97b3cd1a9dd7c",
+          "factoryParameters": {}
+        }
+      ]
+    }
+  ]
+}

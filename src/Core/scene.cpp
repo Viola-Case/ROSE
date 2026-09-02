@@ -30,6 +30,22 @@ namespace ROSE {
     m_name = String(std::format("Scene{}", sceneCounter++).c_str());
   }
 
+  void Scene::TeardownBehavior(Behavior &b) noexcept {
+    if (b.m_enabled) {
+      b.m_enabled = false;
+      b.OnDisable();
+    }
+    b.OnDestroy();
+  }
+
+  void Scene::TeardownObject(Object &o) noexcept {
+    for (auto &b : o.m_behaviors) TeardownBehavior(*b.second);
+  }
+
+  Scene::~Scene() {
+    for (auto &o : m_objects) TeardownObject(*o.second);
+  }
+
   
 
   void Scene::InitializePendingBehaviors() noexcept {
@@ -85,16 +101,15 @@ namespace ROSE {
     }
 
     for (const UUID &u : m_pendingDestroy) {
+      if (Object *o = GetObject(u)) TeardownObject(*o);
       m_objects.erase(u);
     }
     m_pendingDestroy.clear();
 
-    /* TODO neither destroy pass gives anything a shutdown callback - the map entry is
-     * erased and the destructor runs. Needs an OnDestroy hook (and an OnDisable call)
-     * before erasing, so behaviors can drop cached neighbor pointers. */
     for (auto &o : m_objects) {
       auto &l = o.second->m_pendingDestroy;
       for (const UUID &u : l) {
+        if (Behavior *b = o.second->GetBehavior(u)) TeardownBehavior(*b);
         o.second->m_behaviors.erase(u);
       }
       l.clear();
@@ -295,10 +310,12 @@ namespace ROSE {
         for (const auto &b : o.at("behaviors")) {
           UUID tID = getUUIDFromNode(b.at("typeid"));
           auto bvr = BehaviorFactory::Create(tID);
-          /* TODO Create returns nullptr for an unregistered/misspelled typeid and this
-           * dereferences it immediately - a bad scene file is a crash on load. Per the
-           * rehydration notes above this should log loudly, skip the behavior, and keep
-           * loading the rest of the scene. */
+          if (!bvr) {
+            ROSE_LOG_ERROR("Bad typeid {:x}-{:x} not created on object {}!\n"
+                           "Are you sure you spelled it correctly?",
+                           tID.high, tID.low, obj.m_name);
+            continue;
+          }
           bvr->m_object = &obj;
           auto paramObj = b.at("factoryParameters");
           ParamView pview{&paramObj};

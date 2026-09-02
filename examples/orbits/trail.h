@@ -17,7 +17,8 @@
 namespace Orbits {
   using ROSE::List;
 
-  //! Layout-compatible with `SDL_FPoint`; asserted where the cast is made.
+  //! A position in window space. Used to be cast to `SDL_FPoint`; it is now copied into a
+  //! `DrawVertex` by the trail renderer, so nothing depends on its layout any more.
   struct Point {
     float x, y;
   };

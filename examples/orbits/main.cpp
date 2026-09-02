@@ -29,7 +29,6 @@ int main() {
 
   {
     BehaviorFactory &factory = BehaviorFactory::Get();
-    RoseRegisterCoreModule(factory);
     Pair<FactoryFn, UUID> fns[] {
       ROSE_BEHAVIOR_REGISTRY_PAIR(PointCloud),
       ROSE_BEHAVIOR_REGISTRY_PAIR(Closer),
@@ -40,7 +39,7 @@ int main() {
   }
 
   ApplicationInitSettings settings { "Orbits" };
-  settings.SetFlags(APPLICATION_SOFTWARE_RENDERER)
+  settings.SetFlags(APPLICATION_SDL_RENDERER)
     .SetWindowSize(WIDTH, HEIGHT)
     .AddSceneFromFile("assets/orbits.json")
     .SetVSync(false);

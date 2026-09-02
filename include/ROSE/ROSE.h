@@ -42,6 +42,7 @@
 #include <ROSE/Core/audio.h>
 #include <ROSE/Core/audiosource.h>
 #include <ROSE/Core/mesh.h>
+#include <ROSE/Core/texture.h>
 #include <ROSE/Core/renderable.h>
 #include <ROSE/Core/collider.h>
 #include <ROSE/Core/asset.h>

@@ -35,8 +35,9 @@ namespace ROSE {
       NoRenderer = 1,
       Server = 2,
       Light = 3,
-      SoftwareRenderer = 4,
+      SoftwareRenderer = 4, //!< the real rasterizer, not SDL's renderer - see `SDLRenderer`
       LowPerformance = 5,
+      SDLRenderer = 6,
       Vulkan = 7,
       OpenGL = 8,
       DirectX9 = 9,
@@ -63,6 +64,8 @@ namespace ROSE {
                                                              << static_cast<int>(ApplicationFlag::SoftwareRenderer);
   constexpr ApplicationFlags APPLICATION_LOW_PERFORMANCE = static_cast<ApplicationFlags>(1)
                                                            << static_cast<int>(ApplicationFlag::LowPerformance);
+  constexpr ApplicationFlags APPLICATION_SDL_RENDERER = static_cast<ApplicationFlags>(1)
+                                                        << static_cast<int>(ApplicationFlag::SDLRenderer);
   constexpr ApplicationFlags APPLICATION_VULKAN = static_cast<ApplicationFlags>(1)
                                                   << static_cast<int>(ApplicationFlag::Vulkan);
   constexpr ApplicationFlags APPLICATION_OPENGL = static_cast<ApplicationFlags>(1)
@@ -79,9 +82,16 @@ namespace ROSE {
   constexpr ApplicationFlags APPLICATION_DEBUG = static_cast<ApplicationFlags>(1)
                                                  << static_cast<int>(ApplicationFlag::Debug);
 
-  //! What an application gets when it asks for nothing in particular: a windowed, gamepad-aware
-  //! game on the SDL renderer.
-  constexpr ApplicationFlags APPLICATION_DEFAULT = APPLICATION_SOFTWARE_RENDERER;
+  /*!
+   * What an application gets when it asks for nothing in particular: a windowed, gamepad-aware
+   * game on the SDL renderer.
+   *
+   * @warning This used to be `APPLICATION_SOFTWARE_RENDERER`, which selected SDL's renderer
+   *          despite its name. That flag now selects the real software rasterizer, so a caller
+   *          that passed it explicitly and wanted the old behaviour must say
+   *          `APPLICATION_SDL_RENDERER`. It is a behaviour change, not a compile error.
+   */
+  constexpr ApplicationFlags APPLICATION_DEFAULT = APPLICATION_SDL_RENDERER;
 
 
   /*!
@@ -203,6 +213,13 @@ namespace ROSE {
      *
      * @retval 0 on success, negative otherwise.
      */
+    int Init(ApplicationInitSettings &_settings);
+    /*!
+     * Brings up the subsystems, the window, the renderer and the scenes described by `_settings`,
+     * which is consumed. Call exactly once, before `Run`.
+     *
+     * @retval 0 on success, negative otherwise.
+     */
     int Init(ApplicationInitSettings &&_settings);
     void Run(); //!< Should only be called once. Terminates if called again.
     void Quit() noexcept;
@@ -224,6 +241,14 @@ namespace ROSE {
      */
     [[nodiscard]] Scene *GetCurrentScene() noexcept;
 
+    /*!
+     * The active render backend, or `nullptr` when there is none - a headless or `NoRenderer`
+     * run, or before `Init`. This is how a `Renderable` finds somewhere to enroll, and the only
+     * sanctioned route from a behavior to the backend; it hands back the abstract base, never a
+     * concrete backend, so nothing downstream can grow a per-backend code path.
+     */
+    [[nodiscard]] RenderBackend *GetRenderBackend() noexcept;
+
     const List<Scene> &GetScenes() noexcept;
 
     [[nodiscard]] bool GetFlag(ApplicationFlag) const noexcept;
@@ -239,6 +264,10 @@ namespace ROSE {
      * module list on ApplicationInitSettings that Init walks, not a member function to call
      * beforehand. */
     bool LoadModule(StringView name) noexcept;
+
+  private:
+    /*! The active camera's world-to-clip matrix, or a screen-pixel fallback when there is none. */
+    [[nodiscard]] math::Mat4f ResolveViewProjection() noexcept;
 
   protected:
     String m_title { "game" };

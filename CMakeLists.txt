@@ -591,11 +591,11 @@ file(GLOB_RECURSE ORBITS_SOURCES CONFIGURE_DEPENDS "examples/orbits/*.cpp")
 
 add_executable(Orbits ${ORBITS_SOURCES})
 
-# SDL3 is linked explicitly rather than picked up through ROSE_Core: this example calls the render API directly to
-# batch its point cloud, so it is a first-party dependency of the target and not an implementation detail.
+# No SDL3 here, deliberately. The point cloud used to call the render API directly, which made SDL a first-party
+# dependency of the demo; it now hands geometry up as a Renderable and never names a backend. If SDL3 ever needs to
+# come back to this line, something has leaked through the abstraction.
 target_link_libraries(Orbits PRIVATE
         ROSE_Core
-        SDL3::SDL3
         imgui::imgui
 )
 
@@ -604,7 +604,21 @@ set_property(TARGET Orbits PROPERTY FOLDER "Examples")
 rose_deploy_runtime(Orbits)
 
 rose_deploy_assets(Orbits "${CMAKE_CURRENT_SOURCE_DIR}/examples/orbits/assets")
+# ------------------------------------------------------------------------ Cube
+file(GLOB_RECURSE CUBE_SOURCES CONFIGURE_DEPENDS "examples/cube/*.cpp")
 
+add_executable(Cube ${CUBE_SOURCES})
+
+target_link_libraries(Cube PRIVATE
+        ROSE_Core
+        imgui::imgui
+)
+
+set_property(TARGET Cube PROPERTY FOLDER "Examples")
+
+rose_deploy_runtime(Cube)
+
+rose_deploy_assets(Cube "${CMAKE_CURRENT_SOURCE_DIR}/examples/cube/assets")
 # ------------------------------------------------------------------------ Game2
 file(GLOB_RECURSE GAME2_SOURCES CONFIGURE_DEPENDS "examples/game2/*.cpp")
 

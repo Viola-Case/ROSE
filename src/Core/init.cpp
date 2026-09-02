@@ -27,6 +27,8 @@ namespace ROSE {
 
     InputSystem::GetInstance().Init();
 
+    RoseRegisterCoreModule(BehaviorFactory::Get());
+
     return InitStatus::Success;
   }
 } // namespace ROSE
