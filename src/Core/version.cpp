@@ -13,6 +13,7 @@
 
 namespace ROSE {
   unsigned int GetVersion() { return ROSE_VERSION; }
+
   String VersionStr(unsigned int v) {
     return Format("{}.{}.{}",
       ROSE_VERSIONNUM_MAJOR(v),

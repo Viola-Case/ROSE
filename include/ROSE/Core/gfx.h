@@ -17,6 +17,7 @@
 #include <ROSE/Core/paramview.h>
 #include <ROSE/Core/rtl.h>
 #include <ROSE/Core/uuid.h>
+#include <ROSE/Core/version.h>
 
 namespace ROSE {
 
@@ -117,6 +118,9 @@ namespace ROSE {
     int        height { 0 };
     bool       vsync { false };
     ParamView *config { nullptr };
+
+    const char *appName { nullptr };
+    const Version appVersion { ROSE_VERSIONNUM(0,0,0) };
   };
 
   enum class BackendStatus : uint32_t {
@@ -508,6 +512,27 @@ namespace ROSE {
 
   protected:
     void Draw(const DrawCommand &) override {}
+  };
+
+  class ROSE_API(CORE) VulkanRenderer : public RenderBackend {
+  public:
+    VulkanRenderer() = default;
+    ~VulkanRenderer() override = default;
+    VulkanRenderer(const VulkanRenderer &) = delete;
+    VulkanRenderer(VulkanRenderer &&) = delete;
+    VulkanRenderer &operator=(const VulkanRenderer &) = delete;
+    VulkanRenderer &operator=(VulkanRenderer &&) = delete;
+    BackendStatus Init(const RenderBackendContext &ctx) override;
+    void Shutdown() override;
+    void BeginFrame() override;
+    void EndFrame() override;
+    void OnResize(int width, int height) override;
+
+  protected:
+    void Draw(const DrawCommand &) override;
+
+  private:
+
   };
 
   /*!

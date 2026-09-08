@@ -18,7 +18,7 @@
 
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
-#include <ROSE/Core/imgui.h>
+#include <ROSE/Ext/imgui.h>
 
 #if ROSE_PLATFORM_WINDOWS
   #include <Windows.h>
@@ -147,6 +147,9 @@ namespace ROSE {
     m_vsync = settings.m_vsync;
     m_scenes = Move(settings.m_scenes);
 
+    if (settings.m_appVersion)
+      m_appVersion = settings.m_appVersion;
+
 #if defined(_DEBUG)
     m_flags |= APPLICATION_DEBUG;
 #endif
@@ -194,7 +197,14 @@ namespace ROSE {
     if (m_renderer && m_window) {
       const math::Vec2<int> size = m_window->GetSize();
 
-      RenderBackendContext ctx { { m_window->GetHandle() }, size.x, size.y, m_vsync };
+      RenderBackendContext ctx {
+        .window={ m_window->GetHandle() },
+        .width=size.x,
+        .height=size.y,
+        .vsync=m_vsync,
+        .appName = m_title.c_str(),
+        .appVersion = m_appVersion
+      };
 
       // Not ignorable: a backend that failed to initialise leaves ImGui's renderer impl unbound, and the
       // first BeginFrame then trips an assert inside ImGui rather than reporting anything useful here.

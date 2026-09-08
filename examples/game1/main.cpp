@@ -1,5 +1,5 @@
 #include <ROSE/ROSE.h>
-#include <ROSE/Core/imgui.h>
+#include <ROSE/Ext/imgui.h>
 
 #include "applicationcloser.h"
 #include "fpscounter.h"

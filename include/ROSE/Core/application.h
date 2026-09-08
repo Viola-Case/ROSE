@@ -190,6 +190,7 @@ namespace ROSE {
     void *m_windowHandle { nullptr }; //!< If not `nullptr`, adopt this window instead of creating one
     List<Scene> m_scenes {};
     void *m_customBackend { nullptr }; //!< If not `nullptr`, called as factory function of custom renderer
+    Version m_appVersion { 0 };
     bool m_vsync { false };
   };
 
@@ -292,6 +293,8 @@ namespace ROSE {
     math::Vec2<int32_t> m_windowSize { 800, 600 };
 
     uint32_t m_targetFrameRate { 0 };
+
+    Version m_appVersion { 0 };
 
     bool m_vsync { true };
     bool m_shouldClose { false };

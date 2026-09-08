@@ -12,7 +12,7 @@
 
 
 #include <ROSE/ROSE.h>
-#include <ROSE/Core/imgui.h>
+#include <ROSE/Ext/imgui.h>
 
 #include "closer.h"
 #include "pointcloud.h"
