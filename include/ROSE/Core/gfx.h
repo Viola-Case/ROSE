@@ -341,14 +341,14 @@ namespace ROSE {
    * the engine has always used; it was called `SoftwareRenderer` until the class below became a
    * real one.
    */
-  class ROSE_API(CORE) SDLRenderer : public RenderBackend {
+  class ROSE_API(CORE) SoftwareRenderer : public RenderBackend {
   public:
-    SDLRenderer();
-    ~SDLRenderer() override;
-    SDLRenderer(const SDLRenderer &) = delete;
-    SDLRenderer(SDLRenderer &&) = delete;
-    SDLRenderer &operator=(const SDLRenderer &) = delete;
-    SDLRenderer &operator=(SDLRenderer &&) = delete;
+    SoftwareRenderer();
+    ~SoftwareRenderer() override;
+    SoftwareRenderer(const SoftwareRenderer &) = delete;
+    SoftwareRenderer(SoftwareRenderer &&) = delete;
+    SoftwareRenderer &operator=(const SoftwareRenderer &) = delete;
+    SoftwareRenderer &operator=(SoftwareRenderer &&) = delete;
 
     BackendStatus Init(const RenderBackendContext &) override;
     void Shutdown() override;
@@ -444,15 +444,15 @@ namespace ROSE {
    * and letting the present stretch it is the single largest performance lever available, and
    * ImGui draws *after* the blit so the HUD stays crisp at native size over a chunky world.
    */
-  class ROSE_API(CORE) SoftwareRenderer : public RenderBackend {
+  class ROSE_API(CORE) CPURasterRenderer : public RenderBackend {
   public:
     //! 0, 0 means "track the window". A fixed internal size is the point of the thing.
-    explicit SoftwareRenderer(int internalWidth = 0, int internalHeight = 0);
-    ~SoftwareRenderer() override;
-    SoftwareRenderer(const SoftwareRenderer &) = delete;
-    SoftwareRenderer(SoftwareRenderer &&) = delete;
-    SoftwareRenderer &operator=(const SoftwareRenderer &) = delete;
-    SoftwareRenderer &operator=(SoftwareRenderer &&) = delete;
+    explicit CPURasterRenderer(int internalWidth = 0, int internalHeight = 0);
+    ~CPURasterRenderer() override;
+    CPURasterRenderer(const CPURasterRenderer &) = delete;
+    CPURasterRenderer(CPURasterRenderer &&) = delete;
+    CPURasterRenderer &operator=(const CPURasterRenderer &) = delete;
+    CPURasterRenderer &operator=(CPURasterRenderer &&) = delete;
 
     BackendStatus Init(const RenderBackendContext &) override;
     void Shutdown() override;

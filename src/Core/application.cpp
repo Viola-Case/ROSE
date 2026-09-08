@@ -168,7 +168,7 @@ namespace ROSE {
         windowFlags |= SDL_WINDOW_OPENGL;
         m_renderer = new OpenGLRenderer();
       } else if (GetFlag(ApplicationFlag::SoftwareRenderer)) {
-        m_renderer = new SoftwareRenderer();
+        m_renderer = new CPURasterRenderer();
       } else {
         if (GetFlag(ApplicationFlag::Vulkan) || GetFlag(ApplicationFlag::Metal) ||
             GetFlag(ApplicationFlag::DirectX9) || GetFlag(ApplicationFlag::DirectX11) ||
@@ -176,7 +176,7 @@ namespace ROSE {
           ROSE_LOG_WARN("No backend implements that graphics API yet - falling back to the SDL renderer, "
                         "which will pick a hardware driver of its own.\n");
 
-        m_renderer = new SDLRenderer();
+        m_renderer = new CPURasterRenderer();
       }
     }
 

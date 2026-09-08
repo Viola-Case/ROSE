@@ -46,16 +46,16 @@ namespace ROSE {
     }
   } // namespace
 
-  SoftwareRenderer::SoftwareRenderer(const int _internalWidth, const int _internalHeight)
+  CPURasterRenderer::CPURasterRenderer(const int _internalWidth, const int _internalHeight)
     : m_requestedWidth(_internalWidth), m_requestedHeight(_internalHeight) {}
 
-  SoftwareRenderer::~SoftwareRenderer() {
+  CPURasterRenderer::~CPURasterRenderer() {
     Shutdown();
     delete AsPresenter(m_presenter);
     m_presenter = nullptr;
   }
 
-  BackendStatus SoftwareRenderer::Init(const RenderBackendContext &_ctx) {
+  BackendStatus CPURasterRenderer::Init(const RenderBackendContext &_ctx) {
     if (!m_presenter) m_presenter = new SDLPresenter();
 
     if (const BackendStatus status = AsPresenter(m_presenter)->Init(_ctx); status != BackendStatus::Success)
@@ -68,7 +68,7 @@ namespace ROSE {
     return m_color.empty() ? BackendStatus::Failure : BackendStatus::Success;
   }
 
-  void SoftwareRenderer::Shutdown() {
+  void CPURasterRenderer::Shutdown() {
     if (m_target) {
       SDL_DestroyTexture(static_cast<SDL_Texture *>(m_target));
       m_target = nullptr;
@@ -77,7 +77,7 @@ namespace ROSE {
     DetachAllRenderables();
   }
 
-  void SoftwareRenderer::Resize(const int _width, const int _height) {
+  void CPURasterRenderer::Resize(const int _width, const int _height) {
     const int width = _width > 0 ? _width : 1;
     const int height = _height > 0 ? _height : 1;
     if (width == m_width && height == m_height && m_target) return;
@@ -111,7 +111,7 @@ namespace ROSE {
     ClearTo(m_clear);
   }
 
-  void SoftwareRenderer::SetInternalResolution(const int _width, const int _height) {
+  void CPURasterRenderer::SetInternalResolution(const int _width, const int _height) {
     m_requestedWidth = _width;
     m_requestedHeight = _height;
 
@@ -123,23 +123,23 @@ namespace ROSE {
     }
   }
 
-  void SoftwareRenderer::OnResize(const int _width, const int _height) {
+  void CPURasterRenderer::OnResize(const int _width, const int _height) {
     // A fixed internal resolution ignores the window: only the destination rect changes, and
     // that is handled by presenting with a null rect.
     if (m_requestedWidth > 0 && m_requestedHeight > 0) return;
     Resize(_width, _height);
   }
 
-  void SoftwareRenderer::ClearTo(const uint32_t _argb) noexcept {
+  void CPURasterRenderer::ClearTo(const uint32_t _argb) noexcept {
     for (uint32_t &pixel : m_color) pixel = _argb;
   }
 
-  void SoftwareRenderer::BeginFrame() {
+  void CPURasterRenderer::BeginFrame() {
     ClearTo(m_clear);
     AsPresenter(m_presenter)->NewFrame();
   }
 
-  void SoftwareRenderer::EndFrame() {
+  void CPURasterRenderer::EndFrame() {
     SDLPresenter *presenter = AsPresenter(m_presenter);
     SDL_Renderer *renderer = presenter->Renderer();
 
@@ -170,12 +170,12 @@ namespace ROSE {
     presenter->PresentWithImGui();
   }
 
-  void *SoftwareRenderer::GetNativeHandle() const { return m_color.empty() ? nullptr : (void *)m_color.data(); }
-  const char *SoftwareRenderer::GetName() const { return "Software rasterizer"; }
+  void *CPURasterRenderer::GetNativeHandle() const { return m_color.empty() ? nullptr : (void *)m_color.data(); }
+  const char *CPURasterRenderer::GetName() const { return "Software rasterizer"; }
 
 #pragma region rasterizer
 
-  void SoftwareRenderer::BlendPixel(const int _x, const int _y, const Vec4f &_rgba, const bool _blend) noexcept {
+  void CPURasterRenderer::BlendPixel(const int _x, const int _y, const Vec4f &_rgba, const bool _blend) noexcept {
     if (_x < 0 || _y < 0 || _x >= m_width || _y >= m_height) return;
 
     uint32_t &dst = m_color[static_cast<size_t>(_y) * static_cast<size_t>(m_width) + static_cast<size_t>(_x)];
@@ -197,7 +197,7 @@ namespace ROSE {
     dst = PackARGB({ _rgba.x * a + dr * inv, _rgba.y * a + dg * inv, _rgba.z * a + db * inv, a + da * inv });
   }
 
-  void SoftwareRenderer::FillTriangle(const DrawVertex &_a, const DrawVertex &_b, const DrawVertex &_c,
+  void CPURasterRenderer::FillTriangle(const DrawVertex &_a, const DrawVertex &_b, const DrawVertex &_c,
                                       const bool _blend) noexcept {
     const DrawVertex *a = &_a;
     const DrawVertex *b = &_b;
@@ -267,7 +267,7 @@ namespace ROSE {
     }
   }
 
-  void SoftwareRenderer::RasterLine(const DrawVertex &_a, const DrawVertex &_b, const bool _blend) noexcept {
+  void CPURasterRenderer::RasterLine(const DrawVertex &_a, const DrawVertex &_b, const bool _blend) noexcept {
     const float dx = _b.position.x - _a.position.x;
     const float dy = _b.position.y - _a.position.y;
     const float span = math::Max(dx < 0.f ? -dx : dx, dy < 0.f ? -dy : dy);
@@ -293,7 +293,7 @@ namespace ROSE {
     }
   }
 
-  void SoftwareRenderer::RasterPoint(const DrawVertex &_v, const float _size, const bool _blend) noexcept {
+  void CPURasterRenderer::RasterPoint(const DrawVertex &_v, const float _size, const bool _blend) noexcept {
     if (_size <= 1.f) {
       BlendPixel(static_cast<int>(_v.position.x), static_cast<int>(_v.position.y), _v.color, _blend);
       return;
@@ -309,7 +309,7 @@ namespace ROSE {
 
 #pragma endregion
 
-  void SoftwareRenderer::Draw(const DrawCommand &_cmd) {
+  void CPURasterRenderer::Draw(const DrawCommand &_cmd) {
     if (m_color.empty() || _cmd.vertexCount == 0) return;
 
     const bool screenSpace = (_cmd.flags & RENDERABLE_SCREEN_SPACE) != 0;

@@ -29,20 +29,20 @@ namespace ROSE {
     SDLPresenter *AsPresenter(void *_p) noexcept { return static_cast<SDLPresenter *>(_p); }
   } // namespace
 
-  SDLRenderer::SDLRenderer() = default;
+  SoftwareRenderer::SoftwareRenderer() = default;
 
-  SDLRenderer::~SDLRenderer() {
+  SoftwareRenderer::~SoftwareRenderer() {
     Shutdown();
     delete AsPresenter(m_presenter);
     m_presenter = nullptr;
   }
 
-  BackendStatus SDLRenderer::Init(const RenderBackendContext &_ctx) {
+  BackendStatus SoftwareRenderer::Init(const RenderBackendContext &_ctx) {
     if (!m_presenter) m_presenter = new SDLPresenter();
     return AsPresenter(m_presenter)->Init(_ctx);
   }
 
-  void SDLRenderer::Shutdown() {
+  void SoftwareRenderer::Shutdown() {
     for (auto &entry : m_textures)
       if (entry.second) SDL_DestroyTexture(static_cast<SDL_Texture *>(entry.second));
     m_textures.clear();
@@ -51,15 +51,15 @@ namespace ROSE {
     DetachAllRenderables();
   }
 
-  void SDLRenderer::BeginFrame() {
+  void SoftwareRenderer::BeginFrame() {
     const SDLPresenter *p = AsPresenter(m_presenter);
     p->Clear({ 0.f, 0.f, 0.f, 1.f });
     p->NewFrame();
   }
 
-  void SDLRenderer::EndFrame() { AsPresenter(m_presenter)->PresentWithImGui(); }
+  void SoftwareRenderer::EndFrame() { AsPresenter(m_presenter)->PresentWithImGui(); }
 
-  void SDLRenderer::OnResize(int _width, int _height) {
+  void SoftwareRenderer::OnResize(int _width, int _height) {
     /* SDL's renderer tracks its window's size on its own, and the logical presentation is left
      * at its default (disabled), so there is no target to rebuild here. Kept as the hook the
      * base class requires, and as the place a logical-size policy would go. */
@@ -67,13 +67,13 @@ namespace ROSE {
     (void)_height;
   }
 
-  void *SDLRenderer::GetNativeHandle() const {
+  void *SoftwareRenderer::GetNativeHandle() const {
     return m_presenter ? AsPresenter(m_presenter)->Renderer() : nullptr;
   }
 
-  const char *SDLRenderer::GetName() const { return "SDL Renderer"; }
+  const char *SoftwareRenderer::GetName() const { return "SDL Renderer"; }
 
-  void *SDLRenderer::ResolveTexture(const TextureID &_id) noexcept {
+  void *SoftwareRenderer::ResolveTexture(const TextureID &_id) noexcept {
     if (_id == UUID::Invalid()) return nullptr;
 
     if (const auto it = m_textures.find(_id); it != m_textures.end()) return it->second;
@@ -91,7 +91,7 @@ namespace ROSE {
     return texture;
   }
 
-  void SDLRenderer::Draw(const DrawCommand &_cmd) {
+  void SoftwareRenderer::Draw(const DrawCommand &_cmd) {
     SDL_Renderer *renderer = AsPresenter(m_presenter)->Renderer();
     if (!renderer || _cmd.vertexCount == 0) return;
 
