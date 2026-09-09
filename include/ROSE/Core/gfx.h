@@ -514,10 +514,12 @@ namespace ROSE {
     void Draw(const DrawCommand &) override {}
   };
 
+  struct VulkanIMPL;
+
   class ROSE_API(CORE) VulkanRenderer : public RenderBackend {
   public:
-    VulkanRenderer() = default;
-    ~VulkanRenderer() override = default;
+    VulkanRenderer();
+    ~VulkanRenderer();
     VulkanRenderer(const VulkanRenderer &) = delete;
     VulkanRenderer(VulkanRenderer &&) = delete;
     VulkanRenderer &operator=(const VulkanRenderer &) = delete;
@@ -532,7 +534,7 @@ namespace ROSE {
     void Draw(const DrawCommand &) override;
 
   private:
-
+    VulkanIMPL *m_impl {nullptr};
   };
 
   /*!
