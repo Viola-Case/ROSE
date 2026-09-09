@@ -418,8 +418,8 @@ Notes:
   `Sin` overloads would otherwise be ambiguous. Verified correct at runtime:
   `AxisAngle(π/2, 0,0,1)` → `(0.7071, 0, 0, 0.7071)`, norm 1.
 - The folded and runtime results are **not** bit-identical — the constant-evaluated
-  path carries up to ~3.8e-13 absolute error (see `mathfunctions.h`), against a
-  runtime path that matches libm exactly. Fine for rotations, but don't
+  `Sin`/`Cos` are within 1 ulp of the true value (see `math/functions/trig.h`) but
+  can land on the other neighbour from libm. Fine for rotations, but don't
   `static_assert` a folded component against a decimal literal, and don't cache a
   folded quaternion expecting it to equal the same call made at runtime.
 - `FromEuler` default order is `XYZ`; `ToEuler` default order is `ZYX`. **Pass the
@@ -452,74 +452,107 @@ Notes:
 
 ---
 
-## `mathfunctions.h`
+## `mathfunctions.h` and `math/functions/`
+
+`mathfunctions.h` is now an umbrella. The scalar functions live in four headers under
+`math/functions/`, each includable on its own, plus a private `detail.h` they share:
+
+| Header | Provides |
+|---|---|
+| `functions/common.h` | `Abs`, `Min`, `Max`, `Clamp`, `IsNaN`, `IsInf`, `IsFinite` |
+| `functions/roots.h` | `Sqrt`, `Hypot` |
+| `functions/trig.h` | `Sin`, `Cos`, `Tan`, `Asin`, `Acos`, `Atan`, `Atan2` |
+| `functions/exponential.h` | `Exp`, `Ln`, `Log2`, `Log10`, `Pow` |
+| `functions/detail.h` | bit access, `Scale` (constexpr `ldexp`), `Trunc`, a double-double kit — **not API** |
 
 ```cpp
-template <StdScalar T> constexpr T Clamp(T value, T min, T max) noexcept;
+// common.h — all StdScalar templates, all by value
+template <StdScalar T> constexpr T Abs(T) noexcept;              // fabs for floats: clears the sign bit, -0 -> +0
+template <StdScalar T> constexpr T Min(T, T) noexcept;           // first argument wins on NaN, like std::min
+template <StdScalar T> constexpr T Max(T, T) noexcept;
+template <StdScalar T> constexpr T Clamp(T value, T min, T max) noexcept;   // NaN passes through
+template <std::floating_point T> constexpr bool IsNaN(T) / IsInf(T) / IsFinite(T) noexcept;
 
-constexpr double Sqrt(double) noexcept;
-constexpr float  Sqrt(float)  noexcept;
+// roots.h
+constexpr double Sqrt(double) noexcept;               constexpr float Sqrt(float) noexcept;
+constexpr double Hypot(double, double) noexcept;      constexpr float Hypot(float, float) noexcept;
+template <StdScalar A, StdScalar B> constexpr double Hypot(A, B) noexcept;   // mixed / integral -> double
 
-constexpr double Sin(double)  noexcept;   constexpr float Sin(float) noexcept;
-constexpr double Cos(double)  noexcept;   constexpr float Cos(float) noexcept;
-constexpr double Tan(double)  noexcept;   constexpr float Tan(float) noexcept;
+// trig.h — radians
+constexpr double Sin/Cos/Tan(double) noexcept;        constexpr float Sin/Cos/Tan(float) noexcept;
+constexpr double Asin/Acos/Atan(double) noexcept;     constexpr float Asin/Acos/Atan(float) noexcept;
+constexpr double Atan2(double y, double x) noexcept;  constexpr float Atan2(float, float) noexcept;
+template <StdScalar A, StdScalar B> constexpr double Atan2(A, B) noexcept;
 
-inline double Asin(double)  noexcept;         inline float Asin(float) noexcept;
-inline double Atan2(double y, double x) noexcept;  inline float Atan2(float, float) noexcept;
-
-template <T> constexpr const T& Min(const T& a, const T& b) noexcept requires std::is_arithmetic_v<T>;
-template <T> constexpr const T& Max(const T& a, const T& b) noexcept requires std::is_arithmetic_v<T>;
+// exponential.h
+constexpr double Exp(double) noexcept;                constexpr float Exp(float) noexcept;
+constexpr double Ln/Log2/Log10(double) noexcept;      constexpr float Ln/Log2/Log10(float) noexcept;
+constexpr double Pow(double, double) noexcept;        constexpr float Pow(float, float) noexcept;
+constexpr double Pow(double, int) noexcept;           constexpr float Pow(float, int) noexcept;
+template <StdScalar A, StdScalar B> constexpr double Pow(A, B) noexcept;
 ```
 
-`Sqrt` branches on `__builtin_is_constant_evaluated()`: at runtime it is
-`__builtin_sqrt(f)`, which lowers to a single hardware instruction; at compile
-time it falls back to `detail::SqrtConst`, a Quake-style inverse-sqrt seed
-(`SQRTMAGIC64` / `SQRTMAGIC32`) refined with Newton steps, then one classical
-step to land on the rounded result. Handles ±0, NaN, negatives (→ NaN), infinity
-(`MAXFINITE64` / `MAXFINITE32`), and rescales subnormals (`MINNORMAL*`,
-`SUBNORMALSCALE*`, `SUBNORMALUNSCALE*`) into the normal range first. All of those
-live in `constants.h`; `mathfunctions.h` includes it for them.
+Every function branches on `__builtin_is_constant_evaluated()`. At runtime it
+lowers to the hardware instruction or the libm call (`__builtin_sqrt`/`sin`/`exp`/
+`log`/`pow`/`hypot`/`atan2`…, + `f` variants); at compile time it goes through a
+`detail::*Const` function in the same header. **Clang/GCC only** — no MSVC
+fallback, and `roots.h`/`exponential.h` need `uint128_t`.
 
-**Clang/GCC only** — the `__builtin_*` calls have no MSVC fallback.
+A note on `uint128_t` in those constexpr paths: they are compiled even though only
+constant evaluation reaches them, and an unoptimised build keeps the call. 128-bit
+division and int↔float conversion lower to compiler-rt libcalls (`__udivti3`,
+`__floatuntidf`), which clang-cl does not link by default. `CMakeLists.txt` now
+links `clang_rt.builtins-x86_64.lib` into Core (PUBLIC), so those work anywhere in
+the tree; the math headers still avoid them — `detail::FromUInt128` and a
+bit-length overflow test — so they also compile in a standalone test that links
+nothing but `buffer.cpp`.
 
-Accuracy differs between the two paths. The runtime builtin is correctly rounded;
-the constant-evaluated path is **not always** — `Sqrt(2.0)` folds to
-`1.4142135623730949` at compile time against a correctly-rounded
-`1.4142135623730951`, one ulp low. Exact powers of four are fine
-(`static_assert(Sqrt(4.0) == 2.0)` holds). Don't `static_assert` a constant-folded
-`Sqrt` against a decimal literal you got from elsewhere.
+### Which paths agree bit for bit
 
-`Sin`/`Cos`/`Tan` follow the exact same `__builtin_is_constant_evaluated()`
-pattern: at runtime they lower to `__builtin_sin`/`cos`/`tan` (+`f` variants),
-which match libm bit-for-bit; at compile time they go through a shared
-`detail::SinCosConst`, which does Cody–Waite range reduction into
-\f$[-\pi/4, \pi/4]\f$ and a Horner-form Taylor series, returning sin and cos
-together (the quadrant dispatch produces both; `Tan` is `sin/cos`). Arguments are
-in **radians**. Note the reduction uses full-precision π/2 literals baked into
-`SinCosConst`, **not** `math::PI` — `math::PI` is only float-precise (see #8) and
-would poison it. Same accuracy caveat as `Sqrt`: the two paths need not agree in
-the last bit (constexpr `Sin(2.0)` is ~1 ulp off libm), and the compile-time path
-loses low bits for very large arguments (roughly beyond \f$2^{20}\f$). Verified:
-`static_assert(Sin(0.0) == 0.0)` and `Cos(0.0) == 1.0` hold; constexpr errors stay
-≤ ~1 ulp, including `Sin(100.0)` after reduction.
+| Function | constexpr path | Agrees with runtime? |
+|---|---|---|
+| `Sqrt` | integer root of the mantissa (`ISqrt` on a 110-bit radicand), rounded from exact guard/sticky bits | **Yes, always.** Verified exhaustively for every non-negative float and over 20M random double bit patterns, subnormals and NaNs included |
+| `Exp`, `Ln`, `Log2`, `Log10` | series in double-double (~106-bit intermediates), collapsed once; subnormal `Exp` results collapse round-to-odd before the final scale; the other logs are `Ln` divided by a double-double constant | Correctly rounded on every vector tried (4000–5000 each). UCRT's `exp` is 1 ulp off on 0.5% of the same vectors |
+| `Pow` | positive integer exponent on a base with a small odd mantissa: exact `uint128_t` power, rounded once. Otherwise `exp(y ln x)` in double-double | Correctly rounded on every vector tried, including exact ties like `Pow(10, 23)` and 800 random `m·2^e` to the `n`. UCRT's `pow` is 1 ulp off on a few |
+| `Hypot` | scaled, exact sum of squares as a double-double, correctly rounded root + one Newton correction | Correctly rounded on every vector tried; UCRT's `hypot` is 1 ulp off on ~6% |
+| `Asin`, `Acos`, `Atan`, `Atan2` | one arctangent of a quotient ≤ 1, half-angle-reduced twice and summed in double-double; `1 − x²` and the quotient formed exactly | Correctly rounded on every vector tried (4000–5000 each). UCRT's `asin` is 1 ulp off on 10% of the same vectors, `acos` on 4% |
+| `Sin`, `Cos`, `Tan` | double-double reduction (π/2 to 159 bits), Taylor to `x¹⁷`/`x¹⁶` with the reduced argument's tail folded in, fdlibm-style | Within 1 ulp up to \f$2^{48}\f$ (measured: ~2% of inputs are 1 ulp off, libm ~1%); a few 2-ulp cases between \f$2^{48}\f$ and \f$2^{50}\f$; degrades beyond. May differ from libm in the last bit |
 
-⚠️ `math::Min`/`Max` and `ROSE::Min`/`Max` (from `utility.h`) both exist, with
-different signatures — `ROSE::` takes by value and is unconstrained, `math::`
-takes by const reference and requires an arithmetic type. With both namespaces in
-scope an unqualified call is ambiguous.
+So `static_assert(Sqrt(2.0) == 1.4142135623730951)` now holds (it used to fold one
+ulp low), and so do `Pow(10.0, 23.0) == 1e23`, `Log2(1024.0) == 10.0`,
+`Atan2(1.0, 1.0) == 0.7853981633974483`, `Ln(E) == 1.0`. The old "don't
+`static_assert` a folded result against a literal" warning now applies only to
+`Sin`/`Cos`/`Tan`.
 
-`Asin` and `Atan2` were added for `Quat::ToEuler` and are the one place the pattern
-breaks: they are `inline`, **not `constexpr`**, and lower straight to
-`__builtin_asin`/`__builtin_atan2`. A constant-evaluated path would need its own
-range reduction and series the way `detail::SinCosConst` does, and nothing has
-wanted an arcsine inside a constant expression yet — the header asks that it be
-added here rather than at a call site if that changes. `Atan2(y, x)` takes the
-conventional argument order and is quadrant-correct across all four, which is why
-`ToEuler` uses it instead of `Asin` to recover angles from matrix entry pairs.
-`Asin` gives NaN rather than a clamped angle outside [-1, 1], so clamp first.
+Things to know:
 
-Missing: `Abs`, `Floor`/`Ceil`/`Round`, `Lerp`, `Pow`, `Acos`/`Atan`,
-`ToRadians`/`ToDegrees`.
+- **`Pow` follows the full IEEE/Annex F special-case table** on both paths:
+  `Pow(x, 0)` and `Pow(1, y)` are 1 even for NaN, `Pow(-0.0, -1.0)` is `-∞`,
+  `Pow(-8.0, 1.0/3.0)` is NaN, `Pow(-1.0, ±∞)` is 1. The `int`-exponent overloads
+  are exponentiation by squaring at runtime for |n| ≤ 8 (`detail::POWINTLIMIT`) — a
+  couple of multiplies for a cube, measured worst 6 ulps and 91% exact against libm
+  — and fall through to libm above that, where squaring's error grows like |n|
+  (measured ~30 ulps at n = 40). At compile time they take the same correctly
+  rounded path as the rest. `Pow(2, 3)` (two ints) resolves to the promoting
+  template and takes the `int` fast path; `Pow(2.0f, 3.0)` promotes to double.
+- **`Hypot(float, float)` at runtime is `sqrt((double)x² + (double)y²)`**, one
+  hardware root and under an ulp, rather than a scaling libm call; a float's square
+  cannot overflow a double. The double version is libm. `Hypot(∞, NaN)` is `∞` per
+  IEEE.
+- **`Min`/`Max` take and return by value** now (the old `const T &` return dangled
+  on `const int &r = Min(a, 5)`). ⚠️ `ROSE::Min`/`Max` in `utility.h` still exist
+  with the same shape; unqualified calls with both namespaces in scope are ambiguous.
+- **NaN is never *computed* in a constexpr path.** Clang rejects `x + y` with a NaN
+  operand inside a constant expression, so every `*Const` returns the NaN operand
+  or `__builtin_nan("")`. `known-issues.md` #11 has the row.
+- **`Atan2` follows the IEEE table** for zeros and infinities on both paths —
+  `Atan2(0.0, -0.0)` is π, `Atan2(-0.0, -1.0)` is −π, `Atan2(∞, ∞)` is π/4. `Asin`
+  and `Acos` give NaN outside [-1, 1]; clamp first. `Quat::ToEuler` can now run in a
+  constant expression as far as the math is concerned.
+- `matrix.h`'s local `detail::MatAbs` is gone; `Invert()` pivots on `math::Abs`.
+
+Missing: `Floor`/`Ceil`/`Round`, `Lerp`, `ToRadians`/`ToDegrees`, `Sinh`/`Cosh`/
+`Tanh`, `Cbrt`.
 
 ---
 
@@ -540,18 +573,16 @@ constexpr uint64_t  FNVOFFSET64  = 0xcbf29ce484222325;
 constexpr uint128_t FNVPRIME128  = 0x0000000001000000000000000000013B_u128;
 constexpr uint128_t FNVOFFSET128 = 0x6C62272E07BB014262B821756295C58D_u128;
 
-// float-format limits and inverse-sqrt seeds — used by detail::SqrtConst
+// float-format limits — used by the constexpr paths in math/functions/
 constexpr double   MAXFINITE64 = 1.7976931348623157e308;   // DBL_MAX
 constexpr float    MAXFINITE32 = 3.4028234663852886e38f;   // FLT_MAX
 constexpr double   MINNORMAL64 = 2.2250738585072014e-308;  // DBL_MIN
 constexpr float    MINNORMAL32 = 1.1754943508222875e-38f;  // FLT_MIN
-constexpr uint64_t SQRTMAGIC64 = 0x5FE6EB50C7B537A9;
-constexpr uint32_t SQRTMAGIC32 = 0x5F3759DF;               // the original Quake constant
-constexpr double   SUBNORMALSCALE64   = 0x1p106;  // UNSCALE is 1/sqrt(SCALE),
-constexpr double   SUBNORMALUNSCALE64 = 0x1p-53;  // so the pair cancels around the root
-constexpr float    SUBNORMALSCALE32   = 0x1p50f;
-constexpr float    SUBNORMALUNSCALE32 = 0x1p-25f;
 ```
+
+The Quake inverse-sqrt seeds (`SQRTMAGIC64`/`32`) and the subnormal rescaling pairs
+(`SUBNORMALSCALE*`/`SUBNORMALUNSCALE*`) are **gone** — the constexpr root no longer
+seeds anything. A comment in `constants.h` marks where they were.
 
 `PI`, `E`, `PHI` and `TAU` used to carry only float precision — the literals had an
 `f` suffix, so each value was rounded to float and then widened, for a measured
@@ -561,8 +592,9 @@ anywhere near the `Vec3d`/`Quatd` path.
 
 `detail::SinCosConst` still bakes its own full-precision π/2 literals rather than
 reaching for `math::PI`, which is the right call independent of the fix: its
-range reduction needs π/2 split into a high and low part, which no single constant
-provides.
+range reduction needs π/2 split into three parts, which no single constant
+provides. Likewise `detail::LN2` in `functions/detail.h` is ln 2 as a double-double,
+not a plain constant, because `Exp`/`Ln`/`Pow` need it to 106 bits.
 
 Only `constants.h` and `bigint.h` provide the FNV magic numbers; `utility.cpp`
 and `hashmap.cpp` both reach into `math::` for them.
@@ -591,9 +623,12 @@ and `hashmap.cpp` both reach into `math::` for them.
 | complex arithmetic + formatting | ✅ |
 | quaternion product, normalize, axis-angle, from-euler, to-euler | ✅ |
 | quaternion inverse / slerp / rotate-a-vector | ❌ (see `Transform::RotateAroundPoint`) |
-| `constexpr` sqrt | ✅ `math::Sqrt` |
-| `constexpr` sin / cos / tan | ✅ `math::Sin`/`Cos`/`Tan` (radians; runtime builtin, constexpr fallback) |
-| `Asin` / `Atan2` | ✅ runtime only — **not** `constexpr` |
-| clamp / min / max | ✅ (mind the `ROSE::` vs `math::` overload clash) |
-| abs, floor, lerp, deg↔rad, `Acos`/`Atan` | ❌ |
+| `constexpr` sqrt | ✅ `math::Sqrt` — correctly rounded, matches the hardware bit for bit |
+| `constexpr` hypot | ✅ `math::Hypot` |
+| `constexpr` sin / cos / tan | ✅ `math::Sin`/`Cos`/`Tan` (radians; runtime builtin, constexpr fallback within 1 ulp) |
+| `constexpr` exp / ln / log2 / log10 / pow | ✅ `math::Exp`/`Ln`/`Log2`/`Log10`/`Pow` — correctly rounded; `Pow(x, int)` overloads too |
+| `constexpr` asin / acos / atan / atan2 | ✅ `math::Asin`/`Acos`/`Atan`/`Atan2` — correctly rounded, IEEE `atan2` table |
+| abs, clamp / min / max | ✅ `math::Abs`/`Clamp`/`Min`/`Max` (mind the `ROSE::` vs `math::` overload clash) |
+| `IsNaN` / `IsInf` / `IsFinite` | ✅ `constexpr` |
+| floor, lerp, deg↔rad, hyperbolics, cbrt | ❌ |
 | π to double precision | ✅ fixed |

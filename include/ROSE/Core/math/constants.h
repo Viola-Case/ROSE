@@ -33,17 +33,10 @@ namespace ROSE::math {
   constexpr double MINNORMAL64 = 2.2250738585072014e-308; //!< smallest positive normal double; below this is subnormal
   constexpr float MINNORMAL32 = 1.1754943508222875e-38f;  //!< smallest positive normal float; below this is subnormal
 
-  constexpr uint64_t SQRTMAGIC64 =
-    0x5FE6EB50C7B537A9;                        //!< \f$1/\sqrt{v}\f$ seed for a double (the Quake trick, widened)
-  constexpr uint32_t SQRTMAGIC32 = 0x5F3759DF; //!< \f$1/\sqrt{v}\f$ seed for a float (the original Quake constant)
-
-  /*! Subnormals seed the inverse-sqrt refinement badly, so they get scaled into the normal range
-   *  first and scaled back after the root. UNSCALE is \f$1/\sqrt{\text{SCALE}}\f$, so the pair cancels. */
-
-  constexpr double SUBNORMALSCALE64 = 0x1p106;   //!< \f$2^{106}\f$
-  constexpr double SUBNORMALUNSCALE64 = 0x1p-53; //!< \f$2^{-53}\f$
-  constexpr float SUBNORMALSCALE32 = 0x1p50f;    //!< \f$2^{50}\f$
-  constexpr float SUBNORMALUNSCALE32 = 0x1p-25f; //!< \f$2^{-25}\f$
+  /* The Quake inverse-sqrt seeds (SQRTMAGIC64, SQRTMAGIC32) and the subnormal rescaling pairs (SUBNORMALSCALE and
+   * SUBNORMALUNSCALE, 64 and 32) used to live here for detail::SqrtConst. That root is now taken as an integer on the
+   * mantissa - see math/functions/roots.h - which seeds nothing and normalises subnormals on the bit pattern, so they
+   * went. */
 
 #define π PI
 #define φ PHI

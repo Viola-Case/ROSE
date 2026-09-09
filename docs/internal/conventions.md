@@ -188,7 +188,7 @@ bare and that's fine where it already is.
 ## 5. Language rules
 
 - **C++20** (`CMAKE_CXX_STANDARD 20`). Some comments reference C++23/26 features; those are aspirational.
-- **Clang in practice** — `clang-cl` on Windows, `clang++`/`gcc` elsewhere. `bigint.h` `#error`s without `__int128` and `mathfunctions.h` leans on `__builtin_*`, so MSVC proper is not a target.
+- **Clang in practice** — `clang-cl` on Windows, `clang++`/`gcc` elsewhere. `bigint.h` `#error`s without `__int128` and the `math/functions/*.h` headers lean on `__builtin_*`, so MSVC proper is not a target.
 - **No exceptions in engine logic.** Failure paths log and return a fallback. The only `throw`s live in `constexpr`-only paths (`parse128`, `ApplicationFlag`'s constructor) and `std::formatter::parse`. Engine entry points that can fail are `noexcept` and return a null pointer, a sentinel (`UUID::Invalid()`), or a result enum.
 - **Use the RTL, not the STL**, in engine code: `String`, `List`, `TypedHashMap`, `Pair`, `UniquePtr`/`MakeUnique`, `Move`, `Forward`. `std::` is acceptable in `.cpp` internals where the RTL has no equivalent (`<random>`, `<chrono>`, `<fstream>`) and at third-party boundaries.
 - **Prefer `constexpr`** for type IDs, math constants, and sizes. `Behavior::TypeID()` must be `constexpr` — `Object::CreateBehavior` and `FindBehavior` consume it as a constant expression.

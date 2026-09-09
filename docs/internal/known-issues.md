@@ -329,9 +329,10 @@ Re-checked at `de3eafa`; line numbers are current.
 | `utility.h:108` | `SmartMemCpy(dst, src, count)` ignores `count` entirely; it copies `Min(sizeof(T), sizeof(U))` bytes once. Carries its own `// TODO` |
 | `string.h:186` | `at()`'s bounds check is commented out — it is `operator[]` with a different name |
 | `bigint.h:28` | The non-`__int128` fallback is a hard `#error`, so MSVC cannot compile the RTL at all |
-| `mathfunctions.h` | `Sqrt` (and `Sin`/`Cos`/`Tan`) rely on `__builtin_*` — `__builtin_sqrt`/`sin`/`cos`/`tan`, `__builtin_bit_cast`, `__builtin_is_constant_evaluated` — with no MSVC path |
+| `math/functions/*.h` | Every scalar function relies on `__builtin_*` — `__builtin_sqrt`/`sin`/`cos`/`tan`/`exp`/`log`/`pow`/`hypot`, `__builtin_fabs`/`isnan`/`isinf`/`isfinite`/`signbit`/`copysign`, `__builtin_bit_cast`, `__builtin_is_constant_evaluated` — with no MSVC path. `roots.h` additionally needs a 128-bit unsigned for the constexpr root |
 | `mathenum.h:63` | `LeviCivita`'s `static_assert` message still says `cse::math::` |
-| `utility.h` vs `mathfunctions.h` | Two different `Min`/`Max` pairs; ambiguous if both namespaces are in scope |
+| `utility.h` vs `math/functions/common.h` | Two different `Min`/`Max` pairs; ambiguous if both namespaces are in scope. `math::` now takes and returns by value (it used to return `const T &`, which dangled on `const int &r = Min(a, 5)`) and is constrained to `StdScalar` |
+| `math/functions/*.h` | Clang refuses floating-point arithmetic that *produces* a NaN inside a constant expression (`_x + _y` with a NaN operand is "not a constant expression"). The constexpr paths return the NaN operand itself, or `__builtin_nan("")`, and never compute one — keep that up in anything added |
 | `hashmap.h:270-287` | `TypedHashMap::insert`/`emplace` probe twice per insert — `m_map.insert(&tmp)` then `m_map.find(&_key)` to build the returned iterator |
 | `hashmap.cpp:252` | private `HashMap::reset()` is still never called |
 | `list.h`, `string.h` | `begin()`/`end()` on `BasicString` are const-only, so no mutable range-`for` over a string |
@@ -343,7 +344,11 @@ Re-checked at `de3eafa`; line numbers are current.
 | Where | What |
 |---|---|
 | `quaternion.h` | `Quat::ToEuler` was a stub returning `{}` from every branch. Implemented in `6706679`, recovered from the rotation matrix, with a per-type `kGimbalEpsilon` at `sqrt(machineEpsilon)` and a comment explaining why you must not tune it by round-tripping random rotations |
-| `mathfunctions.h:95` | `SinCosConst`'s comment used to claim a couple of ulps. It now says "near-double accuracy", which is honest: measured worst absolute error is **3.888e-13**, at the ends of the reduced range near π/4. The series is unchanged (r¹³ for sin, r¹² for cos); two more terms in each polynomial would still reach full double precision |
+| `math/functions/trig.h` | `SinCosConst` used to carry a measured worst absolute error of **3.888e-13** (series to r¹³/r¹², two-part reduction). It now runs to x¹⁷/x¹⁶, reduces in double-double and folds the reduced argument's tail into the polynomials: measured against a correctly rounded reference it is within **1 ulp** on 5000 vectors up to 2^20 and 2000 more up to 2^50, with three 2-ulp cases between 2^48 and 2^50 |
+| `math/functions/roots.h` | The constexpr `Sqrt` used to fold `Sqrt(2.0)` one ulp low (Quake seed + Newton). It is now an integer root of the mantissa and **matches the hardware bit for bit** — verified over 20M random double bit patterns and every non-negative float |
+| `math/functions/exponential.h` | New: `Exp`, `Ln`, `Log2`, `Log10`, `Pow` in double-double, correctly rounded on every vector tried. `Pow` takes an exact `uint128_t` path for positive integer exponents on odd-mantissa bases, so ties like `Pow(10, 23)` round correctly too. `Abs` is new; `matrix.h`'s local `MatAbs` is gone |
+| `math/functions/trig.h` | `Asin`/`Atan2` used to be runtime-only `inline`. They, plus new `Acos`/`Atan`, are now `constexpr`, correctly rounded on every vector tried, and follow the IEEE `atan2` table |
+| `CMakeLists.txt`, `bigint.h` | clang-cl inlines 128-bit add/mul/shift but emits libcalls for 128-bit `/`, `%` and int↔float conversion (`__udivti3`, `__floatuntidf`), and did not link compiler-rt, so `std::formatter<uint128_t>` — which divides by 10 — would have failed at link on first use. Core now links `clang_rt.builtins-x86_64.lib` (found via `clang-cl /clang:--print-libgcc-file-name /clang:--rtlib=compiler-rt`) PUBLIC. The math headers avoid the libcalls anyway (`detail::FromUInt128`) so they work in a bare standalone compile |
 
 ---
 

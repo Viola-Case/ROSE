@@ -16,14 +16,6 @@
 
 namespace ROSE::math {
 
-  namespace detail {
-    /*! Local |x|. math::Abs does not exist yet and std::abs is not constexpr before C++23. */
-    template <Scalar T>
-    constexpr T MatAbs(const T _value) noexcept {
-      return _value < T { 0 } ? -_value : _value;
-    }
-  } // namespace detail
-
   /*!
    * Dense fixed-size matrix stored in **row-major** order: element (r, c) lives at `data[r * Cols + c]`.
    *
@@ -402,9 +394,9 @@ namespace ROSE::math {
         /* Partial pivoting: eliminating with the largest remaining magnitude in the column keeps the division below
          * from amplifying rounding error, and picks up an exact zero column as the singular case. */
         size_t pivot { k };
-        T best = detail::MatAbs(work.data[k * Cols + k]);
+        T best = Abs(work.data[k * Cols + k]);
         for (size_t r { k + 1 }; r < Rows; ++r) {
-          const T candidate = detail::MatAbs(work.data[r * Cols + k]);
+          const T candidate = Abs(work.data[r * Cols + k]);
           if (candidate > best) {
             best = candidate;
             pivot = r;

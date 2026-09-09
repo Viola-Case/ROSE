@@ -396,6 +396,27 @@ target_link_libraries(ROSE_Core
         PUBLIC $<IF:$<TARGET_EXISTS:mimalloc-static>,mimalloc-static,mimalloc>
 )
 
+# clang inlines 128-bit add/sub/mul/shift/compare but turns 128-bit division and
+# int<->float conversion into calls to compiler-rt's builtins (__udivti3,
+# __floatuntidf, ...). The GNU driver links those from libgcc/libclang_rt on its
+# own; clang-cl does not, and the MSVC CRT has no equivalent, so any uint128_t
+# division -- bigint.h's formatter has several -- fails at link time. Ask the
+# compiler where its builtins archive is and link it. PUBLIC because bigint.h is
+# a public header, so consumers can instantiate the same code.
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    execute_process(
+            COMMAND "${CMAKE_CXX_COMPILER}" /clang:--print-libgcc-file-name /clang:--rtlib=compiler-rt
+            OUTPUT_VARIABLE _rose_clang_rt_builtins
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            RESULT_VARIABLE _rose_clang_rt_result
+    )
+    if (_rose_clang_rt_result EQUAL 0 AND EXISTS "${_rose_clang_rt_builtins}")
+        target_link_libraries(ROSE_Core PUBLIC "${_rose_clang_rt_builtins}")
+    else ()
+        message(WARNING "clang-cl did not report a compiler-rt builtins library; 128-bit division and int<->float conversion will fail to link")
+    endif ()
+endif ()
+
 target_compile_definitions(ROSE_Core
         PUBLIC $<$<CONFIG:Editor>:ROSE_EDITOR>
         # Flips ROSE_API(CORE) from dllimport to dllexport; see api.h.

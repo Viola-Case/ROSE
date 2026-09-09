@@ -37,7 +37,7 @@ Earlier stamps, for reading old diffs: the RTL and math files were first written
 - The build is **C++20** (`CMAKE_CXX_STANDARD 20` in `CMakeLists.txt`), even though some comments reference C++23/26
   features.
 - Clang/GCC only in practice: `bigint.h` `#error`s on anything without
-  `__int128`, and `mathfunctions.h` leans on `__builtin_*`.
+  `__int128`, and the `math/functions/*.h` headers lean on `__builtin_*`.
 
 ## Header layering
 

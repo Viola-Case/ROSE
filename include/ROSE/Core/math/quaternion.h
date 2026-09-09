@@ -145,23 +145,33 @@ namespace ROSE::math {
      *          other, only their sum (or difference) survives. There the inner angle is pinned
      *          to zero and the whole of it is reported on the outer one, which is a rotation
      *          equal to the original but an angle triple that can look nothing like the input.
+     *
+     * @note    The above warnings may be inaccurate now - the implementation for the math being
+     *          used at the time was fast but inaccurate.
+     *
+     * @todo    Make this a template of parameter order instead of function parameter
      */
-    Vec3<T> ToEuler(EulerOrder order = EulerOrder::ZYX) const noexcept {
+    constexpr Vec3<T> ToEuler(EulerOrder order = EulerOrder::ZYX) const noexcept {
       /* i, j, k are the axes of the outer, middle and inner rotation, so `FromEuler` built this
        * as Ri * Rj * Rk. `parity` is +1 when (i, j, k) is an even permutation of (0, 1, 2) and
        * -1 when it is odd, which is the only thing that differs between the two halves. */
       size_t i {}, j {}, k {};
-      T parity {};
+      //T parity {};
 
+      // Levi-Civita ordering
       switch (order) {
-      case EulerOrder::XYZ: i = 0; j = 1; k = 2; parity = T(1); break;
-      case EulerOrder::XZY: i = 0; j = 2; k = 1; parity = -T(1); break;
-      case EulerOrder::YXZ: i = 1; j = 0; k = 2; parity = -T(1); break;
-      case EulerOrder::YZX: i = 1; j = 2; k = 0; parity = T(1); break;
-      case EulerOrder::ZXY: i = 2; j = 0; k = 1; parity = T(1); break;
-      case EulerOrder::ZYX: i = 2; j = 1; k = 0; parity = -T(1); break;
+      case EulerOrder::XYZ: i = 0; j = 1; k = 2; break;
+      case EulerOrder::XZY: i = 0; j = 2; k = 1; break;
+      case EulerOrder::YXZ: i = 1; j = 0; k = 2; break;
+      case EulerOrder::YZX: i = 1; j = 2; k = 0; break;
+      case EulerOrder::ZXY: i = 2; j = 0; k = 1; break;
+      case EulerOrder::ZYX: i = 2; j = 1; k = 0; break;
       default: return Vec3<T> {};
       }
+
+      constexpr T parity = T(1)*LeviCivita(i,j,k);
+
+      constexpr int test = 1 * LeviCivita(0u,1u,2u,3u);
 
       // ToMat4 assumes unit length; a quaternion that has been accumulating products is not.
       const Mat4<T> m = Normalized().ToMat4();
