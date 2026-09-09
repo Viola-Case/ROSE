@@ -25,43 +25,43 @@ namespace ROSE {
     switch (level) {
     case LogLevel::Trace:
 
-      return "󰍉";
+      //return "󰍉";
 
       return "[  TRACE  ]";
 
     case LogLevel::Debug:
 
-      return "";
+      //return "";
 
       return "[    D    ]";
 
     case LogLevel::Info:
 
-      return "";
+      //return "";
 
       return "[    i    ]";
 
     case LogLevel::Warn:
 
-      return "";
+      //return "";
 
       return "[ WARNING ]";
 
     case LogLevel::Error:
 
-      return "";
+      //return "";
 
       return "[  ERROR  ]";
 
     case LogLevel::Fatal:
 
-      return "󰚌";
+      //return "󰚌";
 
       return "[!!FATAL!!]";
 
     default:
 
-      return " ";
+      //return " ";
 
       return "           ";
 
