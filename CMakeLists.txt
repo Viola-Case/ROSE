@@ -338,6 +338,26 @@ find_package(imgui REQUIRED)
 find_package(glad REQUIRED)
 find_package(mimalloc REQUIRED)
 find_package(CLI11 REQUIRED)
+# Vulkan arrives as three vendored config packages, not through CMake's
+# FindVulkan module. find_package(Vulkan) searches the machine for a LunarG SDK
+# (VULKAN_SDK, then the platform's default install locations), which is
+# neither the version pinned in dependencies.toml nor present at all on a
+# machine that never installed the SDK -- and on a machine that did, it would
+# silently win over the vendor prefix.
+#
+#   VulkanHeaders          ->  Vulkan::Headers                 the declarations
+#   VulkanLoader           ->  Vulkan::Loader                  vulkan-1
+#   VulkanMemoryAllocator  ->  GPUOpen::VulkanMemoryAllocator  vk_mem_alloc.h
+#
+# Vulkan::Loader exports no include directories of its own, so Vulkan::Headers
+# is not optional beside it: one carries the symbols, the other the
+# declarations. The loader is also vendored Release-only (the reasoning is in
+# its dependencies.toml block), so Debug and Editor builds import the release
+# vulkan-1 -- it is a C ABI DLL with its own static CRT, and an import library
+# carries no /failifmismatch directive, so there is nothing here to mismatch.
+find_package(VulkanHeaders REQUIRED)
+find_package(VulkanLoader REQUIRED)
+find_package(VulkanMemoryAllocator REQUIRED)
 
 # Core includes <nlohmann/json.hpp> in application.cpp, paramview.cpp and
 # scene.cpp, but nothing used to look for it: it resolved only because vcpkg
@@ -394,7 +414,12 @@ target_link_libraries(ROSE_Core
         PRIVATE glad::glad
         PRIVATE nlohmann_json::nlohmann_json
         PUBLIC $<IF:$<TARGET_EXISTS:mimalloc-static>,mimalloc-static,mimalloc>
+        PRIVATE Vulkan::Headers
+        PRIVATE Vulkan::Loader
+        PRIVATE GPUOpen::VulkanMemoryAllocator
 )
+
+target_precompile_headers(ROSE_Core PRIVATE <vulkan/vulkan_raii.hpp> <SDL3/SDL.h>)
 
 target_compile_definitions(ROSE_Core
         PUBLIC $<$<CONFIG:Editor>:ROSE_EDITOR>
@@ -565,6 +590,7 @@ set_property(TARGET KeyboardTest PROPERTY FOLDER "Examples")
 rose_deploy_runtime(KeyboardTest)
 
 # ------------------------------------------------------------------------ Game1
+
 file(GLOB_RECURSE GAME1_SOURCES CONFIGURE_DEPENDS "examples/game1/*.cpp")
 
 add_executable(Game1 ${GAME1_SOURCES})
@@ -587,6 +613,7 @@ rose_deploy_runtime(Game1)
 rose_deploy_assets(Game1 "${CMAKE_CURRENT_SOURCE_DIR}/examples/game1/assets")
 
 # ----------------------------------------------------------------------- Orbits
+
 file(GLOB_RECURSE ORBITS_SOURCES CONFIGURE_DEPENDS "examples/orbits/*.cpp")
 
 add_executable(Orbits ${ORBITS_SOURCES})
@@ -604,7 +631,9 @@ set_property(TARGET Orbits PROPERTY FOLDER "Examples")
 rose_deploy_runtime(Orbits)
 
 rose_deploy_assets(Orbits "${CMAKE_CURRENT_SOURCE_DIR}/examples/orbits/assets")
+
 # ------------------------------------------------------------------------ Cube
+
 file(GLOB_RECURSE CUBE_SOURCES CONFIGURE_DEPENDS "examples/cube/*.cpp")
 
 add_executable(Cube ${CUBE_SOURCES})
@@ -619,7 +648,9 @@ set_property(TARGET Cube PROPERTY FOLDER "Examples")
 rose_deploy_runtime(Cube)
 
 rose_deploy_assets(Cube "${CMAKE_CURRENT_SOURCE_DIR}/examples/cube/assets")
+
 # ------------------------------------------------------------------------ Game2
+
 file(GLOB_RECURSE GAME2_SOURCES CONFIGURE_DEPENDS "examples/game2/*.cpp")
 
 add_executable(Game2 ${GAME2_SOURCES})
@@ -637,6 +668,25 @@ set_property(TARGET Game2 PROPERTY FOLDER "Examples")
 rose_deploy_runtime(Game2)
 
 rose_deploy_assets(Game2 "${CMAKE_CURRENT_SOURCE_DIR}/examples/game2/assets")
+
+# ------------------------------------------------------------------------ VulkanTest
+
+file(GLOB_RECURSE VULKANTEST_SOURCES CONFIGURE_DEPENDS "examples/VulkanTest/*.cpp")
+
+add_executable(VulkanTest ${VULKANTEST_SOURCES})
+
+target_link_libraries(VulkanTest PRIVATE
+        ROSE_Core
+        imgui::imgui
+)
+
+set_property(TARGET VulkanTest PROPERTY FOLDER "Examples")
+
+rose_deploy_runtime(VulkanTest)
+
+rose_deploy_assets(VulkanTest "${CMAKE_CURRENT_SOURCE_DIR}/examples/VulkanTest/assets")
+
+# ------------------------------------------------------------------------ Build All
 
 add_custom_target(EXAMPLES_BUILD)
 add_dependencies(EXAMPLES_BUILD Game1 Game2 Orbits ControllerTest KeyboardTest)

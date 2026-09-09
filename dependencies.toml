@@ -100,7 +100,8 @@ cmake_args  = [
   "-DSDL_INSTALL_TESTS=OFF",
 ]
 # SDL loads Vulkan at runtime and vendors the headers it needs, so the `vulkan`
-# feature costs nothing and needs no Vulkan-Headers entry here.
+# feature costs nothing and needs no Vulkan-Headers entry of its own. The
+# Vulkan-Headers block at the end of this file is for ROSE's own sources.
 cmake_args_linux = [
   "-DSDL_X11=ON",
   "-DSDL_WAYLAND=ON",
@@ -277,7 +278,10 @@ cmake_args  = [
 # ROSE_Editor in the root CMakeLists.
 #
 # `vulkan-binding` from the old vcpkg manifest is dropped: no ROSE source
-# includes imgui_impl_vulkan.h, and dropping it avoids vendoring Vulkan-Headers.
+# includes imgui_impl_vulkan.h. The second half of that argument -- that it
+# avoids vendoring Vulkan-Headers -- no longer holds now that Vulkan-Headers is
+# in this manifest, so adding `vulkan` to IMGUI_BACKENDS is a question of the
+# shim linking Vulkan::Headers, not of a new dependency.
 # SDL_WINDOW_VULKAN in application.cpp is SDL's own flag and needs nothing here.
 
 [[dependency]]
@@ -377,4 +381,167 @@ cmake_args  = [
   # Header-only, so there is no archive to mismatch a CRT with -- which is what
   # made vcpkg's compiled CLI11.lib break the Editor config.
   "-DCLI11_PRECOMPILED=OFF",
+]
+
+
+# ==============================================================================
+# Vulkan-Headers -- the API headers and the XML registry. Header only.
+# ==============================================================================
+#
+# Provides find_package(VulkanHeaders) and the Vulkan::Headers target. SDL
+# vendors its own copy of these (see the SDL3 block) but does not install them,
+# so anything of ours that says #include <vulkan/vulkan.h> needs this entry.
+#
+# Bump this and Vulkan-Loader together, and to the same version. The loader
+# asks for the headers with
+#
+#   find_package(VulkanHeaders <the loader's own version> CONFIG QUIET)
+#
+# so headers older than the loader are not found -- QUIET, and not REQUIRED, so
+# nothing says so until the compile fails. The Vulkan-Loader block turns that
+# back into a configure error, but only this pin keeps it from happening.
+#
+# The v1.4.x tags are the weekly header releases and are what these two pin.
+# The vulkan-sdk-<x.y.z.w> tags are the slower-moving set LunarG validates
+# together across every Vulkan repo -- worth moving to if the pair ever needs
+# to line up with a released SDK on a developer machine.
+
+[[dependency]]
+name        = "Vulkan-Headers"
+description = "Vulkan API headers and XML registry"
+repo        = "https://github.com/KhronosGroup/Vulkan-Headers.git"
+tag         = "v1.4.362"
+find        = "VulkanHeaders"
+# Header only: one install, no debug artifacts, nothing to mismatch a CRT with.
+# Same reasoning as nlohmann_json and CLI11 above.
+configs     = ["Release"]
+cmake_args  = [
+  "-DVULKAN_HEADERS_ENABLE_INSTALL=ON",
+  "-DVULKAN_HEADERS_ENABLE_TESTS=OFF",
+  # The Vulkan-Hpp C++20 named module. Upstream already defaults it off unless
+  # the whole toolchain supports importing the standard library as a module,
+  # which ours does not -- named anyway, because switching it on is the one
+  # thing that would make this dependency compile something, and it would be
+  # the only C++23 target in the tree.
+  "-DVULKAN_HEADERS_ENABLE_MODULE=OFF",
+]
+
+
+# ==============================================================================
+# Vulkan-Loader -- vulkan-1.dll, the ICD and layer dispatch loader.
+# ==============================================================================
+#
+# Provides find_package(VulkanLoader) and the Vulkan::Loader target, which
+# carries the symbols and no include directories: a consumer links
+# Vulkan::Loader *and* Vulkan::Headers.
+#
+# Shipping our own loader next to the executable rather than using the one the
+# GPU driver installs in System32 is deliberate. LoadLibrary("vulkan-1.dll")
+# searches the executable's own directory first, so ours wins, and the loader
+# ROSE runs against is then the version pinned here rather than whatever the
+# machine happens to have. ICD and layer discovery still goes through the
+# registry, so nothing else about the system setup changes. On Linux the same
+# holds via rpath, and on macOS the loader still needs MoltenVK as its ICD.
+#
+# Note that rose_deploy_dlls() only sees DLLs reachable through CMake's link
+# graph, so vulkan-1.dll is deployed only if a target actually links
+# Vulkan::Loader. A backend that gets its entry points from
+# SDL_Vulkan_GetVkGetInstanceProcAddr() has no link edge and would need an
+# entry in ROSE_EXTRA_RUNTIME_DLLS instead, the way mimalloc-redirect.dll does.
+#
+# On Windows the loader assembles one trampoline (USE_MASM, on by default) with
+# ml64.exe, which is the same MASM-outside-a-developer-environment problem
+# noted for wavpack above. Unlike wavpack this one is survivable: the loader
+# assembles a test file at configure time and, when that fails, warns and
+# builds without it. What is lost is support for unknown physical device and
+# device functions -- extension entry points the loader has no dispatch code
+# for. Leaving it on means we get it whenever ml64 does work.
+
+[[dependency]]
+name        = "Vulkan-Loader"
+description = "Khronos Vulkan ICD loader"
+repo        = "https://github.com/KhronosGroup/Vulkan-Loader.git"
+tag         = "v1.4.362"
+find        = "VulkanLoader"
+needs       = ["Vulkan-Headers"]
+# Release only, on purpose, and the one dependency here that must not be built
+# twice.
+#
+# There is no debug/release pairing to honour: the loader is a C ABI shim, only
+# handles and function pointers cross it, and upstream forces the *static* CRT
+# on it anyway -- its root CMakeLists set()s CMAKE_MSVC_RUNTIME_LIBRARY rather
+# than caching it, so the vendor-wide dynamic-CRT flag never reaches it. That
+# is sound for this library for the same reason: nothing allocated inside it is
+# freed outside it.
+#
+# A Debug build would also have to be named something, and both choices are
+# wrong. The vendor-wide `d` postfix gives vulkan-1d.dll, but
+# SDL_Vulkan_LoadLibrary(NULL) loads "vulkan-1.dll" by that exact name and
+# would quietly fall through to the driver's loader in System32 -- two loaders
+# in one process. Clearing the postfix the way mimalloc does instead has the
+# Debug install overwrite the Release one, since both configs share a prefix.
+configs     = ["Release"]
+cmake_args  = [
+  # The loader's find_package(VulkanHeaders) is QUIET and not REQUIRED, so
+  # missing or stale headers are not an error there -- the build gets as far as
+  # a compile failure on <vulkan/vulkan.h> before anything mentions them. This
+  # makes that call behave as REQUIRED, so it fails at configure time naming
+  # the package.
+  "-DCMAKE_REQUIRE_FIND_PACKAGE_VulkanHeaders=TRUE",
+  # The switch that has the loader fetch and build its *own* Vulkan-Headers
+  # into external/ from scripts/known_good.json. Off by default, and named here
+  # because it is exactly the silent resolution this manifest exists to avoid:
+  # with it on, the headers the loader compiles against stop being the ones
+  # pinned above.
+  "-DUPDATE_DEPS=OFF",
+  "-DBUILD_TESTS=OFF",
+]
+# The WSI backends SDL3 is configured with above. All three are upstream
+# defaults, spelled out because each one needs its pkg-config file present at
+# configure time (xcb, x11, xrandr) and a missing one is a hard error there.
+cmake_args_linux = [
+  "-DBUILD_WSI_XCB_SUPPORT=ON",
+  "-DBUILD_WSI_XLIB_SUPPORT=ON",
+  "-DBUILD_WSI_WAYLAND_SUPPORT=ON",
+  "-DBUILD_WSI_DIRECTFB_SUPPORT=OFF",
+]
+# The loader carries cJSON in loader/ rather than as a submodule, so the name
+# sweep cannot see it. It is MIT, and the notice is the comment block at the
+# top of the file itself -- the LICENSES/ directory the sweep does pick up
+# holds the bare license texts with no copyright holder in them. A file entry
+# lands in a directory named after its parent, so this arrives as
+# share/licenses/Vulkan-Loader/loader/cJSON.h.
+license_paths = [
+  "loader/cJSON.h",
+]
+
+
+# ==============================================================================
+# VulkanMemoryAllocator -- device memory suballocator. Header only.
+# ==============================================================================
+#
+# Provides find_package(VulkanMemoryAllocator) and the
+# GPUOpen::VulkanMemoryAllocator target. One translation unit has to define
+# VMA_IMPLEMENTATION before including vk_mem_alloc.h -- in ROSE that is
+# src/Core/vulkanbackend.cpp.
+
+[[dependency]]
+name        = "VulkanMemoryAllocator"
+description = "AMD Vulkan Memory Allocator"
+repo        = "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git"
+tag         = "v3.4.0"
+find        = "VulkanMemoryAllocator"
+# VMA does not look for the headers itself -- it installs one INTERFACE target
+# and an include directory, and never configures against Vulkan at all. The
+# edge is real for whoever includes vk_mem_alloc.h, though, so it is recorded
+# here: this is the closure the compiler sees rather than the one CMake does.
+needs       = ["Vulkan-Headers"]
+configs     = ["Release"]
+cmake_args  = [
+  "-DVMA_ENABLE_INSTALL=ON",
+  # Both already default off. Named because the documentation target hard
+  # requires Doxygen at configure time, and the samples would add a windowed
+  # executable to what is otherwise a header install.
+  "-DVMA_BUILD_SAMPLES=OFF",
+  "-DVMA_BUILD_DOCUMENTATION=OFF",
 ]
