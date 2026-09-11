@@ -71,8 +71,14 @@ namespace ROSE {
      */
     bool ConvertTo(PixelFormat) noexcept;
 
+    /*! Decodes an image file from a real path on disk. For tools; the engine goes through the catalog. */
     static Surface LoadImage(const char *path) noexcept;
-    static Surface LoadAsset(const char *assetId) noexcept;
+
+    /*!
+     * Decodes an image out of memory, which is where a mounted archive keeps it. The bytes are only
+     * read during the call; the returned Surface owns its own copy.
+     */
+    static Surface LoadImageFromMemory(const void *_data, size_t _size) noexcept;
 
   private:
     void *m_ptr { nullptr }; //!< `SDL_Surface *`; null is a valid, invalid surface

@@ -12,6 +12,7 @@
 #include <ROSE/Core/buffer.h>
 #include <ROSE/Core/surface.h>
 #include <ROSE/Core/utility.h>
+#include <ROSE/Core/log.h>
 #include <SDL3_image/SDL_image.h>
 
 
@@ -117,8 +118,8 @@ namespace ROSE {
     m_ptr = nullptr;
   }
 
-  /* All four guard on m_ptr: an invalid Surface is an ordinary outcome - a missing file, an
-   * unimplemented LoadAsset - and asking it for its size should answer zero, not crash. */
+  /* All four guard on m_ptr: an invalid Surface is an ordinary outcome - a missing file, an asset
+   * that is not in any mounted archive - and asking it for its size should answer zero, not crash. */
   uint16_t Surface::GetWidth() const noexcept {
     return m_ptr ? static_cast<uint16_t>(static_cast<SDL_Surface *>(m_ptr)->w) : 0;
   }
@@ -177,17 +178,30 @@ namespace ROSE {
     return Move(surface);
   }
 
-  Surface Surface::LoadAsset(const char *assetId) noexcept {
+  Surface Surface::LoadImageFromMemory(const void *_data, const size_t _size) noexcept {
     Surface surface;
-    // Asset asset(assetId);
-    // if (!asset.data) {
-    //   /// TODO log error ("Asset failed to load: {}", assetId);
-    //   surface.m_ptr = nullptr;
-    //   surface.m_pitch = surface.m_height = surface.m_width = 0;
-    //   surface.m_format = PixelFormat::Unknown;
-    //   return surface;
-    //
-    // }
+    if (!_data || _size == 0) return Move(surface);
+
+    /* SDL_IOFromConstMem does not copy, so the stream must not outlive _data - it does not:
+     * IMG_Load_IO decodes eagerly, and closes the stream before this returns. */
+    SDL_IOStream *stream = SDL_IOFromConstMem(_data, _size);
+    if (stream == nullptr) {
+      ROSE_LOG_ERROR("Could not wrap {} asset bytes for decoding: {}", _size, SDL_GetError());
+      return Move(surface);
+    }
+
+    SDL_Surface *surf = IMG_Load_IO(stream, true); //!< true: closes the stream for us, even on failure
+    if (surf == nullptr) {
+      ROSE_LOG_ERROR("Image decode failed: {}", SDL_GetError());
+      return Move(surface);
+    }
+
+    surface.m_ptr = surf;
+
+    surface.m_format = PixelFormatFromSDLPixelFormat(surf->format);
+    if (surface.m_format == PixelFormat::Unsupported) {
+      ROSE_LOG_WARN("Unsupported pixel format: {}", SDL_GetPixelFormatName(surf->format));
+    }
     return Move(surface);
   }
 

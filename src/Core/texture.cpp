@@ -65,9 +65,22 @@ namespace ROSE {
   }
 
   UUID LoadTexture(const String &path, const String &name) {
-    Surface surface = Surface::LoadImage(path.c_str());
+    /* `path` is a virtual path into the catalog, not a path on disk. Pointing AssetCatalog at a loose
+     * root is what makes an unpacked working tree load; there is deliberately no second code path here
+     * that opens files directly. */
+    const AssetView view = AssetCatalog::Get().Resolve(StringView(path));
+    if (!view.IsValid()) {
+      if (AssetCatalog::Get().Count() == 0 && !AssetCatalog::Get().HasLooseRoot()) {
+        ROSE_LOG_ERROR("Texture '{}': no archive is mounted and no loose root is set.", name);
+      } else {
+        ROSE_LOG_ERROR("Texture '{}' is not in the catalog under '{}'.", name, path);
+      }
+      return UUID::Invalid();
+    }
+
+    Surface surface = Surface::LoadImageFromMemory(view.data, size_t(view.size));
     if (!surface.IsValid()) {
-      ROSE_LOG_ERROR("Texture '{}' could not be loaded from '{}'.\n", name, path);
+      ROSE_LOG_ERROR("Texture '{}' could not be decoded from '{}'.\n", name, path);
       return UUID::Invalid();
     }
 

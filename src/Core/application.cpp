@@ -111,9 +111,18 @@ namespace ROSE {
      * open() rather than handing it _path.c_str(). */
     const String path { _path };
 
+    /* The catalog first, so a scene can ship inside an .rpkg like everything else. The direct open
+     * below is the fallback for an unpacked tree that has mounted nothing - which is every example
+     * today, and is why this is not catalog-only the way LoadTexture is. */
+    if (const AssetView view = AssetCatalog::Get().Resolve(_path); view.IsValid()) {
+      const StringView json { reinterpret_cast<const char *>(view.data), size_t(view.size) };
+      m_scenes.push_back(Scene::FromJSONString(String(json)));
+      return *this;
+    }
+
     std::ifstream file(path.c_str());
     if (!file) {
-      ROSE_LOG_ERROR("Scene file '{}' could not be opened.\n", path);
+      ROSE_LOG_ERROR("Scene '{}' is not in the catalog and could not be opened from disk.\n", path);
       return *this;
     }
 
