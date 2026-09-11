@@ -511,11 +511,14 @@ endif ()
 
 # ROSE_AssetMaker is gone, not commented out.
 #
-# It targeted the .roseasset format, which is retired along with
+# It targeted the .roseasset format, which the .rpkg work retired along with
 # include/ROSE/Editor/assetfile.h. Every payload write in its main.cpp was already
 # commented out, so it only ever emitted header-only stubs and nothing in the tree
-# ever read one. Unlike ROSE_Editor there is no redesign pending, so there is
-# nothing for a #[[ ]] block to preserve.
+# ever read one. ROSE_Packer below replaces it outright; unlike ROSE_Editor there
+# is no redesign pending, so there is nothing for a #[[ ]] block to preserve.
+#
+# Its extension-sniffing table survives as AssetTypeFromExtension in
+# include/ROSE/Core/asset.h. See docs/internal/assets.md.
 
 # -------------------------------------------------------------------- ROSE_Packer
 #
@@ -684,5 +687,25 @@ rose_deploy_runtime(Game2)
 
 rose_deploy_assets(Game2 "${CMAKE_CURRENT_SOURCE_DIR}/examples/game2/assets")
 
+# ----------------------------------------------------------------- ArchiveTest
+#
+# End-to-end check for the .rpkg path: mount, walk, decode a texture, then prove
+# the loose-file override shadows the archive. Opens no window and returns a
+# non-zero exit code on failure, so it doubles as a smoke test.
+#
+# It gets both helpers on purpose, which no other target should: rose_pack_assets
+# gives it ArchiveTest.rpkg to mount, and rose_deploy_assets gives it the same
+# files loose so there is something for the override half to find.
+add_executable(ArchiveTest "examples/ArchiveTest/main.cpp")
+
+target_link_libraries(ArchiveTest PRIVATE ROSE_Core)
+
+set_property(TARGET ArchiveTest PROPERTY FOLDER "Examples")
+
+rose_deploy_runtime(ArchiveTest)
+
+rose_pack_assets(ArchiveTest "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+rose_deploy_assets(ArchiveTest "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+
 add_custom_target(EXAMPLES_BUILD)
-add_dependencies(EXAMPLES_BUILD Game1 Game2 Orbits ControllerTest KeyboardTest)
+add_dependencies(EXAMPLES_BUILD Game1 Game2 Orbits ControllerTest KeyboardTest ArchiveTest)
