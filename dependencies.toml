@@ -359,7 +359,7 @@ cmake_args  = [
 
 
 # ==============================================================================
-# CLI11 -- header only upstream; used by the asset and UUID tools.
+# CLI11 -- header only upstream; used by the packer and UUID tools.
 # ==============================================================================
 
 [[dependency]]
@@ -377,4 +377,35 @@ cmake_args  = [
   # Header-only, so there is no archive to mismatch a CRT with -- which is what
   # made vcpkg's compiled CLI11.lib break the Editor config.
   "-DCLI11_PRECOMPILED=OFF",
+]
+
+
+# ==============================================================================
+# zstd -- the codec behind .rpkg asset archives. Linked by ROSE_Core.
+# ==============================================================================
+#
+# zstd keeps its CMake lists in build/cmake rather than at the repo root, hence
+# `subdir`. The library is dual-licensed BSD-3-Clause or GPLv2 at the user's
+# option; ROSE takes the BSD option, and both LICENSE and COPYING sit at the top
+# of the checkout so the license sweep collects them without a license_paths
+# entry. Unlike the mpg123 case in SDL3_mixer above, there is no obligation
+# inherited by anyone shipping a game built on ROSE.
+
+[[dependency]]
+name        = "zstd"
+description = "Zstandard compression"
+repo        = "https://github.com/facebook/zstd.git"
+tag         = "v1.5.7"
+find        = "zstd"
+subdir      = "build/cmake"
+cmake_args  = [
+  "-DZSTD_BUILD_PROGRAMS=OFF",
+  "-DZSTD_BUILD_TESTS=OFF",
+  # Shared to match the rest of the tree: ROSE_Core is a DLL and everything must
+  # share one CRT heap. rose_deploy_runtime picks zstd.dll up on its own, because
+  # unlike mimalloc-redirect.dll this is a real link edge.
+  "-DZSTD_BUILD_STATIC=OFF",
+  "-DZSTD_BUILD_SHARED=ON",
+  # Decoding archives this engine wrote; there are no legacy frames to read.
+  "-DZSTD_LEGACY_SUPPORT=OFF",
 ]

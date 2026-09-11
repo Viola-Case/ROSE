@@ -32,7 +32,19 @@ license; re-read the collected text when you do.
 | [glad](https://github.com/Dav1dde/glad)               | 2.0.8          | WTFPL        | OpenGL 4.5 loader              |
 | [mimalloc](https://github.com/microsoft/mimalloc)     | v3.5.0         | MIT          | Allocator                      |
 | [nlohmann/json](https://github.com/nlohmann/json)     | v3.12.0        | MIT          | Scene and config serialization |
-| [CLI11](https://github.com/CLIUtils/CLI11)            | v2.7.2         | BSD-3-Clause | Asset and UUID tool front ends |
+| [CLI11](https://github.com/CLIUtils/CLI11)            | v2.7.2         | BSD-3-Clause | Packer and UUID tool front ends |
+| [zstd](https://github.com/facebook/zstd)              | v1.5.7         | BSD-3-Clause | `.rpkg` asset archive compression |
+
+### zstd, specifically
+
+zstd is offered under BSD-3-Clause **or** GPLv2, at the recipient's option. ROSE takes the BSD option, and the table
+above says so rather than leaving a reader to work it out from two license files sitting side by side in the collected
+tree. Both `LICENSE` (BSD) and `COPYING` (GPLv2) sit at the top of the checkout, so the sweep collects both and no
+`license_paths` entry is needed.
+
+This is the same shape as the mpg123 decision recorded in [dependencies.toml](dependencies.toml), and it came out the
+other way: mpg123 is LGPL-only, so linking it statically into a shipped DLL would have created a real relinking
+obligation inherited by anyone shipping a game built on ROSE. zstd's BSD option carries no such obligation.
 
 ### glad, specifically
 

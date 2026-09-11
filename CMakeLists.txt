@@ -338,6 +338,7 @@ find_package(imgui REQUIRED)
 find_package(glad REQUIRED)
 find_package(mimalloc REQUIRED)
 find_package(CLI11 REQUIRED)
+find_package(zstd REQUIRED)
 
 # Core includes <nlohmann/json.hpp> in application.cpp, paramview.cpp and
 # scene.cpp, but nothing used to look for it: it resolved only because vcpkg
@@ -393,6 +394,7 @@ target_link_libraries(ROSE_Core
         PRIVATE imgui::imgui
         PRIVATE glad::glad
         PRIVATE nlohmann_json::nlohmann_json
+        PRIVATE zstd::libzstd_shared
         PUBLIC $<IF:$<TARGET_EXISTS:mimalloc-static>,mimalloc-static,mimalloc>
 )
 
