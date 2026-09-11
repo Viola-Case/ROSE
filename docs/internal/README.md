@@ -12,6 +12,8 @@ scratch every session.
 | [`scene-object-behavior.md`](scene-object-behavior.md) | The composition layer — `Scene`/`Object`/`Behavior` lifecycle, `BehaviorFactory`, scene JSON and `ParamView`                        |
 | [`behaviors.md`](behaviors.md)                         | Every concrete `Behavior` in the tree, its type ID, and what it does                                                                |
 | [`conventions.md`](conventions.md)                     | House style — comments, formatting, naming, header layering, language rules                                                         |
+| [`assets.md`](assets.md)                               | The `.rpkg` archive format, `AssetCatalog`, the packer tool, and the deferred per-entry protocol                                     |
+| [`bug-history.md`](bug-history.md)                     | Fixed defects worth remembering, indexed by the symptom they presented as                                                           |
 
 The RTL and math files were checked against the headers as of **2026-07-23** (branch `master`, at `8510b49`).
 Behavioural claims were confirmed by compiling and running the code, not inferred from reading — see
@@ -19,7 +21,9 @@ Behavioural claims were confirmed by compiling and running the code, not inferre
 (**2026-07-24**) by reading the sources; the sharp edges they list are traced to specific lines but were not each run.
 `application.md` was written against `master` @ `9e2683c` plus the working-tree
 `ApplicationInitSettings` change (**2026-08-16**), and its startup claims were confirmed by building and running
-`Game1`.
+`Game1`. `assets.md` was written against `master` @ `de3eafa` plus the `asset-hotloading` work (**2026-09-11**); its
+claims were confirmed by a byte-identical `ROSE-rpkg` round trip over `assets/` and by running `ArchiveTest` in both
+the Debug and Release configurations.
 
 ## Ground rules for both layers
 
@@ -152,24 +156,8 @@ When the target comes back, two things about the check are worth keeping:
   at configure time rather than letting it vanish silently — CMake cannot express "this target exists in one
   configuration only" for multi-config generators.
 
-### Historical: `_ITERATOR_DEBUG_LEVEL` under the Editor config
-
-`cmake --build --preset editor` used to build everything except `ROSE_AssetMaker`
-and `ROSE_UUID_Generator`, which failed with
-`lld-link: error: /failifmismatch: mismatch detected for '_ITERATOR_DEBUG_LEVEL'`. vcpkg has no `Editor` configuration,
-so CMake fell back to its **debug** imported libs (`_ITERATOR_DEBUG_LEVEL=2`) while the `Editor` config compiles with
-`NDEBUG`
-and the release CRT (`=0`). Only these two targets noticed, because `CLI11.lib` was the one real static archive they
-link — every other dependency is an import lib and carries no `/failifmismatch` directive.
-
-**Fixed** by `cmake/ROSEVendor.cmake`, which sets
-
-```cmake
-set(CMAKE_MAP_IMPORTED_CONFIG_EDITOR Release "")
-```
-
-so `Editor` imports the release artifacts it is ABI-compatible with. The mapping only applies on the vendored path; the
-`editor-vcpkg` preset still has the original failure, since the toolchain file governs imported configs there.
+Build failures that are fixed but worth remembering -- the `_ITERATOR_DEBUG_LEVEL` mismatch under
+the `Editor` config among them -- live in [`bug-history.md`](bug-history.md).
 
 ## Compiling a throwaway test against the RTL
 

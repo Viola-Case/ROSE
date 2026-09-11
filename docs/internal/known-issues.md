@@ -8,6 +8,9 @@ only where the shape of the old problem still explains the code around it.
 
 Ordered roughly by how likely they are to bite.
 
+Scope is the RTL and math layers. Build- and toolchain-level failures that are already fixed live in
+[`bug-history.md`](bug-history.md) instead, indexed by the error text they produced.
+
 ---
 
 ## 1. `Vec::operator[]` does not compile in a `_DEBUG` build

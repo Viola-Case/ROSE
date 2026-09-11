@@ -11,8 +11,8 @@ Files this touches, or would:
 | `src/Core/meshregistry.cpp` | the registry; `RegisterMesh` is an empty function body |
 | `src/Core/renderable.cpp` | `MeshRenderable::Rebuild`/`Collect`, the only consumer of a `Mesh` |
 | `src/Core/texture.cpp` | `LoadTexture`, the one working loader and the precedent to copy |
-| `include/ROSE/Core/asset.h`, `include/ROSE/Editor/assetfile.h` | the asset format, sketched but hollow |
-| `src/Tools/AssetMaker/main.cpp` | the offline packer, which does not yet write payload bytes |
+| `include/ROSE/Core/asset.h`, `include/ROSE/Core/archive.h` | the asset data model and the `.rpkg` container |
+| `src/Tools/Packer/main.cpp` | the offline packer, `ROSE-rpkg` |
 | `dependencies.toml` | where a third-party parser would have to be pinned |
 
 ## 1. What is actually there
@@ -29,10 +29,11 @@ carried a single triangle.
 resolve it there, because `Unpack` runs at parse time before anything could have registered a mesh.
 Resolution is retried once per frame in `Collect`.
 
-The asset pipeline is declared but not built: `AssetType::Mesh` exists in `asset.h`,
-`AssetFileHeader` exists in `Editor/assetfile.h`, `ROSE_AssetMaker` has its payload writes commented
-out, and `Surface::LoadAsset` is a stub that returns an invalid surface. None of it can round-trip a
-byte yet.
+The asset pipeline is built now, and this paragraph used to say the opposite. `.rpkg` archives
+round-trip bytes, `AssetCatalog` resolves virtual paths, and `LoadTexture` reads out of a mounted
+archive — see `docs/internal/assets.md`. What is *not* built is anything mesh-specific: an
+`AssetType::Mesh` entry is carried as opaque bytes, because nothing can parse one. The decision below
+is therefore unchanged; it just no longer has to wait on a file format.
 
 The only loader that works is `LoadTexture(path, name)` in `src/Core/texture.cpp:73`: decode from
 disk, generate a UUID, hand ownership to the registry, return the id. Whatever the mesh importer
@@ -43,14 +44,15 @@ looks like, it should look like that, because that is the shape the engine alrea
 **(a) Runtime loader in Core.** `LoadMesh(path, name) -> UUID`, symmetric with `LoadTexture`. Usable
 almost immediately; no new file format to design first.
 
-**(b) Offline only.** AssetMaker converts OBJ/glTF into a `.roseasset` with `AssetType::Mesh`, and the
-runtime only ever reads ROSE's own format. This is clearly what `asset.h`, `assetfile.h` and
-AssetMaker are aiming at. The cost is that none of that pipeline works today, so choosing this means
-building the asset format first and the importer second, with nothing on screen until both land.
+**(b) Offline only.** The packer converts OBJ/glTF into ROSE's own mesh payload at pack time, and the
+runtime only ever reads that. The container half of this now exists, so the cost is no longer "build a
+file format first" — it is that `ROSE-rpkg` would grow a mesh-specific encoder and the runtime a
+matching decoder, neither of which can be written before the in-memory `Mesh` layout settles (§4.1).
 
 **(c) Parser as a shared layer.** A pure `ParseOBJ(bytes) -> Mesh` with no file I/O and no registry
-contact, called by Core's `LoadMesh` and by AssetMaker alike. AssetMaker's `main.cpp` already carries
-`// TODO rewrite this as a library`, so this is the direction that file is already pointing.
+contact, called by Core's `LoadMesh` and by the packer alike. This also now fits the grain of the
+asset layer: `AssetCatalog::Resolve` already hands back a `(pointer, length)` pair, which is exactly
+what a parser over bytes wants.
 
 **Recommendation: (c), implemented as (a) first.** Write the parser as a free function over bytes
 returning a `Mesh`; wrap it in a `LoadMesh` that mirrors `LoadTexture`. The offline route stays open
@@ -158,5 +160,5 @@ actually make a model look right.
 5. Decide 4.4 so a scene file can actually name the result.
 6. A cube or a teapot in one of the examples, to prove the whole path.
 
-Deferred deliberately: the `.roseasset` mesh payload, materials, glTF, mesh splitting by group,
+Deferred deliberately: a mesh payload encoder for `.rpkg`, materials, glTF, mesh splitting by group,
 anything that needs a normal to survive to the backend.

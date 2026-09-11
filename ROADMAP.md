@@ -20,6 +20,10 @@
   - [ ] Object maker
   - [ ] Bundled compiler
 - [ ] UUID generator 
+- [x] Asset packer (`ROSE-rpkg`) — pack, list, extract
+  - [ ] Re-read loose assets when they change on disk, instead of caching until unmount
+  - [ ] Per-entry codec and level (see the deferred protocol in docs/internal/assets.md)
+  - [ ] Stable asset identity a scene file can name
 
 ## Plugins
 - [ ] Physics

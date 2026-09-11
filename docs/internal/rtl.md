@@ -219,6 +219,7 @@ BasicString() noexcept;                         // null m_data, size 0, capacity
 BasicString(const CharT* str);
 BasicString(const BasicString&);  BasicString(BasicString&&) noexcept;
 BasicString(const std::basic_string<CharT>&);   // interop, both ctor and operator=
+BasicString(BasicStringView<CharT>);            // length-correct; defined out of line at the bottom
 BasicString& operator=(const CharT*);           // + copy/move assign
 
 void swap(BasicString&) noexcept;
