@@ -326,6 +326,40 @@ function(rose_deploy_assets target src_dir)
     add_dependencies(${target} ${target}_assets)
 endfunction()
 
+# Packs <src_dir> into "<target>.rpkg" next to <target>'s executable.
+#
+# The archive alternative to rose_deploy_assets: same stamp-file shape and the
+# same reason for it (a POST_BUILD command hangs off the link step, so touching
+# an asset would never reach the build tree), but the command is ROSE_Packer
+# rather than a directory copy.
+#
+# DEPENDS names ROSE_Packer as well as the asset files, so editing an asset
+# repacks and rebuilding the packer repacks. A target using this does not also
+# need rose_deploy_assets -- pick one, or the same bytes ship twice.
+function(rose_pack_assets target src_dir)
+    if (NOT IS_DIRECTORY "${src_dir}")
+        message(STATUS "rose_pack_assets: ${target} has no assets directory (${src_dir}), skipping")
+        return()
+    endif ()
+
+    file(GLOB_RECURSE assets CONFIGURE_DEPENDS "${src_dir}/*")
+
+    set(stamp "${CMAKE_CURRENT_BINARY_DIR}/${target}_rpkg.stamp")
+    set(archive "$<TARGET_FILE_DIR:${target}>/${target}.rpkg")
+
+    add_custom_command(OUTPUT "${stamp}"
+            COMMAND $<TARGET_FILE:ROSE_Packer> pack "${src_dir}" -o "${archive}"
+            COMMAND ${CMAKE_COMMAND} -E touch "${stamp}"
+            DEPENDS ${assets} ROSE_Packer
+            COMMENT "Packing assets for ${target}"
+            VERBATIM
+    )
+
+    add_custom_target(${target}_rpkg DEPENDS "${stamp}")
+    set_property(TARGET ${target}_rpkg PROPERTY FOLDER "Assets")
+    add_dependencies(${target} ${target}_rpkg)
+endfunction()
+
 # ==============================================================================
 # Dependencies
 # ==============================================================================
@@ -483,6 +517,33 @@ endif ()
 # ever read one. Unlike ROSE_Editor there is no redesign pending, so there is
 # nothing for a #[[ ]] block to preserve.
 
+# -------------------------------------------------------------------- ROSE_Packer
+#
+# Writes and reads .rpkg asset archives. Links ROSE_Core for the format itself --
+# Archive, AssetEntry and the header live in Core, because the runtime is the
+# thing that has to read them; the tool only adds the writing half.
+file(GLOB_RECURSE ROSE_PACKER_SOURCES CONFIGURE_DEPENDS
+        "src/Tools/Packer/*.cpp"
+        "src/Tools/Packer/*.c"
+)
+
+add_executable(ROSE_Packer ${ROSE_PACKER_SOURCES})
+
+target_include_directories(ROSE_Packer PUBLIC include/)
+
+target_link_libraries(ROSE_Packer PRIVATE
+        ROSE_Core
+        CLI11::CLI11
+        zstd::libzstd_shared
+)
+
+set_target_properties(ROSE_Packer PROPERTIES
+        OUTPUT_NAME "ROSE-rpkg"
+        FOLDER "Tools"
+)
+
+rose_deploy_runtime(ROSE_Packer)
+
 # ----------------------------------------------------------- ROSE_UUID_Generator
 file(GLOB_RECURSE ROSE_UUID_GENERATOR_SOURCES CONFIGURE_DEPENDS
         "src/Tools/UUIDGenerator/*.cpp"
@@ -504,7 +565,7 @@ rose_deploy_runtime(ROSE_UUID_Generator)
 
 # --------------------------------------------------------- aggregate build target
 add_custom_target(ENGINE_BUILD)
-add_dependencies(ENGINE_BUILD ROSE_Core ROSE_UUID_Generator)
+add_dependencies(ENGINE_BUILD ROSE_Core ROSE_UUID_Generator ROSE_Packer)
 # Commented out with ROSE_Editor; see the note near the top of this file.
 #[[
 if (ROSE_BUILD_EDITOR)
