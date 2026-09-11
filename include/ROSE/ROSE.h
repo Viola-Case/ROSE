@@ -46,6 +46,7 @@
 #include <ROSE/Core/renderable.h>
 #include <ROSE/Core/collider.h>
 #include <ROSE/Core/asset.h>
+#include <ROSE/Core/archive.h>
 #include <ROSE/Core/surface.h>
 #include <ROSE/Core/factory.h>
 #include <ROSE/Core/time.h>
