@@ -475,30 +475,13 @@ if (ROSE_BUILD_EDITOR)
 endif ()
 ]]
 
-# --------------------------------------------------------------- ROSE_AssetMaker
-file(GLOB_RECURSE ROSE_ASSET_MAKER_SOURCES CONFIGURE_DEPENDS
-        "src/Tools/AssetMaker/*.cpp"
-        "src/Tools/AssetMaker/*.c"
-)
-
-add_executable(ROSE_AssetMaker ${ROSE_ASSET_MAKER_SOURCES})
-
-target_include_directories(ROSE_AssetMaker PUBLIC include/)
-
-target_link_libraries(ROSE_AssetMaker PRIVATE
-        ROSE_Core
-        SDL3::SDL3
-        SDL3_image::SDL3_image
-        SDL3_ttf::SDL3_ttf
-        CLI11::CLI11
-)
-
-set_target_properties(ROSE_AssetMaker PROPERTIES
-        OUTPUT_NAME "ROSE-masset"
-        FOLDER "Tools"
-)
-
-rose_deploy_runtime(ROSE_AssetMaker)
+# ROSE_AssetMaker is gone, not commented out.
+#
+# It targeted the .roseasset format, which is retired along with
+# include/ROSE/Editor/assetfile.h. Every payload write in its main.cpp was already
+# commented out, so it only ever emitted header-only stubs and nothing in the tree
+# ever read one. Unlike ROSE_Editor there is no redesign pending, so there is
+# nothing for a #[[ ]] block to preserve.
 
 # ----------------------------------------------------------- ROSE_UUID_Generator
 file(GLOB_RECURSE ROSE_UUID_GENERATOR_SOURCES CONFIGURE_DEPENDS
@@ -521,7 +504,7 @@ rose_deploy_runtime(ROSE_UUID_Generator)
 
 # --------------------------------------------------------- aggregate build target
 add_custom_target(ENGINE_BUILD)
-add_dependencies(ENGINE_BUILD ROSE_Core ROSE_UUID_Generator ROSE_AssetMaker)
+add_dependencies(ENGINE_BUILD ROSE_Core ROSE_UUID_Generator)
 # Commented out with ROSE_Editor; see the note near the top of this file.
 #[[
 if (ROSE_BUILD_EDITOR)
